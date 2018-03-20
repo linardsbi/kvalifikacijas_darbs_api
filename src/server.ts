@@ -2,17 +2,38 @@ import errorHandler from "errorhandler";
 
 import app from "./app";
 import WebSocket from "ws";
+import jwt from "jsonwebtoken";
 import { stringify } from "querystring";
+import { Response } from "superagent";
 
 /**
  * Error Handler. Provides full stack - remove for production
  */
 app.use(errorHandler());
 
+function generateSignedToken(): String {
+    return jwt.sign({ foo: "bar" }, process.env.APPLICATION_KEY);
+}
+
+function verifyToken(token: string): boolean {
+    try {
+        const decoded = jwt.verify(token, process.env.APPLICATION_KEY);
+    } catch (e) {
+        console.error("token mismatch", e);
+        return false;
+    }
+    console.log("successful connection");
+    return true;
+}
+
+function verifyClientInfo(info: Response): boolean {
+    return verifyToken(info.req.headers.token);
+}
+
 /**
  * Start WebSocket server.
  */
-const wss = new WebSocket.Server({ port: process.env.WS_PORT });
+const wss = new WebSocket.Server({ port: process.env.WS_PORT, verifyClient: verifyClientInfo });
 
 let msgCount: number;
 
@@ -24,7 +45,9 @@ function heartbeat(): void {
 
 wss.on("connection", function connection(ws: any) {
     ws.on("message", function incoming(message: any) {
-        console.log("received %s", message.toString());
+
+        console.log("received %s", JSON.parse(message).aaa);
+
         msgCount++;
         if (msgCount > 3) ws.terminate();
     });

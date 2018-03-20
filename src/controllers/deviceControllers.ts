@@ -3,11 +3,11 @@
 import async from "async";
 import request from "request";
 
-import {Response, Request, NextFunction} from "express";
+import { Response, Request, NextFunction } from "express";
 import {default as Controller, Controller as ControllerInterface } from "../models/DeviceController";
-import {default as Topic} from "../models/Topic";
-import {default as Sensor} from "../models/Device";
-import {default as PublishedData} from "../models/PublishedData";
+import {default as Topic } from "../models/Topic";
+import {default as Sensor } from "../models/Device";
+import {default as PublishedData } from "../models/PublishedData";
 
 
 function returnResponse(res: Response, controller: any, err: Error) {
@@ -35,7 +35,7 @@ export let isAuthenticated = (req: Request, res: Response, next: NextFunction) =
  *
  */
 export let createController = (req: Request, res: Response) => {
-    const controller = new Controller();
+    const controller: any = new Controller();
     controller.name = req.body.name;
     controller.machine_name = req.body.name;
 
@@ -149,7 +149,7 @@ export let getControllerData = (req: Request, res: Response) => {
  */
 export let editController = (req: Request, res: Response) => {
     // TODO: request body to update parameters
-    let controller: ControllerInterface;
+    let controller: any;
     const update: object = req.body;
     const controllerID = req.body.id;
     if (controllerID) {
@@ -166,7 +166,7 @@ export let editController = (req: Request, res: Response) => {
  *
  */
 export let deleteController = (req: Request, res: Response) => {
-    let controller: ControllerInterface;
+    let controller: any;
     const controllerID = req.body.id;
     if (controllerID) {
         controller = Controller.findByIdAndRemove({id: req.body.id}, function (err) {
