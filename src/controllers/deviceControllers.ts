@@ -4,16 +4,17 @@ import async from "async";
 import request from "request";
 
 import { Response, Request, NextFunction } from "express";
-import {default as Controller, Controller as ControllerInterface } from "../models/DeviceController";
+import {default as Controller, Controller as ControllerInterface, ControllerModel } from "../models/DeviceController";
 import {default as Topic } from "../models/Topic";
 import {default as Sensor } from "../models/Device";
 import {default as PublishedData } from "../models/PublishedData";
-import {ObjectID} from "bson";
+import { ObjectID } from "bson";
 import { ParseRequest } from "../util/helpers/parseRequest";
-import {ErrorHandler} from "../util/helpers/errorHandling";
-import { APIResponsePayload } from "../util/helpers/APIResponsePayload";
+import { ErrorHandler } from "../util/helpers/errorHandling";
+import { APIResponsePayload, Payload } from "../util/helpers/APIResponsePayload";
+import { sanitize } from "mongo-sanitize";
 
-const payload = new APIResponsePayload();
+let payload = new APIResponsePayload();
 
 function returnResponse(res: Response, controller: any, err: Error) {
     if (err) {
@@ -28,7 +29,7 @@ function getTopicsByControllerID(controllerID: ObjectID): any {
     Topic.find({_controllerID: controllerID}, function (err, found) {
         if (err) return err;
         return found;
-    })
+    });
 }
 
 function getControllerDataByID(controllerID?: ObjectID): any {
@@ -38,21 +39,29 @@ function getControllerDataByID(controllerID?: ObjectID): any {
     });
 }
 
-function createNewController(controllerData): any {
-    let controller = new Controller();
-    controller.name = controllerData.name;
-    controller.machine_name = controllerData.machine_name;
+function createNewController(controllerData: ControllerModel): any {
+    const controller = new Controller();
+
+    if (controllerData.name && controllerData.machine_name) {
+        controller.name = controllerData.name;
+        controller.machine_name = controllerData.machine_name;
+    } else {
+        payload.addUnformattedData({error: "Required parameters name or machine_name are missing"});
+    }
 
     try {
-        return controller.save(function (err) {
+        const result = controller.save(function (err) {
             if (err) {
                 ErrorHandler.handle(err);
-                return { error: new Error("Error occurred while saving") };
+                payload.addUnformattedData({ error: new Error("Error occurred while saving") });
             }
         });
+        payload.addUnformattedData({ controller: result });
     } catch (e) {
-        return {error: "Error occurred while parsing string"};
+        payload.addUnformattedData({ error: new Error("Error occurred while parsing string") });
     }
+
+    return payload.getFormattedPayload();
 }
 
 /**
@@ -70,27 +79,21 @@ export let isAuthenticated = (req: Request, res: Response, next: NextFunction) =
  * @param {e.Response} res
  */
 export const create = (req: Request, res: Response) => {
-    const controller = req.body;
-    const result = createNewController(controller);
+    const controller: ControllerModel = req.body;
+    const result: Payload = createNewController(controller);
 
-    payload.addUnformattedData({test: "Error occurred while parsing string"});
-    payload.addUnformattedData({tedsagst: "Error occurred while parsing string"});
-    payload.addUnformattedData({sss: "aa"});
-    payload.addUnformattedData({sss: "afgggfgda"});
-    payload.addUnformattedData({error: "gfdgfgdgff"});
-    payload.addUnformattedData({error: "33"});
-    payload.addUnformattedData({error: "3rew"});
-    payload.addUnformattedData({error: "3dsasdrewr3"});
-
-    console.log(payload.getFormattedPayload());
+    console.log(ParseRequest.toString(result.data));
 
     if (result === undefined) {
         res.status(500).send("error");
-    } else if (result.error) {
-        res.status(500).send(result.error);
+    } else if (result.errors[0]) {
+        res.status(500).send(result.errors);
     } else {
-        res.send(result);
+        res.send(ParseRequest.toString(result.data));
     }
+
+    // Temporary solution
+    payload = new APIResponsePayload();
 };
 
 /**

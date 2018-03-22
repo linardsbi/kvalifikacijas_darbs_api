@@ -1,8 +1,10 @@
 "use strict";
 
-interface Payload {
-    errors?: object,
-    data: object
+// TODO: attach as global var, destroy after response sent
+
+export interface Payload {
+    errors?: object;
+    data: object;
 }
 
 export class APIResponsePayload {
@@ -10,25 +12,33 @@ export class APIResponsePayload {
     private unformattedPayload: object = [];
 
     addUnformattedData(unformattedData: object): void {
+        // TODO: rework so payload isn't in an array
         this.unformattedPayload.push(unformattedData);
     }
 
     formatPayload(): void {
-        let formattedPayload: Payload = {"data":[], "errors": []};
+        // TODO: array payload followup rework
+        const formattedPayload: Payload = {"data": [], "errors": []};
 
         for (const key in this.unformattedPayload) {
             let value: any = "";
-            let tmp: object = [];
+            const tmp: object = [];
 
             if (this.unformattedPayload.hasOwnProperty(key)) {
                 value = this.unformattedPayload[key];
             }
 
-            console.log();
-            if (key == "error") {
-                formattedPayload.errors.push({ [key]: value });
-            } else {
-                formattedPayload.data.push({ [key]: value });
+            for (const objectKey in value) {
+                let objectValue = "";
+                if (value.hasOwnProperty(objectKey)) {
+                    objectValue = value[objectKey];
+                }
+
+                if (objectKey == "error") {
+                    formattedPayload.errors.push({ [objectKey]: objectValue });
+                } else {
+                    formattedPayload.data.push({ [objectKey]: objectValue });
+                }
             }
         }
 
@@ -36,7 +46,6 @@ export class APIResponsePayload {
     }
 
     getFormattedPayload(): Payload {
-        console.log(this.unformattedPayload);
         this.formatPayload();
         return this.formattedPayload;
     }

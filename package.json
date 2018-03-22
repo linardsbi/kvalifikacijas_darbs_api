@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@types/jsonwebtoken": "^7.2.6",
+    "@types/mongo-sanitize": "^1.0.0",
     "async": "^2.6.0",
     "bcrypt-nodejs": "^0.0.3",
     "bluebird": "^3.5.1",
@@ -42,6 +43,7 @@
     "jsonwebtoken": "^8.2.0",
     "lodash": "^4.17.4",
     "lusca": "^1.5.2",
+    "mongo-sanitize": "^1.0.0",
     "mongoose": "^4.13.11",
     "nodemailer": "^4.4.1",
     "passport": "^0.4.0",

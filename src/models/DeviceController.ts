@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export interface Controller {
+export interface ControllerModel {
     id?: mongoose.Schema.Types.ObjectId;
     name?: String;
     machine_name?: String;

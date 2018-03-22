@@ -11,7 +11,7 @@ import mongoose from "mongoose";
 import passport from "passport";
 import expressValidator from "express-validator";
 import bluebird from "bluebird";
-import {MONGODB_URI, SESSION_SECRET} from "./util/secrets";
+import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
 // Controllers (route handlers)
 import * as homeController from "./controllers/home";
 import * as userController from "./controllers/user";
