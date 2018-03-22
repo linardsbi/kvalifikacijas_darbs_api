@@ -8,7 +8,12 @@ import {default as Controller, Controller as ControllerInterface } from "../mode
 import {default as Topic } from "../models/Topic";
 import {default as Sensor } from "../models/Device";
 import {default as PublishedData } from "../models/PublishedData";
+import {ObjectID} from "bson";
+import { ParseRequest } from "../util/helpers/parseRequest";
+import {ErrorHandler} from "../util/helpers/errorHandling";
+import { APIResponsePayload } from "../util/helpers/APIResponsePayload";
 
+const payload = new APIResponsePayload();
 
 function returnResponse(res: Response, controller: any, err: Error) {
     if (err) {
@@ -19,10 +24,40 @@ function returnResponse(res: Response, controller: any, err: Error) {
     res.send(controller);
 }
 
+function getTopicsByControllerID(controllerID: ObjectID): any {
+    Topic.find({_controllerID: controllerID}, function (err, found) {
+        if (err) return err;
+        return found;
+    })
+}
+
+function getControllerDataByID(controllerID?: ObjectID): any {
+    Controller.findById({controllerID}, function (err, found) {
+        if (err) throw new Error(err);
+        return found;
+    });
+}
+
+function createNewController(controllerData): any {
+    let controller = new Controller();
+    controller.name = controllerData.name;
+    controller.machine_name = controllerData.machine_name;
+
+    try {
+        return controller.save(function (err) {
+            if (err) {
+                ErrorHandler.handle(err);
+                return { error: new Error("Error occurred while saving") };
+            }
+        });
+    } catch (e) {
+        return {error: "Error occurred while parsing string"};
+    }
+}
+
 /**
  * Handles all the routes associated with the DeviceController model
  */
-
 export let isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
     // TODO: auth check
     next();
@@ -31,22 +66,31 @@ export let isAuthenticated = (req: Request, res: Response, next: NextFunction) =
 /**
  * POST /controllers/create
  * Create a new controller.
- * parameters: name, machine_name
- *
+ * @param {e.Request} req
+ * @param {e.Response} res
  */
-export let createController = (req: Request, res: Response) => {
-    const controller: any = new Controller();
-    controller.name = req.body.name;
-    controller.machine_name = req.body.name;
+export const create = (req: Request, res: Response) => {
+    const controller = req.body;
+    const result = createNewController(controller);
 
-    controller.save(function (err, controller) {
-        if (err) {
-            handleErrors(err);
-            res.status(500).send("Error occurred when saving controller");
-        }
+    payload.addUnformattedData({test: "Error occurred while parsing string"});
+    payload.addUnformattedData({tedsagst: "Error occurred while parsing string"});
+    payload.addUnformattedData({sss: "aa"});
+    payload.addUnformattedData({sss: "afgggfgda"});
+    payload.addUnformattedData({error: "gfdgfgdgff"});
+    payload.addUnformattedData({error: "33"});
+    payload.addUnformattedData({error: "3rew"});
+    payload.addUnformattedData({error: "3dsasdrewr3"});
 
-        res.send("OK");
-    });
+    console.log(payload.getFormattedPayload());
+
+    if (result === undefined) {
+        res.status(500).send("error");
+    } else if (result.error) {
+        res.status(500).send(result.error);
+    } else {
+        res.send(result);
+    }
 };
 
 /**
@@ -79,15 +123,9 @@ export let getControllerTopics = (req: Request, res: Response) => {
     let controller: object;
     let topics: object;
     const controllerID = req.body.id;
-    if (controllerID) {
-        controller = Controller.findOne({id: req.body.id}, function (err) {
-            if (err) res.send("error");
-        });
 
-        topics = Topic.find({_controllerID: controller.id}, function (err, found) {
-            if (err) res.send("error");
-            returnResponse(res, found, err);
-        });
+    if (controllerID) {
+        getTopicsByControllerID(req.body.id);
     }
 };
 

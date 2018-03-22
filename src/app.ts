@@ -112,7 +112,7 @@ app.post("/account/delete", passportConfig.isAuthenticated, userController.postD
 /**
  * controllers
  */
-app.post("/controllers/create", deviceControllers.isAuthenticated, deviceControllers.createController);
+app.post("/controllers/create", deviceControllers.isAuthenticated, deviceControllers.create);
 app.get("/controllers/get", deviceControllers.isAuthenticated, deviceControllers.getController);
 app.get("/controllers/get/topics", deviceControllers.isAuthenticated, deviceControllers.getControllerTopics);
 app.get("/controllers/get/sensors", deviceControllers.isAuthenticated, deviceControllers.getControllerSensors);
