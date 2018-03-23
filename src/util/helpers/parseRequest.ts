@@ -1,6 +1,7 @@
 "use strict";
 
 import { ErrorHandler } from "./errorHandling";
+import {type} from "os";
 
 
 export class ParseRequest {
@@ -13,7 +14,6 @@ export class ParseRequest {
         try {
             return JSON.parse(requestBody);
         } catch (e) {
-            ErrorHandler.handle(e);
             return {error: "Error occurred while parsing string"};
         }
 
@@ -28,8 +28,43 @@ export class ParseRequest {
         try {
             return JSON.stringify(requestBody);
         } catch (e) {
-            ErrorHandler.handle(e);
-            return "";
+
+            return "invalid json object";
         }
+    }
+
+    /**
+     * Check if string can be converted to JSON
+     * @param {string} string
+     * @returns {boolean}
+     */
+    static isJSON(string: string): boolean {
+        try {
+            return !!(JSON.parse(string));
+        } catch (e) {
+            return false;
+        }
+    }
+
+    static convertJSONArrayToArray(jsonArray: object): object {
+        let newArray: object = [];
+
+        try {
+            for (const item of jsonArray) {
+                for (const objectKey in item) {
+                    let value: string;
+
+                    if (item.hasOwnProperty(objectKey)) {
+                        value = item[objectKey];
+                    }
+
+                    newArray.push(value);
+                }
+            }
+        } catch (e) {
+            return {error: "array is not a valid json object"};
+        }
+
+        return newArray;
     }
 }

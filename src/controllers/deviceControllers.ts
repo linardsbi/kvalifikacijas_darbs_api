@@ -16,52 +16,96 @@ import { sanitize } from "mongo-sanitize";
 
 let payload = new APIResponsePayload();
 
-function returnResponse(res: Response, controller: any, err: Error) {
-    if (err) {
-        handleErrors(err);
-        res.status(500).send("Error occurred when fetching controller");
-    }
+function returnResponse(res: Response, result: Payload) {
+    res.setHeader('Content-Type', 'application/json');
 
-    res.send(controller);
+    if (result === undefined) {
+        res.status(500).send("error");
+    } else if (result.errors[0]) {
+        res.status(500).send(result.errors);
+    } else {
+        res.send(ParseRequest.toString(result.data));
+    }
 }
 
-function getTopicsByControllerID(controllerID: ObjectID): any {
-    Topic.find({_controllerID: controllerID}, function (err, found) {
-        if (err) return err;
-        return found;
+function getController(controllerID?: string): any {
+    return new Promise((resolve, reject) => {
+        let controller: any;
+
+        if (controllerID) {
+            getValuesFromJSONString(controllerID).then( (controllerIDs: object) => {
+                controller = Controller.find({_id: { $in: controllerIDs }}, function (err, found) {
+                    if (err) {
+                        payload.addUnformattedData({ error: new Error("Error occurred while trying to find a controller") });
+                        reject(payload.getFormattedPayload());
+                    }
+                    payload.addUnformattedData(found);
+                    resolve(payload.getFormattedPayload());
+                });
+            }, (err) => {
+                payload.addUnformattedData(err);
+                reject(payload.getFormattedPayload());
+            });
+        } else {
+            controller = Controller.find({}, function (err, found) {
+                if (err) {
+                    payload.addUnformattedData({ error: new Error("Error occurred while trying to find controllers") });
+                    reject(payload.getFormattedPayload());
+                }
+                payload.addUnformattedData(found);
+                resolve(payload.getFormattedPayload());
+            });
+        }
     });
 }
 
-function getControllerDataByID(controllerID?: ObjectID): any {
-    Controller.findById({controllerID}, function (err, found) {
-        if (err) throw new Error(err);
-        return found;
+function getValuesFromJSONString(controllerID: string): object {
+    return new Promise((resolve, reject) => {
+        const jsonObject: object = ParseRequest.toObject(controllerID);
+        let convertedString: object = {};
+
+        if (!jsonObject.error) {
+            convertedString = ParseRequest.convertJSONArrayToArray(jsonObject);
+            if (convertedString.error) {
+                payload.addUnformattedData(convertedString.error);
+                reject(payload.getFormattedPayload());
+            } else {
+                resolve(convertedString);
+            }
+        } else {
+            payload.addUnformattedData(jsonObject.error);
+            reject(payload.getFormattedPayload());
+        }
     });
 }
 
 function createNewController(controllerData: ControllerModel): any {
-    const controller = new Controller();
+    return new Promise(function (resolve, reject) {
+        const controller = new Controller();
 
-    if (controllerData.name && controllerData.machine_name) {
-        controller.name = controllerData.name;
-        controller.machine_name = controllerData.machine_name;
-    } else {
-        payload.addUnformattedData({error: "Required parameters name or machine_name are missing"});
-    }
+        if (controllerData.name && controllerData.machine_name) {
+            controller.name = controllerData.name;
+            controller.machine_name = controllerData.machine_name;
+        } else {
+            payload.addUnformattedData({error: "Required parameters name or machine_name are missing"});
+            reject(payload.getFormattedPayload());
+        }
 
-    try {
-        const result = controller.save(function (err) {
-            if (err) {
-                ErrorHandler.handle(err);
-                payload.addUnformattedData({ error: new Error("Error occurred while saving") });
-            }
-        });
-        payload.addUnformattedData({ controller: result });
-    } catch (e) {
-        payload.addUnformattedData({ error: new Error("Error occurred while parsing string") });
-    }
-
-    return payload.getFormattedPayload();
+        try {
+            const result = controller.save(function (err) {
+                if (err) {
+                    ErrorHandler.handle(err);
+                    payload.addUnformattedData({ error: new Error("Error occurred while saving") });
+                    reject(payload.getFormattedPayload());
+                }
+            });
+            payload.addUnformattedData({ controller: result });
+            resolve(payload.getFormattedPayload());
+        } catch (e) {
+            payload.addUnformattedData({ error: new Error("Error occurred while parsing string") });
+            reject(payload.getFormattedPayload());
+        }
+    });
 }
 
 /**
@@ -80,20 +124,15 @@ export let isAuthenticated = (req: Request, res: Response, next: NextFunction) =
  */
 export const create = (req: Request, res: Response) => {
     const controller: ControllerModel = req.body;
-    const result: Payload = createNewController(controller);
-
-    console.log(ParseRequest.toString(result.data));
-
-    if (result === undefined) {
-        res.status(500).send("error");
-    } else if (result.errors[0]) {
-        res.status(500).send(result.errors);
-    } else {
-        res.send(ParseRequest.toString(result.data));
-    }
-
-    // Temporary solution
-    payload = new APIResponsePayload();
+    createNewController(controller).then(function (result) {
+        returnResponse(res, result);
+        // Temporary solution
+        payload = new APIResponsePayload();
+    }, (err) => {
+        returnResponse(res, err);
+        // Temporary solution
+        payload = new APIResponsePayload();
+    });
 };
 
 /**
@@ -102,19 +141,26 @@ export const create = (req: Request, res: Response) => {
  * parameters: id - optional
  *
  */
-export let getController = (req: Request, res: Response) => {
-    let controller: object;
-    const controllerID = req.body.id;
-    if (controllerID) {
-        controller = Controller.find(function (err, found) {
-            returnResponse(res, found, err);
-        });
-    } else {
-         controller = Controller.findById(controllerID, function (err, found) {
-             returnResponse(res, found, err);
-        });
-    }
+export const read = (req: Request, res: Response) => {
+    // TODO: create a nice flow of error handling ops, minimize async ops
+    const controllerID: string = req.query.id;
+    getController(controllerID).then( (result: Payload) => {
+        returnResponse(res, result);
+        // Temporary solution
+        payload = new APIResponsePayload();
+    }, (err) => {
+        returnResponse(res, err);
+        // Temporary solution
+        payload = new APIResponsePayload();
+    });
 };
+
+function getTopicsByControllerID(controllerID: ObjectID): any {
+    Topic.find({_controllerID: controllerID}, function (err, found) {
+        if (err) return err;
+        return found;
+    });
+}
 
 /**
  * GET /controllers/get/topics

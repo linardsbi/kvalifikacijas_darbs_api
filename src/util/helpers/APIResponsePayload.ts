@@ -12,7 +12,6 @@ export class APIResponsePayload {
     private unformattedPayload: object = [];
 
     addUnformattedData(unformattedData: object): void {
-        // TODO: rework so payload isn't in an array
         this.unformattedPayload.push(unformattedData);
     }
 

@@ -5,6 +5,8 @@
 
 @import "themes/default/default";
 
+@import url('https://fonts.googleapis.com/css?family=Anonymous+Pro:400,700');
+
 // Scaffolding
 // -------------------------
 
@@ -16,6 +18,8 @@ html {
 body {
   padding-top: 60px;
   margin-bottom: 75px;
+  font-family: 'Anonymous Pro', sans-serif !important;
+  letter-spacing: 0.1em;
 }
 
 footer {
