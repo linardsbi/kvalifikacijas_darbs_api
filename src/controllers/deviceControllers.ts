@@ -1,6 +1,6 @@
 "use strict";
 
-import async from "async";
+import async, { reject } from "async";
 import request from "request";
 
 import { Response, Request, NextFunction } from "express";
@@ -12,72 +12,9 @@ import { ObjectID } from "bson";
 import { ParseRequest } from "../util/helpers/parseRequest";
 import { ErrorHandler } from "../util/helpers/errorHandling";
 import { APIResponsePayload, Payload } from "../util/helpers/APIResponsePayload";
-import { sanitize } from "mongo-sanitize";
+import { APIResponse } from "../util/helpers/APIResponse";
 
 let payload = new APIResponsePayload();
-
-function returnResponse(res: Response, result: Payload) {
-    res.setHeader('Content-Type', 'application/json');
-
-    if (result === undefined) {
-        res.status(500).send("error");
-    } else if (result.errors[0]) {
-        res.status(500).send(result.errors);
-    } else {
-        res.send(ParseRequest.toString(result.data));
-    }
-}
-
-function getController(controllerID?: string): any {
-    return new Promise((resolve, reject) => {
-        let controller: any;
-
-        if (controllerID) {
-            getValuesFromJSONString(controllerID).then( (controllerIDs: object) => {
-                controller = Controller.find({_id: { $in: controllerIDs }}, function (err, found) {
-                    if (err) {
-                        payload.addUnformattedData({ error: new Error("Error occurred while trying to find a controller") });
-                        reject(payload.getFormattedPayload());
-                    }
-                    payload.addUnformattedData(found);
-                    resolve(payload.getFormattedPayload());
-                });
-            }, (err) => {
-                payload.addUnformattedData(err);
-                reject(payload.getFormattedPayload());
-            });
-        } else {
-            controller = Controller.find({}, function (err, found) {
-                if (err) {
-                    payload.addUnformattedData({ error: new Error("Error occurred while trying to find controllers") });
-                    reject(payload.getFormattedPayload());
-                }
-                payload.addUnformattedData(found);
-                resolve(payload.getFormattedPayload());
-            });
-        }
-    });
-}
-
-function getValuesFromJSONString(controllerID: string): object {
-    return new Promise((resolve, reject) => {
-        const jsonObject: object = ParseRequest.toObject(controllerID);
-        let convertedString: object = {};
-
-        if (!jsonObject.error) {
-            convertedString = ParseRequest.convertJSONArrayToArray(jsonObject);
-            if (convertedString.error) {
-                payload.addUnformattedData(convertedString.error);
-                reject(payload.getFormattedPayload());
-            } else {
-                resolve(convertedString);
-            }
-        } else {
-            payload.addUnformattedData(jsonObject.error);
-            reject(payload.getFormattedPayload());
-        }
-    });
-}
 
 function createNewController(controllerData: ControllerModel): any {
     return new Promise(function (resolve, reject) {
@@ -124,16 +61,68 @@ export let isAuthenticated = (req: Request, res: Response, next: NextFunction) =
  */
 export const create = (req: Request, res: Response) => {
     const controller: ControllerModel = req.body;
+    const response = new APIResponse(res);
+
     createNewController(controller).then(function (result) {
-        returnResponse(res, result);
+        response.sendSuccess(result);
         // Temporary solution
         payload = new APIResponsePayload();
     }, (err) => {
-        returnResponse(res, err);
+        response.sendError(err);
         // Temporary solution
         payload = new APIResponsePayload();
     });
 };
+
+function getController(controllerID?: string): any {
+    return new Promise((resolve, reject) => {
+        let controller: any;
+
+        if (controllerID) {
+            getValuesFromJSONString(controllerID).then( (controllerIDs: object) => {
+                controller = Controller.find({_id: { $in: controllerIDs }}, function (err, found) {
+                    if (err) {
+                        payload.addUnformattedData({ error: "Error occurred while trying to find a controller"});
+
+                    }
+                    payload.addUnformattedData(found);
+                    resolve(payload.getFormattedPayload());
+                });
+            }, (err) => {
+                payload.addUnformattedData(err);
+                reject(payload.getFormattedPayload());
+            });
+        } else {
+            controller = Controller.find({}, function (err, found) {
+                if (err) {
+                    payload.addUnformattedData({ error: "Error occurred while trying to find controllers" });
+                }
+                payload.addUnformattedData(found);
+                resolve(payload.getFormattedPayload());
+            });
+        }
+    });
+}
+
+function getValuesFromJSONString(controllerID: string): object {
+    return new Promise((resolve, reject) => {
+        const jsonObject: object = ParseRequest.toObject(controllerID);
+        let convertedString: object = {};
+
+        if (!jsonObject.error) {
+            convertedString = ParseRequest.convertJSONArrayToArray(jsonObject);
+            if (convertedString.error) {
+                payload.addUnformattedData(convertedString);
+                reject();
+            } else {
+                resolve(convertedString);
+            }
+        } else {
+            payload.addUnformattedData(jsonObject);
+            reject();
+        }
+    });
+}
 
 /**
  * GET /controllers/get
@@ -144,21 +133,29 @@ export const create = (req: Request, res: Response) => {
 export const read = (req: Request, res: Response) => {
     // TODO: create a nice flow of error handling ops, minimize async ops
     const controllerID: string = req.query.id;
+    const response = new APIResponse(res);
+
     getController(controllerID).then( (result: Payload) => {
-        returnResponse(res, result);
+        response.sendSuccess(result);
         // Temporary solution
         payload = new APIResponsePayload();
     }, (err) => {
-        returnResponse(res, err);
+        response.sendError(err);
         // Temporary solution
         payload = new APIResponsePayload();
     });
 };
 
 function getTopicsByControllerID(controllerID: ObjectID): any {
-    Topic.find({_controllerID: controllerID}, function (err, found) {
-        if (err) return err;
-        return found;
+    return new Promise( (resolve, reject) => {
+        const topic = Topic.find({_controllerID: controllerID}, function (err, found) {
+            if (err) {
+                payload.addUnformattedData({error: "error occurred while getting topics"});
+                reject();
+            }
+            payload.addUnformattedData(found);
+            resolve(payload.getFormattedPayload());
+        });
     });
 }
 
@@ -168,13 +165,20 @@ function getTopicsByControllerID(controllerID: ObjectID): any {
  * parameters: controller id
  *
  */
-export let getControllerTopics = (req: Request, res: Response) => {
-    let controller: object;
-    let topics: object;
-    const controllerID = req.body.id;
+export const getControllerTopics = (req: Request, res: Response) => {
+    const controllerID = req.query.id;
+    const response = new APIResponse(res);
 
     if (controllerID) {
-        getTopicsByControllerID(req.body.id);
+        getTopicsByControllerID(controllerID).then( (result: Payload) => {
+            response.sendSuccess(result);
+            // Temporary solution
+            payload = new APIResponsePayload();
+        }, (err) => {
+            response.sendError(err);
+            // Temporary solution
+            payload = new APIResponsePayload();
+        });
     }
 };
 
