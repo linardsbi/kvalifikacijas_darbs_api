@@ -67,4 +67,22 @@ export class ParseRequest {
 
         return newArray;
     }
+
+    static getValuesFromJSONString(jsonString: string): object {
+        return new Promise((resolve, reject) => {
+            const jsonObject: object = ParseRequest.toObject(jsonString);
+            let convertedString: object = {};
+
+            if (!jsonObject.error) {
+                convertedString = ParseRequest.convertJSONArrayToArray(jsonObject);
+                if (convertedString.error) {
+                    reject(convertedString);
+                } else {
+                    resolve(convertedString);
+                }
+            } else {
+                reject(jsonObject);
+            }
+        });
+    }
 }

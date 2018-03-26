@@ -1,19 +1,18 @@
-import crypto from "crypto";
 import mongoose from "mongoose";
 
-function generateSecret() {
-    crypto.randomBytes(16, function (err: Error, buffer: any) {
-        return buffer.toString("hex");
-    });
+export interface BrokerInterface {
+    static_ip: String;
+    secret: String;
+    clients?: object;
 }
 
 const BrokerSchema = new mongoose.Schema({
     static_ip: {type: String, unique: true, required: true},
-    secret: {type: String, unique: true, required: true, default: generateSecret()},
+    secret: String,
     clients: [
-        {_clientID: mongoose.Schema.Types.ObjectId}
+        { _clientID: mongoose.Schema.Types.ObjectId }
     ]
 }, {timestamps: true});
 
-const Broker = mongoose.model("User", BrokerSchema);
+const Broker = mongoose.model("Broker", BrokerSchema);
 export default Broker;

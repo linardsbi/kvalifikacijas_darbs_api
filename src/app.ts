@@ -108,7 +108,7 @@ app.post("/account/delete", passportConfig.isAuthenticated, userController.postD
 /**
  * API routes
  */
-
+// TODO: Generalize authentication and create routes
 /**
  * controllers
  */
@@ -133,16 +133,16 @@ app.post("/clients/delete", userController.postLogin);
 /**
  * devices
  */
-app.post("/devices/create", userController.postLogin);
-app.get("/devices/get", userController.postLogin);
+app.post("/devices/create", deviceControllers.isAuthenticated, deviceController.create);
+app.get("/devices/get", deviceControllers.isAuthenticated, deviceController.read);
 app.post("/devices/edit", userController.postLogin);
 app.post("/devices/delete", userController.postLogin);
 
 /**
  * brokers
  */
-app.post("/brokers/create", userController.postLogin);
-app.get("/brokers/get", userController.postLogin);
+app.post("/brokers/create", deviceControllers.isAuthenticated, brokerController.create);
+app.get("/brokers/get", deviceControllers.isAuthenticated, deviceController.read);
 app.get("/brokers/get/users", userController.postLogin);
 app.post("/brokers/edit", userController.postLogin);
 app.post("/brokers/delete", userController.postLogin);

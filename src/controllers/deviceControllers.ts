@@ -29,15 +29,16 @@ function createNewController(controllerData: ControllerModel): any {
         }
 
         try {
-            const result = controller.save(function (err) {
+            const result = controller.save(function (err, controller) {
                 if (err) {
                     ErrorHandler.handle(err);
                     payload.addUnformattedData({ error: new Error("Error occurred while saving") });
                     reject(payload.getFormattedPayload());
                 }
+                payload.addUnformattedData({ controller: controller });
+                resolve(payload.getFormattedPayload());
             });
-            payload.addUnformattedData({ controller: result });
-            resolve(payload.getFormattedPayload());
+
         } catch (e) {
             payload.addUnformattedData({ error: new Error("Error occurred while parsing string") });
             reject(payload.getFormattedPayload());
@@ -79,7 +80,7 @@ function getController(controllerID?: string): any {
         let controller: any;
 
         if (controllerID) {
-            getValuesFromJSONString(controllerID).then( (controllerIDs: object) => {
+            ParseRequest.getValuesFromJSONString(controllerID).then( (controllerIDs: object) => {
                 controller = Controller.find({_id: { $in: controllerIDs }}, function (err, found) {
                     if (err) {
                         payload.addUnformattedData({ error: "Error occurred while trying to find a controller"});
@@ -100,26 +101,6 @@ function getController(controllerID?: string): any {
                 payload.addUnformattedData(found);
                 resolve(payload.getFormattedPayload());
             });
-        }
-    });
-}
-
-function getValuesFromJSONString(controllerID: string): object {
-    return new Promise((resolve, reject) => {
-        const jsonObject: object = ParseRequest.toObject(controllerID);
-        let convertedString: object = {};
-
-        if (!jsonObject.error) {
-            convertedString = ParseRequest.convertJSONArrayToArray(jsonObject);
-            if (convertedString.error) {
-                payload.addUnformattedData(convertedString);
-                reject();
-            } else {
-                resolve(convertedString);
-            }
-        } else {
-            payload.addUnformattedData(jsonObject);
-            reject();
         }
     });
 }
