@@ -4,7 +4,7 @@ import async from "async";
 import request from "request";
 
 import { Response, Request, NextFunction } from "express";
-import { default as Broker, BrokerInterface as BrokerModel, generateSecret } from "../models/Broker";
+import { default as Broker, BrokerInterface as BrokerModel } from "../models/Broker";
 import {APIResponse} from "../util/helpers/APIResponse";
 import {ParseRequest} from "../util/helpers/parseRequest";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
@@ -31,6 +31,7 @@ export const create = (req: Request, res: Response) => {
         function generateSecret(done: Function){
             crypto.randomBytes(16, function (err: Error, buffer: any) {
                 broker.secret = buffer.toString("hex");
+                if (err) payload.addUnformattedData({ error: err });
                 done(err, broker);
             });
         },
@@ -42,35 +43,39 @@ export const create = (req: Request, res: Response) => {
                 broker.secret = brokerData.secret;
             } else {
                 payload.addUnformattedData({error: "Required parameter static_ip is missing"});
-                done(payload.getFormattedPayload());
             }
             try {
                 const result = broker.save(function (err, saved) {
                     if (err) {
-                        ErrorHandler.handle(err);
-                        payload.addUnformattedData({ error: "Error occurred while saving" });
+                        payload.addUnformattedData({ error: err });
+                        done(err);
+                    } else {
+                        payload.addUnformattedData({ broker: saved });
+                        done();
                     }
-                    payload.addUnformattedData({ broker: saved });
-                    done(err, payload.getFormattedPayload());
                 });
             } catch (e) {
-                payload.addUnformattedData({ error: "Error occurred while parsing string" });
-                done(e, payload.getFormattedPayload());
+                payload.addUnformattedData({ error: e });
+                done(e);
             }
         }
     ], (result) => {
-        console.log(result);
-        response.sendSuccess(payload.getFormattedPayload());
+        result = payload.getFormattedPayload();
+        
+        if (!result.errors[0]) response.sendSuccess(result);
+        else response.sendError(result);
     });
+
+    payload = new APIResponsePayload();
 };
 
-function getBroker(deviceID?: string): any {
+function getBroker(brokerID?: string): any {
     return new Promise((resolve, reject) => {
         let broker: any;
 
-        if (deviceID) {
-            ParseRequest.getValuesFromJSONString(deviceID).then( (deviceIDs: object) => {
-                broker = Broker.find({_id: { $in: deviceIDs }}, function (err, found) {
+        if (brokerID) {
+            ParseRequest.getValuesFromJSONString(brokerID).then( (brokerIDs: object) => {
+                broker = Broker.find({_id: { $in: brokerIDs }}, function (err, found) {
                     if (err) {
                         payload.addUnformattedData({ error: "Error occurred while trying to find a broker"});
                     }

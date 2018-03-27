@@ -142,7 +142,7 @@ app.post("/devices/delete", userController.postLogin);
  * brokers
  */
 app.post("/brokers/create", deviceControllers.isAuthenticated, brokerController.create);
-app.get("/brokers/get", deviceControllers.isAuthenticated, deviceController.read);
+app.get("/brokers/get", deviceControllers.isAuthenticated, brokerController.read);
 app.get("/brokers/get/users", userController.postLogin);
 app.post("/brokers/edit", userController.postLogin);
 app.post("/brokers/delete", userController.postLogin);
@@ -156,6 +156,6 @@ app.get("/logs/get", userController.postLogin);
  * topics
  */
 app.get("/topics/get", userController.postLogin);
-app.post("/topics/create", userController.postLogin);
+app.post("/topics/create", deviceControllers.isAuthenticated, topicController.create);
 
 export default app;

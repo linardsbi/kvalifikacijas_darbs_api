@@ -4,7 +4,7 @@ import async, { reject } from "async";
 import request from "request";
 
 import { Response, Request, NextFunction } from "express";
-import {default as Controller, Controller as ControllerInterface, ControllerModel } from "../models/DeviceController";
+import {default as Controller, ControllerModel } from "../models/DeviceController";
 import {default as Topic } from "../models/Topic";
 import {default as Sensor } from "../models/Device";
 import {default as PublishedData } from "../models/PublishedData";

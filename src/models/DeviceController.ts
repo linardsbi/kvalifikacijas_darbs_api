@@ -11,18 +11,15 @@ export interface ControllerModel {
 const deviceControllerSchema = new mongoose.Schema({
     name: String,
     machine_name: String,
-    devices: [
-        {_deviceID: mongoose.Schema.Types.ObjectId}
-    ],
+    devices: [ { type: mongoose.Schema.Types.ObjectId } ],
     topics: [
         {
             _topicID: mongoose.Schema.Types.ObjectId,
-            source: Number,
-            destination: Number,
-            protocol: String
+            details: {type: String, default: "generic"},
+            protocol_name: String,
         }
     ]
-}, {timestamps: true});
+}, { timestamps: true, usePushEach: true});
 
 const DeviceController = mongoose.model("DeviceController", deviceControllerSchema);
 export default DeviceController;

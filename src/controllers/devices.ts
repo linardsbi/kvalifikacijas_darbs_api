@@ -15,33 +15,44 @@ import {ParseRequest} from "../util/helpers/parseRequest";
 let payload = new APIResponsePayload();
 
 function createNewDevice(deviceData: DeviceModel): any {
-    return new Promise(function (resolve, reject) {
-        const device = new Device();
+    return new Promise( (resolve) => {
+        const device = new Device({
+            "name": deviceData.name,
+            "machine_name": deviceData.machine_name,
+            "_controllerID": deviceData._controllerID
+        });
 
-        if (deviceData.name && deviceData.machine_name && deviceData._controllerID) {
-            device.name = deviceData.name;
-            device.machine_name = deviceData.machine_name;
-            device._controllerID = deviceData._controllerID;
-        } else {
-            payload.addUnformattedData({error: "Required parameters name, machine_name or controllerID are missing"});
-            reject(payload.getFormattedPayload());
-        }
-
-        try {
-            const result = device.save(function (err, device) {
-                if (err) {
-                    ErrorHandler.handle(err);
-                    payload.addUnformattedData({ error: new Error("Error occurred while saving") });
-                    reject(payload.getFormattedPayload());
+        async.waterfall([
+            function (done: Function) {
+                device.save(function (err, device) {
+                    if (err) {
+                        ErrorHandler.handle(err);
+                        payload.addUnformattedData({ error: "Error occurred while saving" });
+                        done();
+                    }
+                    payload.addUnformattedData({ device: device });
+                    done(null, device);
+                });
+            },
+            function (device, done: Function) {
+                try {
+                    Controller.findById(deviceData._controllerID, (err, controller) => {
+                        controller.devices.push({ _id: device._id });
+                        controller.save(function (err, saved) {
+                            if (err)
+                                payload.addUnformattedData({ error: err });
+                            console.log(err);
+                            done();
+                        });
+                    });
+                } catch (e) {
+                    payload.addUnformattedData({ error: e });
+                    done();
                 }
-                payload.addUnformattedData({ controller: device });
-                resolve(payload.getFormattedPayload());
-            });
-
-        } catch (e) {
-            payload.addUnformattedData({ error: new Error("Error occurred while parsing string") });
-            reject(payload.getFormattedPayload());
-        }
+            }
+        ], () => {
+            resolve(payload.getFormattedPayload());
+        });
     });
 }
 
@@ -59,14 +70,10 @@ export const create = (req: Request, res: Response) => {
     const device: DeviceModel = req.body;
     const response = new APIResponse(res);
 
-    createNewDevice(device).then(function (result) {
+    createNewDevice(device).then( (result) => {
+        console.log(result);
         response.sendSuccess(result);
-        // Temporary solution
-        new APIResponsePayload();
-    }, (err) => {
-        response.sendError(err);
-        // Temporary solution
-        new APIResponsePayload();
+        payload = new APIResponsePayload();
     });
 };
 

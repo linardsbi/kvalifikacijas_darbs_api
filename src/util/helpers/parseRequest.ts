@@ -16,7 +16,6 @@ export class ParseRequest {
         } catch (e) {
             return {error: "Error occurred while parsing string"};
         }
-
     }
 
     /**
@@ -28,7 +27,6 @@ export class ParseRequest {
         try {
             return JSON.stringify(requestBody);
         } catch (e) {
-
             return "invalid json object";
         }
     }
