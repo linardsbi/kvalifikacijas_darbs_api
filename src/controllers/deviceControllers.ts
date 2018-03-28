@@ -8,6 +8,7 @@ import {default as Controller, ControllerModel } from "../models/DeviceControlle
 import {default as Topic } from "../models/Topic";
 import {default as Sensor } from "../models/Device";
 import {default as PublishedData } from "../models/PublishedData";
+import { default as User, UserModel } from "../models/User";
 import { ObjectID } from "bson";
 import { ParseRequest } from "../util/helpers/parseRequest";
 import { ErrorHandler } from "../util/helpers/errorHandling";
@@ -18,31 +19,58 @@ let payload = new APIResponsePayload();
 
 function createNewController(controllerData: ControllerModel): any {
     return new Promise(function (resolve, reject) {
-        const controller = new Controller();
+        async.waterfall([
+            function saveController(done: Function) {
+                const controller = new Controller({
+                    "name": controllerData.name,
+                    "machine_name": controllerData.machine_name,
+                    "_client_id": controllerData._client_id
+                });
 
-        if (controllerData.name && controllerData.machine_name) {
-            controller.name = controllerData.name;
-            controller.machine_name = controllerData.machine_name;
-        } else {
-            payload.addUnformattedData({error: "Required parameters name or machine_name are missing"});
-            reject(payload.getFormattedPayload());
-        }
+                try {
+                    controller.save( (err, controller: ControllerModel) => {
+                        if (err) {
+                            ErrorHandler.handle(err);
+                            payload.addUnformattedData({ error: err });
+                        }
+                        payload.addUnformattedData({ controller: controller });
+                        done(err, controller);
+                    });
 
-        try {
-            const result = controller.save(function (err, controller) {
-                if (err) {
-                    ErrorHandler.handle(err);
-                    payload.addUnformattedData({ error: new Error("Error occurred while saving") });
-                    reject(payload.getFormattedPayload());
+                } catch (e) {
+                    payload.addUnformattedData({ error: e });
+                    done(e);
                 }
-                payload.addUnformattedData({ controller: controller });
-                resolve(payload.getFormattedPayload());
-            });
+            },
+            function addControllerToClient(controller: ControllerModel, done: Function) {
+                try {
+                    User.findById(controllerData._client_id, (err, user: UserModel) => {
+                        if (user) {
+                            user.controllers.push(controller._id);
+                            user.save((err, found) => {
+                                console.log(user, err, found);
+                                if (err) {
+                                    payload.addUnformattedData({error: err});
+                                }
+                            });
 
-        } catch (e) {
-            payload.addUnformattedData({ error: new Error("Error occurred while parsing string") });
-            reject(payload.getFormattedPayload());
-        }
+                        } else {
+                            payload.addUnformattedData({ error: "no client was found by that id" });
+                        }
+                        done(err);
+                    });
+                } catch (e) {
+                    payload.addUnformattedData({ error: e });
+                    done(e);
+                }
+            }
+        ], (err) => {
+            if (err) {
+                ErrorHandler.handle(err);
+                reject(payload.getFormattedPayload());
+            } else
+                resolve(payload.getFormattedPayload());
+        });
     });
 }
 

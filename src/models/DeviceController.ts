@@ -1,17 +1,23 @@
 import mongoose from "mongoose";
+import {DeviceModel} from "../models/Device";
+import {TopicModel} from "../models/Topic";
 
-export interface ControllerModel {
+export type ControllerModel = mongoose.Document & {
+    _client_id: mongoose.Schema.Types.ObjectId;
     id?: mongoose.Schema.Types.ObjectId;
     name?: String;
     machine_name?: String;
-    devices?: object;
-    topics?: object;
+    devices?: DeviceModel[];
+    topics?: TopicModel[];
 }
 
 const deviceControllerSchema = new mongoose.Schema({
     name: String,
     machine_name: String,
-    devices: [ { type: mongoose.Schema.Types.ObjectId } ],
+    _client_id: mongoose.Schema.Types.ObjectId,
+    devices: [
+        {type: mongoose.Schema.Types.ObjectId}
+    ],
     topics: [
         {
             _topicID: mongoose.Schema.Types.ObjectId,
@@ -19,7 +25,7 @@ const deviceControllerSchema = new mongoose.Schema({
             protocol_name: String,
         }
     ]
-}, { timestamps: true, usePushEach: true});
+}, {timestamps: true, usePushEach: true});
 
 const DeviceController = mongoose.model("DeviceController", deviceControllerSchema);
 export default DeviceController;

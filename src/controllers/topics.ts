@@ -4,7 +4,7 @@ import request from "request";
 import async from "async";
 
 import { Response, Request, NextFunction } from "express";
-import { default as Topic, TopicInterface as TopicModel } from "../models/Topic";
+import { default as Topic, TopicModel } from "../models/Topic";
 import { default as Controller, ControllerModel } from "../models/DeviceController";
 import { default as Client } from "../models/User";
 import {APIResponse} from "../util/helpers/APIResponse";
@@ -17,59 +17,81 @@ let payload = new APIResponsePayload();
 // client_id/protocol/room_name/controller_id/sensor_id/?callback
 
 function createNewTopic(topicData: TopicModel): any {
-    async.waterfall([
-        function getControllerBySensorID(done: Function) {
-            console.log(topicData["_sensorID"]);
+    return new Promise( (resolve, reject) => {
+        async.waterfall([
+            function getControllerBySensorID(done: Function) {
+                console.log(topicData._sensorID);
+                Controller.find({ devices: topicData._sensorID}, (err, controller) => {
+                    if (err)
+                        payload.addUnformattedData({ error: err });
+                    else if (!controller)
+                        payload.addUnformattedData({ error: "No controllers were found with that sensor id" });
+                    else
+                        topicData._controllerID = controller._id;
 
-            Controller.findById({"": topicData._sensorID}, '_id', (err, controller) => {
-                if (err || !controller)
-                    payload.addUnformattedData({ error: "An error occurred while getting controller id" });
-                else {
-                    topicData._controllerID = controller._id;
-                    done();
+                    done(err);
+                });
+            },
+            function getClientByControllerID(done: Function) {
+            console.log(topicData._controllerID);
+                Client.findById(topicData._controllerID, "_id", (err, client) => {
+                    if (err)
+                        payload.addUnformattedData({ error: "An error occurred while getting client id" });
+                    else if (!client)
+                        payload.addUnformattedData({ error: "Controller is not assigned to any clients" });
+                    else
+                        topicData._clientID = client._id;
+
+                    done(err);
+                });
+            },
+            function saveTopic(done: Function) {
+                try {
+                    const topic = new Topic({
+                        "_clientID": topicData._clientID,
+                        "protocol_name": topicData.protocol_name,
+                        "details": (topicData.details) ? topicData.details : "generic",
+                        "_controllerID": topicData._controllerID,
+                        "_sensorID": topicData._sensorID,
+                    });
+
+                    topic.save(function (err, topic) {
+                        if (err) {
+                            ErrorHandler.handle(err);
+                            payload.addUnformattedData({ error: err });
+                        }
+                        payload.addUnformattedData({ topic: topic });
+                        done(err, topic);
+                    });
+
+                } catch (e) {
+                    payload.addUnformattedData({ error: e });
+                    done(e);
                 }
-            });
-        },
-        function getClientByControllerID(controller, done: Function) {
-            Client.findById(topicData._controllerID, "_id", (err, client) => {
-                if (err || !client)
-                    payload.addUnformattedData({ error: "An error occurred while getting client id" });
-                else
-                    topicData._clientID = client._id;
-
-                done();
-            });
-        },
-        function saveTopic(controller, done: Function) {
-            try {
-                const topic = new Topic({
-                    "_clientID": topicData._clientID,
-                    "protocol_name": topicData.protocol_name,
-                    "details": (topicData.details) ? topicData.details : "generic",
-                    "_controllerID": topicData._controllerID,
-                    "_sensorID": topicData._sensorID,
-                });
-
-                const result = topic.save(function (err, topic) {
-                    if (err) {
-                        ErrorHandler.handle(err);
-                        payload.addUnformattedData({ error: "Error occurred while saving" });
-                        done();
-                    }
-                    payload.addUnformattedData({ topic: topic });
-                    done();
-                });
-
-            } catch (e) {
-                payload.addUnformattedData({ error: e });
-                done();
+            },
+            function updateControllerWithTopic(topic, done: Function) {
+                try {
+                    Controller.findById(topicData._controllerID, (err, controller) => {
+                        controller.topics.push({ _id: topic._id, details: topicData.details, protocol_name: topicData.protocol_name });
+                        controller.save(function (err, saved) {
+                            if (err) {
+                                payload.addUnformattedData({ error: err });
+                            }
+                            done(err);
+                        });
+                    });
+                } catch (e) {
+                    payload.addUnformattedData({ error: e });
+                    done(e);
+                }
             }
-        },
-        function updateControllerWithTopic() {
-
-        }
-    ], () => {
-        return payload.getFormattedPayload();
+        ], (err) => {
+            if (err) {
+                // ErrorHandler.handle(err);
+                reject(payload.getFormattedPayload());
+            } else
+                resolve(payload.getFormattedPayload());
+        });
     });
 }
 
@@ -88,13 +110,15 @@ export const create = (req: Request, res: Response) => {
     const topic: TopicModel = req.body;
     const response = new APIResponse(res);
 
-    const result = createNewTopic(topic);
-    console.log(result);
+    createNewTopic(topic).then( (result) => {
+        response.sendSuccess(result);
 
-    if (!result.errors[0]) response.sendSuccess(result);
-    else response.sendError(result);
+        payload = new APIResponsePayload();
+    }).catch( (err) => {
+        response.sendError(err);
 
-    payload = new APIResponsePayload();
+        payload = new APIResponsePayload();
+    });
 };
 
 function getTopic(topicID?: string): any {

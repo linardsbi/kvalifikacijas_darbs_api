@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export interface DeviceInterface {
+export type DeviceModel = mongoose.Document & {
     name: String,
     machine_name: String,
     _controllerID: mongoose.Schema.Types.ObjectId,
@@ -16,7 +16,7 @@ const deviceSchema = new mongoose.Schema({
     name: String,
     machine_name: String,
     _controllerID: mongoose.Schema.Types.ObjectId,
-    used_pins: [pinSchema]
+    used_pins: { type: [pinSchema], required: true }
 }, { timestamps: true });
 
 const Device = mongoose.model("Device", deviceSchema);

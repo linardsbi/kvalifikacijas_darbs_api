@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export interface TopicInterface {
+export type TopicModel = mongoose.Document & {
     details?: String;
     protocol_name: String,
     _sensorID: mongoose.Schema.Types.ObjectId,

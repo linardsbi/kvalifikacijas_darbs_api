@@ -1,10 +1,10 @@
 "use strict";
 
-import async from "async";
+import async, {reject} from "async";
 import request from "request";
 
 import { Response, Request, NextFunction } from "express";
-import { default as Device, DeviceInterface as DeviceModel } from "../models/Device";
+import { default as Device, DeviceModel } from "../models/Device";
 import {APIResponse} from "../util/helpers/APIResponse";
 import {ControllerModel, default as Controller} from "../models/DeviceController";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
@@ -15,43 +15,46 @@ import {ParseRequest} from "../util/helpers/parseRequest";
 let payload = new APIResponsePayload();
 
 function createNewDevice(deviceData: DeviceModel): any {
-    return new Promise( (resolve) => {
+    return new Promise( (resolve, reject) => {
         const device = new Device({
             "name": deviceData.name,
             "machine_name": deviceData.machine_name,
-            "_controllerID": deviceData._controllerID
+            "_controllerID": deviceData._controllerID,
+            "used_pins": deviceData.used_pins
         });
 
         async.waterfall([
-            function (done: Function) {
-                device.save(function (err, device) {
+            function saveDevice(done: Function) {
+                device.save(function (err, device: DeviceModel) {
                     if (err) {
-                        ErrorHandler.handle(err);
-                        payload.addUnformattedData({ error: "Error occurred while saving" });
-                        done();
+                        payload.addUnformattedData({ error: err });
                     }
                     payload.addUnformattedData({ device: device });
-                    done(null, device);
+                    done(err, device);
                 });
             },
-            function (device, done: Function) {
+            function updateControllerWithNewDeviceInfo(device: DeviceModel, done: Function) {
                 try {
-                    Controller.findById(deviceData._controllerID, (err, controller) => {
-                        controller.devices.push({ _id: device._id });
-                        controller.save(function (err, saved) {
-                            if (err)
+                    Controller.findById(deviceData._controllerID, (err, controller: ControllerModel) => {
+                        controller.devices.push(device._id);
+                        controller.save(function (err) {
+                            if (err) {
                                 payload.addUnformattedData({ error: err });
-                            console.log(err);
-                            done();
+                            }
+                            done(err);
                         });
                     });
                 } catch (e) {
                     payload.addUnformattedData({ error: e });
-                    done();
+                    done(e);
                 }
             }
-        ], () => {
-            resolve(payload.getFormattedPayload());
+        ], (err) => {
+            if (err) {
+                ErrorHandler.handle(err);
+                reject(payload.getFormattedPayload());
+            } else
+                resolve(payload.getFormattedPayload());
         });
     });
 }
@@ -71,8 +74,12 @@ export const create = (req: Request, res: Response) => {
     const response = new APIResponse(res);
 
     createNewDevice(device).then( (result) => {
-        console.log(result);
         response.sendSuccess(result);
+
+        payload = new APIResponsePayload();
+    }).catch( (err) => {
+        response.sendError(err);
+
         payload = new APIResponsePayload();
     });
 };
