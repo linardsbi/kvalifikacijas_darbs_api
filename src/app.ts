@@ -20,6 +20,7 @@ import * as deviceControllers from "./controllers/deviceControllers";
 import * as deviceController from "./controllers/devices";
 import * as logController from "./controllers/logs";
 import * as topicController from "./controllers/topics";
+import { isAuthenticated } from "./controllers/APIController";
 // API keys and Passport configuration
 import * as passportConfig from "./config/passport";
 
@@ -108,17 +109,21 @@ app.post("/account/delete", passportConfig.isAuthenticated, userController.postD
 /**
  * API routes
  */
-// TODO: Generalize authentication and create routes
+
+/**
+ * TODO: Generalize authentication and create routes
+ */
+
 /**
  * controllers
  */
-app.post("/controllers/create", deviceControllers.isAuthenticated, deviceControllers.create);
-app.get("/controllers/get", deviceControllers.isAuthenticated, deviceControllers.read);
-app.get("/controllers/get/topics", deviceControllers.isAuthenticated, deviceControllers.getControllerTopics);
-app.get("/controllers/get/sensors", deviceControllers.isAuthenticated, deviceControllers.getControllerSensors);
-app.get("/controllers/get/data", deviceControllers.isAuthenticated, deviceControllers.getControllerData);
-app.patch("/controllers/edit", deviceControllers.isAuthenticated, deviceControllers.editController);
-app.delete("/controllers/delete", deviceControllers.isAuthenticated, deviceControllers.deleteController);
+app.post("/controllers/create", isAuthenticated, deviceControllers.create);
+app.get("/controllers/get", isAuthenticated, deviceControllers.read);
+app.get("/controllers/get/topics", isAuthenticated, deviceControllers.getControllerTopics);
+app.get("/controllers/get/devices", isAuthenticated, deviceControllers.getControllerSensors);
+app.get("/controllers/get/data", isAuthenticated, deviceControllers.getControllerData);
+app.patch("/controllers/edit", isAuthenticated, deviceControllers.update);
+app.delete("/controllers/delete", isAuthenticated, deviceControllers.remove);
 
 /**
  * users
@@ -133,19 +138,19 @@ app.post("/clients/delete", userController.postLogin);
 /**
  * devices
  */
-app.post("/devices/create", deviceControllers.isAuthenticated, deviceController.create);
-app.get("/devices/get", deviceControllers.isAuthenticated, deviceController.read);
-app.post("/devices/edit", userController.postLogin);
-app.post("/devices/delete", userController.postLogin);
+app.post("/devices/create", isAuthenticated, deviceController.create);
+app.get("/devices/get", isAuthenticated, deviceController.read);
+app.post("/devices/edit", isAuthenticated, deviceController.update);
+app.post("/devices/delete", isAuthenticated, deviceController.remove);
 
 /**
  * brokers
  */
-app.post("/brokers/create", deviceControllers.isAuthenticated, brokerController.create);
-app.get("/brokers/get", deviceControllers.isAuthenticated, brokerController.read);
-app.get("/brokers/get/users", userController.postLogin);
-app.post("/brokers/edit", userController.postLogin);
-app.post("/brokers/delete", userController.postLogin);
+app.post("/brokers/create", isAuthenticated, brokerController.create);
+app.get("/brokers/get", isAuthenticated, brokerController.read);
+app.get("/brokers/get/users", isAuthenticated, brokerController.read);
+app.post("/brokers/edit", isAuthenticated, brokerController.update);
+app.post("/brokers/delete", isAuthenticated, brokerController.remove);
 
 /**
  * logs
@@ -155,7 +160,12 @@ app.get("/logs/get", userController.postLogin);
 /**
  * topics
  */
-app.get("/topics/get", userController.postLogin);
-app.post("/topics/create", deviceControllers.isAuthenticated, topicController.create);
+app.get("/topics/get", isAuthenticated, topicController.read);
+app.post("/topics/create", isAuthenticated, topicController.create);
+
+/**
+ * data
+ */
+app.post("/data/post", isAuthenticated, brokerController.postData);
 
 export default app;

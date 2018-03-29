@@ -8,7 +8,7 @@ export type DeviceModel = mongoose.Document & {
 }
 
 const pinSchema = new mongoose.Schema({
-    pinName: String,
+    pin_name: String,
     information_type: {type: String, required: true, default: "digital"}
 });
 

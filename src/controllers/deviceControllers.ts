@@ -1,19 +1,19 @@
 "use strict";
 
-import async, { reject } from "async";
-import request from "request";
+import async from "async";
 
-import { Response, Request, NextFunction } from "express";
-import {default as Controller, ControllerModel } from "../models/DeviceController";
-import {default as Topic } from "../models/Topic";
-import {default as Sensor } from "../models/Device";
-import {default as PublishedData } from "../models/PublishedData";
-import { default as User, UserModel } from "../models/User";
-import { ObjectID } from "bson";
-import { ParseRequest } from "../util/helpers/parseRequest";
-import { ErrorHandler } from "../util/helpers/errorHandling";
-import { APIResponsePayload, Payload } from "../util/helpers/APIResponsePayload";
-import { APIResponse } from "../util/helpers/APIResponse";
+import {NextFunction, Request, Response} from "express";
+import {ControllerModel, default as Controller} from "../models/DeviceController";
+import {default as Topic, TopicModel} from "../models/Topic";
+import {default as Device, DeviceModel} from "../models/Device";
+import {default as PublishedData, PublishedDataModel} from "../models/PublishedData";
+import {default as User, UserModel} from "../models/User";
+import { APIController } from "./APIController";
+
+import {ParseRequest} from "../util/helpers/parseRequest";
+import {ErrorHandler} from "../util/helpers/errorHandling";
+import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
+import {APIResponse} from "../util/helpers/APIResponse";
 
 let payload = new APIResponsePayload();
 
@@ -28,17 +28,17 @@ function createNewController(controllerData: ControllerModel): any {
                 });
 
                 try {
-                    controller.save( (err, controller: ControllerModel) => {
+                    controller.save((err, controller: ControllerModel) => {
                         if (err) {
                             ErrorHandler.handle(err);
-                            payload.addUnformattedData({ error: err });
+                            payload.addUnformattedData({error: err});
                         }
-                        payload.addUnformattedData({ controller: controller });
+                        payload.addUnformattedData({controller: controller});
                         done(err, controller);
                     });
 
                 } catch (e) {
-                    payload.addUnformattedData({ error: e });
+                    payload.addUnformattedData({error: e});
                     done(e);
                 }
             },
@@ -55,12 +55,12 @@ function createNewController(controllerData: ControllerModel): any {
                             });
 
                         } else {
-                            payload.addUnformattedData({ error: "no client was found by that id" });
+                            payload.addUnformattedData({error: "no client was found by that id"});
                         }
                         done(err);
                     });
                 } catch (e) {
-                    payload.addUnformattedData({ error: e });
+                    payload.addUnformattedData({error: e});
                     done(e);
                 }
             }
@@ -73,14 +73,6 @@ function createNewController(controllerData: ControllerModel): any {
         });
     });
 }
-
-/**
- * Handles all the routes associated with the DeviceController model
- */
-export let isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-    // TODO: auth check
-    next();
-};
 
 /**
  * POST /controllers/create
@@ -103,67 +95,18 @@ export const create = (req: Request, res: Response) => {
     });
 };
 
-function getController(controllerID?: string): any {
+function getTopicsByControllerID(controllerID: string): any {
     return new Promise((resolve, reject) => {
-        let controller: any;
-
-        if (controllerID) {
-            ParseRequest.getValuesFromJSONString(controllerID).then( (controllerIDs: object) => {
-                controller = Controller.find({_id: { $in: controllerIDs }}, function (err, found) {
-                    if (err) {
-                        payload.addUnformattedData({ error: "Error occurred while trying to find a controller"});
-
-                    }
-                    payload.addUnformattedData(found);
-                    resolve(payload.getFormattedPayload());
-                });
-            }, (err) => {
-                payload.addUnformattedData(err);
-                reject(payload.getFormattedPayload());
-            });
-        } else {
-            controller = Controller.find({}, function (err, found) {
+        ParseRequest.getValuesFromJSONString(controllerID).then((controllerIDs: object) => {
+            Topic.find({_controllerID: {$in: controllerIDs}}, function (err, topic: TopicModel) {
                 if (err) {
-                    payload.addUnformattedData({ error: "Error occurred while trying to find controllers" });
+                    payload.addUnformattedData({error: err});
+                    reject(payload.getFormattedPayload());
                 }
-                payload.addUnformattedData(found);
+
+                payload.addUnformattedData(topic);
                 resolve(payload.getFormattedPayload());
             });
-        }
-    });
-}
-
-/**
- * GET /controllers/get
- * Get all or a certain controller.
- * parameters: id - optional
- *
- */
-export const read = (req: Request, res: Response) => {
-    // TODO: create a nice flow of error handling ops, minimize async ops
-    const controllerID: string = req.query.id;
-    const response = new APIResponse(res);
-
-    getController(controllerID).then( (result: Payload) => {
-        response.sendSuccess(result);
-        // Temporary solution
-        payload = new APIResponsePayload();
-    }, (err) => {
-        response.sendError(err);
-        // Temporary solution
-        payload = new APIResponsePayload();
-    });
-};
-
-function getTopicsByControllerID(controllerID: ObjectID): any {
-    return new Promise( (resolve, reject) => {
-        const topic = Topic.find({_controllerID: controllerID}, function (err, found) {
-            if (err) {
-                payload.addUnformattedData({error: "error occurred while getting topics"});
-                reject();
-            }
-            payload.addUnformattedData(found);
-            resolve(payload.getFormattedPayload());
         });
     });
 }
@@ -179,7 +122,7 @@ export const getControllerTopics = (req: Request, res: Response) => {
     const response = new APIResponse(res);
 
     if (controllerID) {
-        getTopicsByControllerID(controllerID).then( (result: Payload) => {
+        getTopicsByControllerID(controllerID).then((result: Payload) => {
             response.sendSuccess(result);
             // Temporary solution
             payload = new APIResponsePayload();
@@ -191,6 +134,22 @@ export const getControllerTopics = (req: Request, res: Response) => {
     }
 };
 
+function getControllerDevicesByID(controllerID: string) {
+    return new Promise((resolve, reject) => {
+        ParseRequest.getValuesFromJSONString(controllerID).then((controllerIDs: object) => {
+            Device.find({_controllerID: {$in: controllerIDs}}, function (err, device: DeviceModel) {
+                if (err) {
+                    payload.addUnformattedData({error: err});
+                    reject(payload.getFormattedPayload());
+                }
+
+                payload.addUnformattedData(device);
+                resolve(payload.getFormattedPayload());
+            });
+        });
+    });
+}
+
 /**
  * GET /controllers/get/sensors
  * Get all sensors of a certain controller.
@@ -198,20 +157,37 @@ export const getControllerTopics = (req: Request, res: Response) => {
  *
  */
 export let getControllerSensors = (req: Request, res: Response) => {
-    let controller: object;
-    let sensors: object;
-    const controllerID = req.body.id;
-    if (controllerID) {
-        controller = Controller.findOne({id: req.body.id}, function (err) {
-            if (err) res.send("error");
-        });
+    const controllerID = req.query.id;
+    const response = new APIResponse(res);
 
-        sensors = Sensor.find({_controllerID: controller.id}, function (err, found) {
-            if (err) res.send("error");
-            returnResponse(res, found, err);
+    if (controllerID) {
+        getControllerDevicesByID(controllerID).then((result: Payload) => {
+            response.sendSuccess(result);
+            // Temporary solution
+            payload = new APIResponsePayload();
+        }, (err) => {
+            response.sendError(err);
+            // Temporary solution
+            payload = new APIResponsePayload();
         });
     }
 };
+
+function getControllerDataByID(controllerID: string) {
+    return new Promise((resolve, reject) => {
+        ParseRequest.getValuesFromJSONString(controllerID).then((controllerIDs: object) => {
+            PublishedData.find({_controllerID: {$in: controllerIDs}}, function (err, published: PublishedDataModel) {
+                if (err) {
+                    payload.addUnformattedData({error: err});
+                    reject(payload.getFormattedPayload());
+                }
+
+                payload.addUnformattedData(published);
+                resolve(payload.getFormattedPayload());
+            });
+        });
+    });
+}
 
 /**
  * GET /controllers/get/topics
@@ -225,20 +201,33 @@ export let getControllerSensors = (req: Request, res: Response) => {
  *             }
  */
 export let getControllerData = (req: Request, res: Response) => {
-    // TODO: handle extra parameters
-    let controller: object;
-    let data: object;
-    const controllerID = req.body.id;
-    if (controllerID) {
-        controller = Controller.findOne({id: req.body.id}, function (err) {
-            if (err) res.send("error");
-        });
+    const controllerID = req.query.id;
+    const response = new APIResponse(res);
 
-        data = PublishedData.find({_controllerID: controller.id}, function (err, found) {
-            if (err) res.send("error");
-            returnResponse(res, found, err);
+    if (controllerID) {
+        getControllerDataByID(controllerID).then((result: Payload) => {
+            response.sendSuccess(result);
+            // Temporary solution
+            payload = new APIResponsePayload();
+        }, (err) => {
+            response.sendError(err);
+            // Temporary solution
+            payload = new APIResponsePayload();
         });
     }
+};
+
+/**
+ * GET /controllers/get
+ * Get all or a certain controller.
+ * parameters: id - optional
+ *
+ */
+export const read = (req: Request, res: Response) => {
+    const controllerID: string = req.query.id;
+    const api = new APIController(res, Controller);
+
+    api.read(controllerID);
 };
 
 /**
@@ -247,16 +236,11 @@ export let getControllerData = (req: Request, res: Response) => {
  * parameters: controller id, update parameters
  *
  */
-export let editController = (req: Request, res: Response) => {
-    // TODO: request body to update parameters
-    let controller: any;
-    const update: object = req.body;
-    const controllerID = req.body.id;
-    if (controllerID) {
-        controller = Controller.findByIdAndUpdate({id: req.body.id}, update, function (err) {
-            if (err) res.send("error");
-        });
-    }
+export let update = (req: Request, res: Response) => {
+    const parameters: ControllerModel = req.body;
+    const api = new APIController(res, Controller);
+
+    api.update(parameters);
 };
 
 /**
@@ -265,12 +249,9 @@ export let editController = (req: Request, res: Response) => {
  * parameters: controller id
  *
  */
-export let deleteController = (req: Request, res: Response) => {
-    let controller: any;
-    const controllerID = req.body.id;
-    if (controllerID) {
-        controller = Controller.findByIdAndRemove({id: req.body.id}, function (err) {
-            if (err) res.send("error");
-        });
-    }
+export let remove = (req: Request, res: Response) => {
+    const controllerID: string = req.body;
+    const api = new APIController(res, Controller);
+
+    api.remove(controllerID);
 };

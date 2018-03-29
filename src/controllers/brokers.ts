@@ -1,15 +1,18 @@
 "use strict";
 
 import async from "async";
-import request from "request";
 
-import { Response, Request, NextFunction } from "express";
-import { default as Broker, BrokerInterface as BrokerModel } from "../models/Broker";
+import {Request, Response} from "express";
+import {BrokerInterface as BrokerModel, default as Broker} from "../models/Broker";
 import {APIResponse} from "../util/helpers/APIResponse";
 import {ParseRequest} from "../util/helpers/parseRequest";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
-import { ErrorHandler } from "../util/helpers/errorHandling";
+import {ErrorHandler} from "../util/helpers/errorHandling";
+import {default as PublishedData, PublishedDataModel} from "../models/PublishedData";
 import crypto from "crypto";
+import {default as Controller} from "../models/DeviceController";
+import {APIController} from "./APIController";
+import {default as Device, DeviceModel} from "../models/Device";
 
 let payload = new APIResponsePayload();
 
@@ -28,10 +31,10 @@ export const create = (req: Request, res: Response) => {
     const response = new APIResponse(res);
 
     async.waterfall([
-        function generateSecret(done: Function){
+        function generateSecret(done: Function) {
             crypto.randomBytes(16, function (err: Error, buffer: any) {
                 broker.secret = buffer.toString("hex");
-                if (err) payload.addUnformattedData({ error: err });
+                if (err) payload.addUnformattedData({error: err});
                 done(err, broker);
             });
         },
@@ -47,21 +50,21 @@ export const create = (req: Request, res: Response) => {
             try {
                 const result = broker.save(function (err, saved) {
                     if (err) {
-                        payload.addUnformattedData({ error: err });
+                        payload.addUnformattedData({error: err});
                         done(err);
                     } else {
-                        payload.addUnformattedData({ broker: saved });
+                        payload.addUnformattedData({broker: saved});
                         done();
                     }
                 });
             } catch (e) {
-                payload.addUnformattedData({ error: e });
+                payload.addUnformattedData({error: e});
                 done(e);
             }
         }
     ], (result) => {
         result = payload.getFormattedPayload();
-        
+
         if (!result.errors[0]) response.sendSuccess(result);
         else response.sendError(result);
     });
@@ -74,10 +77,10 @@ function getBroker(brokerID?: string): any {
         let broker: any;
 
         if (brokerID) {
-            ParseRequest.getValuesFromJSONString(brokerID).then( (brokerIDs: object) => {
-                broker = Broker.find({_id: { $in: brokerIDs }}, function (err, found) {
+            ParseRequest.getValuesFromJSONString(brokerID).then((brokerIDs: object) => {
+                broker = Broker.find({_id: {$in: brokerIDs}}, function (err, found) {
                     if (err) {
-                        payload.addUnformattedData({ error: "Error occurred while trying to find a broker"});
+                        payload.addUnformattedData({error: "Error occurred while trying to find a broker"});
                     }
                     payload.addUnformattedData(found);
                     resolve(payload.getFormattedPayload());
@@ -89,7 +92,7 @@ function getBroker(brokerID?: string): any {
         } else {
             broker = Broker.find({}, function (err, found) {
                 if (err) {
-                    payload.addUnformattedData({ error: "Error occurred while trying to find brokers" });
+                    payload.addUnformattedData({error: "Error occurred while trying to find brokers"});
                 }
                 payload.addUnformattedData(found);
                 resolve(payload.getFormattedPayload());
@@ -98,18 +101,45 @@ function getBroker(brokerID?: string): any {
     });
 }
 
+function savePostData(data: PublishedDataModel) {
+    return new Promise((resolve, reject) => {
+        const publishedData = new PublishedData({
+            "_controllerID": data._controllerID,
+            "payload": data.payload
+        });
+
+        try {
+            publishedData.save((err) => {
+                if (err) {
+                    ErrorHandler.handle(err);
+                    payload.addUnformattedData({error: err});
+                    reject(payload.getFormattedPayload());
+                } else {
+                    payload.addUnformattedData({success: "success"});
+                    resolve(payload.getFormattedPayload());
+                }
+            });
+        } catch (e) {
+            payload.addUnformattedData({error: e});
+            reject(payload.getFormattedPayload());
+        }
+
+        payload = new APIResponsePayload();
+    });
+}
+
 /**
- * GET /brokers/get
- * Get all or a certain broker.
- * parameters: id - optional
+ * GET /data/post
+ * Submit data.
+ * parameters: controllerID, payload
  *
  */
-export const read = (req: Request, res: Response) => {
+export const postData = (req: Request, res: Response) => {
     // TODO: create a nice flow of error handling ops, minimize async ops
-    const brokerID: string = req.query.id;
+    const data: PublishedDataModel = req.body;
     const response = new APIResponse(res);
 
-    getBroker(brokerID).then( (result: Payload) => {
+    savePostData(data).then((result: Payload) => {
         response.sendSuccess(result);
         // Temporary solution
         payload = new APIResponsePayload();
@@ -120,3 +150,41 @@ export const read = (req: Request, res: Response) => {
     });
 };
 
+/**
+ * GET /brokers/get
+ * Get all or a certain broker.
+ * parameters: id - optional
+ *
+ */
+export const read = (req: Request, res: Response) => {
+    const brokerID: string = req.query.id;
+    const api = new APIController(res, Broker);
+
+    api.read(brokerID);
+};
+
+/**
+ * PATCH /brokers/edit
+ * Update a certain broker.
+ * parameters: broker id, update parameters
+ *
+ */
+export let update = (req: Request, res: Response) => {
+    const parameters: BrokerModel = req.body;
+    const api = new APIController(res, Broker);
+
+    api.update(parameters);
+};
+
+/**
+ * DELETE /brokers/delete
+ * delete a certain broker
+ * parameters: broker id
+ *
+ */
+export let remove = (req: Request, res: Response) => {
+    const brokerID: string = req.body;
+    const api = new APIController(res, Broker);
+
+    api.remove(brokerID);
+};

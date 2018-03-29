@@ -10,6 +10,7 @@ import {ControllerModel, default as Controller} from "../models/DeviceController
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import {ErrorHandler} from "../util/helpers/errorHandling";
 import {ParseRequest} from "../util/helpers/parseRequest";
+import {APIController} from "./APIController";
 
 
 let payload = new APIResponsePayload();
@@ -36,13 +37,19 @@ function createNewDevice(deviceData: DeviceModel): any {
             function updateControllerWithNewDeviceInfo(device: DeviceModel, done: Function) {
                 try {
                     Controller.findById(deviceData._controllerID, (err, controller: ControllerModel) => {
-                        controller.devices.push(device._id);
-                        controller.save(function (err) {
-                            if (err) {
-                                payload.addUnformattedData({ error: err });
-                            }
-                            done(err);
-                        });
+                        if (err)
+                            payload.addUnformattedData({ error: err });
+                        else if (!controller)
+                            payload.addUnformattedData({ error: "No controller with that id was found" });
+                        else {
+                            controller.devices.push(device._id);
+                            controller.save(function (err) {
+                                if (err) {
+                                    payload.addUnformattedData({ error: err });
+                                }
+                            });
+                        }
+                        done(err);
                     });
                 } catch (e) {
                     payload.addUnformattedData({ error: e });
@@ -84,54 +91,41 @@ export const create = (req: Request, res: Response) => {
     });
 };
 
-function getDevice(deviceID?: string): any {
-    return new Promise((resolve, reject) => {
-        let device: any;
-
-        if (deviceID) {
-            ParseRequest.getValuesFromJSONString(deviceID).then( (deviceIDs: object) => {
-                device = Device.find({_id: { $in: deviceIDs }}, function (err, found) {
-                    if (err) {
-                        payload.addUnformattedData({ error: "Error occurred while trying to find a device"});
-                    }
-                    payload.addUnformattedData(found);
-                    resolve(payload.getFormattedPayload());
-                });
-            }, (err) => {
-                payload.addUnformattedData(err);
-                reject(payload.getFormattedPayload());
-            });
-        } else {
-            device = Device.find({}, function (err, found) {
-                if (err) {
-                    payload.addUnformattedData({ error: "Error occurred while trying to find devices" });
-                }
-                payload.addUnformattedData(found);
-                resolve(payload.getFormattedPayload());
-            });
-        }
-    });
-}
-
 /**
- * GET /controllers/get
- * Get all or a certain controller.
+ * GET /devices/get
+ * Get all or a certain device.
  * parameters: id - optional
  *
  */
 export const read = (req: Request, res: Response) => {
-    // TODO: create a nice flow of error handling ops, minimize async ops
     const deviceID: string = req.query.id;
-    const response = new APIResponse(res);
+    const api = new APIController(res, Device);
 
-    getDevice(deviceID).then( (result: Payload) => {
-        response.sendSuccess(result);
-        // Temporary solution
-        payload = new APIResponsePayload();
-    }, (err) => {
-        response.sendError(err);
-        // Temporary solution
-        payload = new APIResponsePayload();
-    });
+    api.read(deviceID);
 };
 
+/**
+ * GET /devices/edit
+ * Get all sensors of a certain controller.
+ * parameters: device id, update parameters
+ *
+ */
+export let update = (req: Request, res: Response) => {
+    const parameters: DeviceModel = req.body;
+    const api = new APIController(res, Controller);
+
+    api.update(parameters);
+};
+
+/**
+ * GET /devices/delete
+ * Get delete a certain device
+ * parameters: device id
+ *
+ */
+export let remove = (req: Request, res: Response) => {
+    const deviceID: string = req.body;
+    const api = new APIController(res, Device);
+
+    api.remove(deviceID);
+};

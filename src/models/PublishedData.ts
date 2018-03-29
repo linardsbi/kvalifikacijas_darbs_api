@@ -1,5 +1,15 @@
 import mongoose from "mongoose";
 
+type payloadModel = mongoose.Document & {
+    data_type: String,
+    payload_body: String
+}
+
+export type PublishedDataModel = mongoose.Document & {
+    _controllerID: mongoose.Schema.Types.ObjectId,
+    payload: payloadModel,
+}
+
 const payloadSchema = new mongoose.Schema({
     data_type: String,
     payload_body: String
