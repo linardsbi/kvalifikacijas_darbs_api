@@ -22,9 +22,12 @@ const userSchema = new mongoose.Schema({
     password: String,
     passwordResetToken: String,
     passwordResetExpires: Date,
-    controllers: [mongoose.Schema.Types.ObjectId],
+    controllers: [{
+        _id: mongoose.Schema.Types.ObjectId,
+        machine_name: String
+    }],
     tokens: Array,
-}, {timestamps: true});
+}, {timestamps: true, usePushEach: true});
 
 /**
  * Password hash middleware.

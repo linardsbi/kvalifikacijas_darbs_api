@@ -1,0 +1,18 @@
+extends ../layout
+
+block content
+  .page-header
+    h3 Dashboard
+  input(type="hidden", name="clientID" id="clientID" value=user.id)
+  each controller in controllers
+    .controller
+      .controller-name= controller.name
+      .controller-machine-name= controller.machine_name
+      .controller-devices
+        each device in controller.devices
+          .device= device
+  script(src="./js/lib/browserMqtt.js")
+  script(src="./js/dashboard/dashboard.js")
+   
+
+  
