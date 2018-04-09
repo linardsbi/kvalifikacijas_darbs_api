@@ -88,6 +88,8 @@ app.use(
     express.static(path.join(__dirname, "public"), {maxAge: 31557600000})
 );
 
+
+
 /**
  * Primary app routes.
  */
@@ -106,7 +108,7 @@ app.get("/account", passportConfig.isAuthenticated, userController.getAccount);
 app.post("/account/profile", passportConfig.isAuthenticated, userController.postUpdateProfile);
 app.post("/account/password", passportConfig.isAuthenticated, userController.postUpdatePassword);
 app.post("/account/delete", passportConfig.isAuthenticated, userController.postDeleteAccount);
-
+app.get("/dashboard", passportConfig.isAuthenticated, userController.getDashboard);
 /**
  * API routes
  */

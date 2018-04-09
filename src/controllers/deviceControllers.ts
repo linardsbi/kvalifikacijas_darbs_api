@@ -10,14 +10,14 @@ import {default as PublishedData, PublishedDataModel} from "../models/PublishedD
 import {default as User, UserModel} from "../models/User";
 import { APIController } from "./APIController";
 
-import {ParseRequest} from "../util/helpers/parseRequest";
-import {ErrorHandler} from "../util/helpers/errorHandling";
-import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
-import {APIResponse} from "../util/helpers/APIResponse";
+import {ParseRequest } from "../util/helpers/parseRequest";
+import {ErrorHandler } from "../util/helpers/errorHandling";
+import { APIResponsePayload, Payload } from "../util/helpers/APIResponsePayload";
+import {APIResponse } from "../util/helpers/APIResponse";
 
 let payload = new APIResponsePayload();
 
-function createNewController(controllerData: ControllerModel): any {
+export function createNewController(controllerData: ControllerModel): any {
     return new Promise(function (resolve, reject) {
         async.waterfall([
             function saveController(done: Function) {
@@ -46,7 +46,10 @@ function createNewController(controllerData: ControllerModel): any {
                 try {
                     User.findById(controllerData._client_id, (err, user: UserModel) => {
                         if (user) {
-                            user.controllers.push(controller._id);
+                            user.controllers.push({
+                                _id: controller._id,
+                                machine_name: controller.machine_name
+                            });
                             user.save((err, found) => {
                                 console.log(user, err, found);
                                 if (err) {

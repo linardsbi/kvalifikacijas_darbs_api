@@ -26,9 +26,14 @@ const userSchema = new mongoose.Schema({
     passwordResetExpires: Date,
     apiKey: String,
     role: {type: String, default: "user"},
-    controllers: [mongoose.Schema.Types.ObjectId],
+
+    controllers: [{
+        _id: mongoose.Schema.Types.ObjectId,
+        machine_name: String
+    }],
+
     tokens: Array,
-}, {timestamps: true});
+}, {timestamps: true, usePushEach: true});
 
 /**
  * Password hash middleware.

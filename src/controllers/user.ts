@@ -6,6 +6,7 @@ import { default as User, UserModel, AuthToken } from "../models/User";
 import { Request, Response, NextFunction } from "express";
 import { IVerifyOptions } from "passport-local";
 import { WriteError } from "mongodb";
+import DeviceController, { ControllerModel } from "../models/DeviceController";
 const request = require("express-validator");
 import jwt from "jsonwebtoken";
 
@@ -19,6 +20,24 @@ export let getLogin = (req: Request, res: Response) => {
   }
   res.render("account/login", {
     title: "Login"
+  });
+};
+
+/**
+ * GET /dashboard
+ * Dashboard page.
+ */
+export let getDashboard = (req: Request, res: Response) => {
+  DeviceController.find({_client_id: req.user.id}, (err, controllers: ControllerModel) => {
+    if (err) {
+      req.flash("errors", err);
+      return res.redirect("/");
+    }
+
+    res.render("account/dashboard", {
+      title: "Dashboard",
+      controllers: controllers
+    });
   });
 };
 
