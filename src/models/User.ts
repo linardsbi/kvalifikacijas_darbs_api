@@ -6,6 +6,8 @@ export type UserModel = mongoose.Document & {
     password: string,
     passwordResetToken: string,
     passwordResetExpires: Date,
+    apiKey: string,
+    role: string,
     controllers: [mongoose.Schema.Types.ObjectId],
     tokens: AuthToken[],
 
@@ -22,6 +24,8 @@ const userSchema = new mongoose.Schema({
     password: String,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    apiKey: String,
+    role: {type: String, default: "user"},
     controllers: [mongoose.Schema.Types.ObjectId],
     tokens: Array,
 }, {timestamps: true});

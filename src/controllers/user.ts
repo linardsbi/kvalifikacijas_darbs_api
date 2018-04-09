@@ -7,7 +7,7 @@ import { Request, Response, NextFunction } from "express";
 import { IVerifyOptions } from "passport-local";
 import { WriteError } from "mongodb";
 const request = require("express-validator");
-
+import jwt from "jsonwebtoken";
 
 /**
  * GET /login
@@ -356,4 +356,24 @@ export let postForgot = (req: Request, res: Response, next: NextFunction) => {
     if (err) { return next(err); }
     res.redirect("/forgot");
   });
+};
+
+function generateSignedToken(signingParams: object): String {
+    return jwt.sign(signingParams, process.env.APPLICATION_KEY);
+}
+
+/**
+ * POST /api/key
+ * Generate a new api key.
+ */
+export let setApiKey = (req: Request, res: Response, next: NextFunction) => {
+    User.findById(req.user.id, (err, user: UserModel) => {
+        if (err) { return next(err); }
+        user.apiKey = generateSignedToken({username: user.email, role: user.role});
+        user.save((err: WriteError) => {
+            if (err) { return next(err); }
+            req.flash("success", { msg: "API key successfully generated." });
+            res.redirect("/account");
+        });
+    });
 };

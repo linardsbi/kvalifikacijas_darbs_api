@@ -6,7 +6,7 @@ type payloadModel = mongoose.Document & {
 }
 
 export type PublishedDataModel = mongoose.Document & {
-    _controllerID: mongoose.Schema.Types.ObjectId,
+    _deviceID: mongoose.Schema.Types.ObjectId,
     payload: payloadModel,
 }
 
@@ -16,9 +16,18 @@ const payloadSchema = new mongoose.Schema({
 });
 
 const publishedDataSchema = new mongoose.Schema({
-    _controllerID: mongoose.Schema.Types.ObjectId,
-    payload: [payloadSchema],
+    _deviceID: mongoose.Schema.Types.ObjectId,
+    payload: payloadSchema,
 }, { timestamps: true });
+
+publishedDataSchema.virtual('formatted_value').get(function() {
+    // TODO: create data type formatting
+    return `${this.payload.payload_body} ${this.payload.data_type}`;
+});
+
+publishedDataSchema.set('toJSON', {
+    virtuals: true
+});
 
 // export const User: UserType = mongoose.model<UserType>('User', userSchema);
 const PublishedData = mongoose.model("PublishedData", publishedDataSchema);

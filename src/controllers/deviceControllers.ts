@@ -156,7 +156,7 @@ function getControllerDevicesByID(controllerID: string) {
  * parameters: controller id
  *
  */
-export let getControllerSensors = (req: Request, res: Response) => {
+export let getControllerDevices = (req: Request, res: Response) => {
     const controllerID = req.query.id;
     const response = new APIResponse(res);
 
@@ -173,39 +173,57 @@ export let getControllerSensors = (req: Request, res: Response) => {
     }
 };
 
-function getControllerDataByID(controllerID: string) {
+function getControllerDataByID(controllerID: string, parameters: string) {
     return new Promise((resolve, reject) => {
-        ParseRequest.getValuesFromJSONString(controllerID).then((controllerIDs: object) => {
-            PublishedData.find({_controllerID: {$in: controllerIDs}}, function (err, published: PublishedDataModel) {
-                if (err) {
-                    payload.addUnformattedData({error: err});
-                    reject(payload.getFormattedPayload());
-                }
-
-                payload.addUnformattedData(published);
+        async.waterfall([
+            function parseParameters(next: Function) {
+                ParseRequest.getValuesFromJSONString(parameters).then((formattedParameters: object) => {
+                    console.log(formattedParameters);
+                    next(null, formattedParameters);
+                });
+            },
+            function parseControllerIDs(formattedParameters: object, next: Function) {
+                ParseRequest.getValuesFromJSONString(controllerID).then((controllerIDs: object) => {
+                    next(null, formattedParameters, controllerIDs);
+                });
+            },
+            function getData(formattedParameters: object, controllerIDs: object, done: Function) {
+                PublishedData.find({_controllerID: {$in: controllerIDs}}, function (err, published: PublishedDataModel) {
+                    if (err) {
+                        payload.addUnformattedData({error: err});
+                        done(err);
+                    }
+                    payload.addUnformattedData(published);
+                    done();
+                });
+            }
+        ], (err) => {
+            if (err) {
+                ErrorHandler.handle(err);
+                reject(payload.getFormattedPayload());
+            } else
                 resolve(payload.getFormattedPayload());
-            });
         });
     });
 }
 
 /**
- * GET /controllers/get/topics
+ * GET /controllers/get/data
  * Get data that came from devices connected to a specific controller
  * parameters:
  *             extra parameters {
  *                  	datetime: String,
- *                      controllerIDs: ObjectID,
  *                      clientIDs: ObjectID,
  *                      topicName: String,
  *             }
  */
 export let getControllerData = (req: Request, res: Response) => {
     const controllerID = req.query.id;
+    const parameters = req.query.parameters;
     const response = new APIResponse(res);
 
     if (controllerID) {
-        getControllerDataByID(controllerID).then((result: Payload) => {
+        getControllerDataByID(controllerID, parameters).then((result: Payload) => {
             response.sendSuccess(result);
             // Temporary solution
             payload = new APIResponsePayload();

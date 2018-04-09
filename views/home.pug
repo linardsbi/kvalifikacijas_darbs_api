@@ -1,27 +1,32 @@
 extends layout
 
 block content
-  h1 Hackathon Starter
-  p.lead A boilerplate for Node.js web applications.
+  h1 API Dashboard
+  p.lead Welcome to the API Dashboard.
   hr
   .row
     .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
+      h2 To start using the api:
+      p First, you need to generate an API token. After created, the token needs to be included in the API request header, so your request can be authenticated.
       p
-        a.btn.btn-default(href='#', role='button') View details »
+        a.btn.btn-default(href='#', role='button') Full guide »
     .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
+      h2 Sending requests:
+      p Depending on the particular API endpoint, the request body needs to be formatted properly: see the full info on how to do that in the API Documentation.
       p
-        a.btn.btn-default(href='#', role='button') View details »
+        a.btn.btn-default(href='#', role='button') API Docs »
     .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
+      h2 Receiving responses:
+      p The responses are formatted in a way so they can be handled very easily in your app.
       p
-        a.btn.btn-default(href='#', role='button') View details »
+        a.btn.btn-default(href='#', role='button') API Docs »
     .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
+      h2 WebSockets:
+      p The API has WebSocket endpoints for faster communication with MQTT brokers - see how it works:
       p
-        a.btn.btn-default(href='#', role='button') View details »
+        a.btn.btn-default(href='#', role='button') API Docs »
+  hr
+  .row
+    .col-sm-12
+      h3 More info on setting up your app and usage demos can be found 
+        a(href='#') here

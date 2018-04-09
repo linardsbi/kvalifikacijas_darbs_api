@@ -11,10 +11,6 @@ import { Response } from "superagent";
  */
 app.use(errorHandler());
 
-function generateSignedToken(): String {
-    return jwt.sign({ foo: "bar" }, process.env.APPLICATION_KEY);
-}
-
 function verifyToken(token: string): boolean {
     try {
         const decoded = jwt.verify(token, process.env.APPLICATION_KEY);
@@ -26,7 +22,7 @@ function verifyToken(token: string): boolean {
     return true;
 }
 
-function verifyClientInfo(info: Response): boolean {
+function verifyClientInfo(info: Request): boolean {
     return verifyToken(info.req.headers.token);
 }
 

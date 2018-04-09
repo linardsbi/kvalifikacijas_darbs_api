@@ -93,6 +93,7 @@ app.use(
  */
 app.get("/", homeController.index);
 app.get("/login", userController.getLogin);
+app.post("/api/key", passportConfig.isAuthenticated, userController.setApiKey);
 app.post("/login", userController.postLogin);
 app.get("/logout", userController.logout);
 app.get("/forgot", userController.getForgot);
@@ -120,7 +121,7 @@ app.post("/account/delete", passportConfig.isAuthenticated, userController.postD
 app.post("/controllers/create", isAuthenticated, deviceControllers.create);
 app.get("/controllers/get", isAuthenticated, deviceControllers.read);
 app.get("/controllers/get/topics", isAuthenticated, deviceControllers.getControllerTopics);
-app.get("/controllers/get/devices", isAuthenticated, deviceControllers.getControllerSensors);
+app.get("/controllers/get/devices", isAuthenticated, deviceControllers.getControllerDevices);
 app.get("/controllers/get/data", isAuthenticated, deviceControllers.getControllerData);
 app.patch("/controllers/edit", isAuthenticated, deviceControllers.update);
 app.delete("/controllers/delete", isAuthenticated, deviceControllers.remove);

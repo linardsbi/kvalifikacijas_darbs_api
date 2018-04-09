@@ -4,6 +4,7 @@ import {NextFunction, Request, Response} from "express";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import {APIResponse} from "../util/helpers/APIResponse";
 import {ParseRequest} from "../util/helpers/parseRequest";
+import jwt from "jsonwebtoken";
 
 export class APIController {
     payload = new APIResponsePayload();
@@ -88,6 +89,7 @@ export class APIController {
                     reject(this.payload.getFormattedPayload());
                 }
 
+
                 this.payload.addUnformattedData({success: "success"});
                 resolve(this.payload.getFormattedPayload());
             });
@@ -95,11 +97,29 @@ export class APIController {
     }
 }
 
+// signing params will be username and role
+function generateSignedToken(signingParams: object): string {
+    return jwt.sign(signingParams, process.env.APPLICATION_KEY);
+}
+
+function verifyToken(token: string): boolean {
+    try {
+        const decoded = jwt.verify(token, process.env.APPLICATION_KEY);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 /**
- * Handles all the routes associated with the DeviceController model
+ * Authentication middleware
  */
 export let isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
     // TODO: auth check
-    next();
+    if (verifyToken(req.headers.authtoken)) {
+        return next();
+    }
+    res.status(403).send({error: "invalid auth token"});
+    // console.log(generateSignedToken({bar: "foo"}));
 };
 

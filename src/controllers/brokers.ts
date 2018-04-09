@@ -10,7 +10,7 @@ import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import {ErrorHandler} from "../util/helpers/errorHandling";
 import {default as PublishedData, PublishedDataModel} from "../models/PublishedData";
 import crypto from "crypto";
-import {default as Controller} from "../models/DeviceController";
+import {ControllerModel, default as Controller} from "../models/DeviceController";
 import {APIController} from "./APIController";
 import {default as Device, DeviceModel} from "../models/Device";
 
@@ -72,39 +72,10 @@ export const create = (req: Request, res: Response) => {
     payload = new APIResponsePayload();
 };
 
-function getBroker(brokerID?: string): any {
-    return new Promise((resolve, reject) => {
-        let broker: any;
-
-        if (brokerID) {
-            ParseRequest.getValuesFromJSONString(brokerID).then((brokerIDs: object) => {
-                broker = Broker.find({_id: {$in: brokerIDs}}, function (err, found) {
-                    if (err) {
-                        payload.addUnformattedData({error: "Error occurred while trying to find a broker"});
-                    }
-                    payload.addUnformattedData(found);
-                    resolve(payload.getFormattedPayload());
-                });
-            }, (err) => {
-                payload.addUnformattedData(err);
-                reject(payload.getFormattedPayload());
-            });
-        } else {
-            broker = Broker.find({}, function (err, found) {
-                if (err) {
-                    payload.addUnformattedData({error: "Error occurred while trying to find brokers"});
-                }
-                payload.addUnformattedData(found);
-                resolve(payload.getFormattedPayload());
-            });
-        }
-    });
-}
-
 function savePostData(data: PublishedDataModel) {
     return new Promise((resolve, reject) => {
         const publishedData = new PublishedData({
-            "_controllerID": data._controllerID,
+            "_deviceID": data._deviceID,
             "payload": data.payload
         });
 
