@@ -1,15 +1,13 @@
 import errorHandler from "errorhandler";
 
 import app from "./app";
-import WebSocket from "ws";
 import jwt from "jsonwebtoken";
 import { stringify } from "querystring";
 import { Response } from "superagent";
 import { authenticate as MQTTAuthenticate, handleClientPublish, addController } from "./controllers/MQTTController";
+import { startWS } from "./websockets";
 import mosca from "mosca";
-import mqttws from "mqtt-ws";
 import * as net from "net";
-import { handle, WSInstance, emitPresence } from "./controllers/WSController";
 
 const moscaServer = new mosca.Server({port: 1884});
 
@@ -37,42 +35,7 @@ function generateSignedToken(): String {
 //     return verifyToken(info.req.headers.token);
 // }
 
-/**
- * Start WebSocket server.
- */
-// const wss = new WebSocket.Server({ port: process.env.WS_PORT });
 
-// function noop(): void {}
-
-// function heartbeat(): void {
-//     this.isAlive = true;
-// }
-
-// wss.on("connection", function connection(ws: any) {
-//     const WSConnection = new WSInstance(ws);
-
-//     ws.on("message", function incoming(message: any) {
-//         WSConnection.handle(message);
-//     });
-
-//     ws.on("error", function incoming(err: any) {
-//         console.error("error occurred: %s", err.toString());
-//     });
-
-//     ws.isAlive = true;
-//     ws.on("pong", heartbeat);
-// });
-
-// const interval = setInterval(function ping() {
-//     wss.clients.forEach(function each(ws) {
-//         if (ws.isAlive === false) return ws.terminate();
-
-//         ws.isAlive = false;
-//         ws.ping(noop);
-//     });
-// }, 15000);
-
-// export { wss as WebSocketServer };
 
 /**
  * start mqtt server
@@ -81,25 +44,13 @@ function generateSignedToken(): String {
  * as a response the device gets parameters on how it should operate.
  * i.e. pins to get info from, type of info, id of device(s).
  *
+ * mqtt has a presence channel i.e. controller/machine_id/presence for controllers or client/client_id/presence for clients
+ * to declare presence, on connection the client passes a payload and will
+ * Need to implement retained messages (LWT), so when client subscribes to presence topic, it gets the payload sent by the
+ * other client
  */
 start();
 export function start(): void {
-    const mqttOptions = {
-        host: "localhost",
-        port: 1884
-    };
-    const options = {
-        mqtt: mqttOptions,
-        websocket: {
-            port: 8080
-        }
-    };
-    const mqttBridge = new mqttws(options);
-    mqttBridge.connectMqtt(mqttOptions);
-
-    mqttBridge.on("connection", function(ws) {
-        console.log("client connected");
-    });
 
     moscaServer.on("clientConnected", function(client) {
         console.log("client connected", client.id);
@@ -119,6 +70,7 @@ export function start(): void {
     // fired when the mqtt server is ready
     function setup() {
         console.log("Mosca server is up and running");
+        startWS();
     }
 
     moscaServer.authenticate = (client, username, password, callback: Function) => {

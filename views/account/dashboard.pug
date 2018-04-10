@@ -3,15 +3,16 @@ extends ../layout
 block content
   .page-header
     h3 Dashboard
-  input(type="hidden", name="clientID" id="clientID" value=user.id)
-  each controller in controllers
-    .controller
-      .controller-name= controller.name
-      .controller-machine-name= controller.machine_name
-      .controller-devices
-        each device in controller.devices
-          .device= device
-  script(src="./js/lib/browserMqtt.js")
+  input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
+  .controller-page
+    each controller in controllers
+      .controller(data-machine-name=controller.machine_name)
+        .controller-name= controller.name
+        .controller-machine-name= controller.machine_name
+        .status
+        .controller-devices
+          each device in controller.devices
+            .device= device
   script(src="./js/dashboard/dashboard.js")
    
 
