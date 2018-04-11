@@ -16,27 +16,6 @@ const moscaServer = new mosca.Server({port: 1884});
  */
 app.use(errorHandler());
 
-function generateSignedToken(): String {
-    return jwt.sign({ foo: "bar" }, process.env.APPLICATION_KEY);
-}
-
-// function verifyToken(token: string): boolean {
-//     try {
-//         const decoded = jwt.verify(token, process.env.APPLICATION_KEY);
-//     } catch (e) {
-//         console.error("token mismatch", e);
-//         return false;
-//     }
-//     console.log("successful connection");
-//     return true;
-// }
-
-// function verifyClientInfo(info: Response): boolean {
-//     return verifyToken(info.req.headers.token);
-// }
-
-
-
 /**
  * start mqtt server
  * when a device connects, if authenticated and not already assigned,
@@ -62,7 +41,7 @@ export function start(): void {
             handleClientPublish(packet);
         }
 
-        console.log("Published", packet);
+        // console.log("Published", packet);
     });
 
     moscaServer.on("ready", setup);

@@ -3,10 +3,10 @@
 let socket: any = null;
 
 function getDevices() {
-    const controllerIDs: object = [];
-    $(".controller-machine-name").each(() => {
-        if ($(this).text()) {
-            controllerIDs.push(`controllers/${$(this).text()}/presence`);
+    const controllerIDs: string[] = [];
+    $(".controller-machine-name").each((index, element) => {
+        if (element.innerText) {
+            controllerIDs.push(`controllers/${element.innerText}/presence`);
         }
     });
 
@@ -23,8 +23,8 @@ function getPresenceData() {
         };
 
         send(data);
-    } else
-        $(".controller-page").text("No devices added yet!").addClass("no-devices");
+    }
+    $(".controller-page").text("No devices added yet!").addClass("no-devices");
 }
 
 function updateDOM(data: object) {
@@ -38,28 +38,43 @@ function updateDOM(data: object) {
 }
 
 function send(message: object) {
-    console.log("message sent:",message);
-    socket.sendMessage(message);
+    console.log("message sent:", message);
+    socket.send(JSON.stringify(message));
 }
 
 function connect() {
-  socket = new WebSocket(`ws://${window.location.hostname}:8080`);
+    return new Promise((resolve) => {
+        socket = new WebSocket(`ws://${window.location.hostname}:8080`);
 
-  // Connection opened
-  socket.addEventListener("open", function (event) {
-      getPresenceData();
-      console.log(event);
-  });
+        // Connection opened
+        socket.addEventListener("open", function (event) {
+            getPresenceData();
+            console.log(event);
+            resolve();
+        });
 
-  // Listen for messages
-  socket.addEventListener("message", function (event) {
-      updateDOM(event.data);
-  });
+        // Listen for messages
+        socket.addEventListener("message", function (event) {
+            const data = JSON.parse(event.data);
+            updateDOM(data);
+        });
+    });
 }
 
+$(window).on('load', async function () {
+    await connect();
 
-$(window).on('load',function () {
-  connect();
+    const payload = {
+        action: "publish",
+        topic: "controllers/aaa/presence",
+        payload: "test",
+        apiToken: $("#apiToken").val(),
+        options: {
+            retain: true
+        }
+    };
+
+    send(payload);
 });
 
 

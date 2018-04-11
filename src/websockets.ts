@@ -24,10 +24,6 @@ export function startWS() {
         WSConnection = new WSClientInstance(ws);
 
         // Once server started and client, connect to mqtt server
-        bridgeClient();
+        WSConnection._mqttClient = client;
     });
-}
-
-function bridgeClient() {
-    WSConnection._mqttClient = client;
 }

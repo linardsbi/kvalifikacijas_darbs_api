@@ -8,7 +8,7 @@ import { IVerifyOptions } from "passport-local";
 import { WriteError } from "mongodb";
 import DeviceController, { ControllerModel } from "../models/DeviceController";
 const request = require("express-validator");
-import jwt from "jsonwebtoken";
+import { JwtToken as jwt } from "../util/helpers/jwtToken";
 
 /**
  * GET /login
@@ -377,10 +377,6 @@ export let postForgot = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-function generateSignedToken(signingParams: object): String {
-    return jwt.sign(signingParams, process.env.APPLICATION_KEY);
-}
-
 /**
  * POST /api/key
  * Generate a new api key.
@@ -388,7 +384,7 @@ function generateSignedToken(signingParams: object): String {
 export let setApiKey = (req: Request, res: Response, next: NextFunction) => {
     User.findById(req.user.id, (err, user: UserModel) => {
         if (err) { return next(err); }
-        user.apiKey = generateSignedToken({username: user.email, role: user.role});
+        user.apiKey = jwt.generateToken({username: user.email, role: user.role});
         user.save((err: WriteError) => {
             if (err) { return next(err); }
             req.flash("success", { msg: "API key successfully generated." });
