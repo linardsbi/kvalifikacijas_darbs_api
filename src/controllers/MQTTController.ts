@@ -25,7 +25,7 @@ function handleFirstConnection(packet) {
 }
 
 function handlePacket(packet: object) {
-    console.log("packet received");
+    console.log("packet received", packet);
 }
 
 export function handleClientPublish(packet) {

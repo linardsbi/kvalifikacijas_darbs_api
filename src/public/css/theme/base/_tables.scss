@@ -1,0 +1,34 @@
+// Table styles.
+table {
+  border-collapse : collapse;
+  margin          : $small-spacing 0;
+  table-layout    : fixed;
+  min-width           : 100%;
+  width: auto;
+
+  &[align='center'] {
+    text-align : center;
+  }
+
+}
+th {
+  border-bottom  : 1px solid shade($base-border-color, 25%);
+  font-weight    : 600;
+  padding        : $small-spacing 0;
+  vertical-align : top;
+  text-align     : inherit;
+}
+td {
+  border-bottom : $base-border;
+  padding       : $small-spacing 0;
+  strong {
+    font-weight : bold;
+  }
+}
+tr,
+td {
+  vertical-align : middle;
+}
+article {
+
+}

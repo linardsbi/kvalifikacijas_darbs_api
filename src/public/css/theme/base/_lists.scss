@@ -1,0 +1,65 @@
+// List styles.
+ul,
+ol {
+  list-style-type : none;
+  margin          : 0;
+  padding         : 0;
+  &:after{
+    clear: both;
+    content: '';
+    display: block;
+  }
+}
+dl {
+  margin-bottom : $small-spacing;
+
+  dt {
+    font-weight : 600;
+    margin-top  : $small-spacing;
+  }
+
+  dd {
+    margin : 0;
+  }
+}
+article, #edit-additional {
+
+  li {
+    position     : relative;
+    padding-left : 25px;
+    &:before {
+      position : absolute;
+      content  : '';
+      left     : 0;
+      top   : 0;
+    }
+  }
+
+  ol {
+    list-style-type : none;
+    counter-reset   : li-counter;
+    li {
+      &:before {
+        content           : counter(li-counter) ".";
+        counter-increment : li-counter;
+        font-family       : $heading-font-family;
+        font-size         : 15px;
+        color             : $accent-red;
+      }
+    }
+  }
+
+  ul {
+    li {
+      &:before {
+        @include border-radius(50%);
+        top: 8px;
+        width  : 9px;
+        height : 9px;
+        border : 1px solid $accent-red;
+      }
+    }
+  }
+
+}
+

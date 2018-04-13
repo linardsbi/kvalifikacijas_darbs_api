@@ -9,7 +9,22 @@ import { startWS } from "./websockets";
 import mosca from "mosca";
 import * as net from "net";
 
-const moscaServer = new mosca.Server({port: 1884});
+const ascoltatore = {
+    type: 'mongo',
+    url: `${process.env.MONGODB_URI_LOCAL}/mqtt`,
+    pubsubCollection: 'ascoltatori',
+    mongo: {}
+};
+
+const moscaSettings = {
+    port: parseInt(process.env.MQTT_PORT),
+    persistence: {
+        factory: mosca.persistence.Memory
+    },
+    backend: ascoltatore
+};
+
+const moscaServer = new mosca.Server(moscaSettings);
 
 /**
  * Error Handler. Provides full stack - remove for production
@@ -72,7 +87,7 @@ export function start(): void {
     };
 
     moscaServer.authorizeSubscribe = function(client, topic, callback) {
-
+        console.log(topic, client.id);
         callback(null, true);
     };
 }

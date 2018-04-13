@@ -1,0 +1,78 @@
+// Variables
+// -----------
+
+// Layout
+$column: 60px;
+$gutter: 20px;
+$grid-columns: 4;
+$max-width: 1250px;
+
+// Breakpoints
+$small-screen:  540px;
+$medium-screen: 720px;
+$large-screen:  960px;
+
+// Define your mobile first breakpoints using min-width
+$small-screen-up: new-breakpoint(min-width $small-screen 4);
+$medium-screen-up: new-breakpoint(min-width $medium-screen 8);
+$large-screen-up: new-breakpoint(min-width $large-screen 12);
+
+// Margin/Padding.
+$margin: 20px;
+$padding: 20px;
+$form-bottom-margin: 15px;
+
+
+// Typography.
+$base-font-family: 'Open Sans', "Helvetica", "Arial", sans-serif;
+$heading-font-family: "U8 Black", 'Arial', sans-serif;
+
+// Font Sizes.
+$base-font-size: 16px;
+// Line height.
+$base-line-height: 1.5;
+$heading-line-height: 1.3;
+
+// Other Sizes.
+$base-border-radius: 2px;
+$base-spacing: $base-line-height * 1em;
+$small-spacing: $base-spacing / 2;
+$base-z-index: 0;
+
+// Colors.
+$dark-gray: #333;
+$medium-gray: #999;
+$light-gray: #ddd;
+$accent-red: #DA001E;
+$accent-red-dark: #920011;
+$accent-cyan: #92DCC4;
+$accent-black: #222222;
+$txt-color-main: #5a5a5a;
+$action-color: #DA001E;
+// Brand Colors.
+$primary-color: #555;
+
+// Action Colors.
+$status-color: #8dbe51;
+$warning-color: #ddc44f;
+$error-color: #cd4533;
+
+// Font Colors.
+$base-font-color: $dark-gray;
+$action-color: $primary-color;
+
+// Border.
+$base-border-color: $light-gray;
+$base-border: 1px solid $base-border-color;
+
+// Background Colors.
+$base-background-color: #fff;
+$secondary-background-color: tint($base-border-color, 75%);
+
+// Forms.
+$form-box-shadow: inset 0 1px 3px rgba(#000, 0.06);
+$form-box-shadow-focus: $form-box-shadow, 0 0 5px adjust-color($action-color, $lightness: -5%, $alpha: -0.3);
+
+// Animations.
+$base-duration: 150ms;
+$base-timing: ease;

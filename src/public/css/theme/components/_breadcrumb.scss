@@ -1,0 +1,28 @@
+// Breadcrumb styles
+.breadcrumb {
+  margin    : 25px 0 65px;
+  font-size : 13px;
+  li {
+    list-style-type: none;
+    display: inline-block;
+    &:not(:first-child) {
+      &:before {
+        font-weight : bold;
+        content     : " \2022  ";
+        padding     : 0 5px;
+      }
+    }
+    &:last-child:not(:first-child) {
+      a {
+        color : #222;
+      }
+    }
+    a {
+      color : #9D9D9D;
+      &:hover {
+        color : #222;
+      }
+    }
+  }
+
+}

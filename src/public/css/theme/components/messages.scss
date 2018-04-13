@@ -1,0 +1,110 @@
+// Messages
+// ---------
+
+// Import config
+@import "../config/config";
+
+// Messages.
+.messages {
+  padding: 9px;
+  margin: 1em 0;
+  color: darken($light-gray, 30%);
+  background-color: $light-gray;
+  border: 1px solid darken($light-gray, 10%);
+  word-wrap: break-word;
+
+  pre {
+    border: 0;
+  }
+}
+.messages--warning {
+  color: darken($error-color, 15%);
+  background-color: $warning-color;
+  border-color: darken($warning-color, 10%);
+
+  pre {
+    background-color: darken($warning-color, 10%);
+  }
+}
+.messages--error {
+  color: white;
+  background-color: $error-color;
+  border-color: darken($error-color, 10%);
+
+  pre {
+    background-color: darken($error-color, 10%);
+  }
+}
+.messages--status {
+  color: darken($status-color, 35%);
+  background-color: $status-color;
+  border-color: darken($status-color, 10%);
+
+  pre {
+    background-color: darken($status-color, 10%);
+  }
+}
+
+//Messages
+@mixin messages($color) {
+  border-left      : none;
+  border-right     : none;
+  border-width     : 2px;
+  border-color     : $color;
+  position         : relative;
+  padding          : 13px 50px;
+  background-color : transparent;
+  color            : black;
+  font-family      : $heading-font-family;
+  *::selection, &::selection {
+    background-color : $color;
+  }
+  *::-moz-selection, &::-moz-selection {
+    background-color : $color;
+  }
+  &:before,
+  &:after {
+    position   : absolute;
+    background : $color;
+    content    : '';
+  }
+}
+.messages.messages--status {
+  $color-msg-stat : #5EAF60;
+  &:after {
+    height : 10px;
+    width  : 3px;
+    left   : 20px;
+    top    : 22px;
+    @include transform-rotate(-45deg)
+  }
+  &:before {
+    height : 16px;
+    width  : 3px;
+    left   : 27px;
+    top    : 17px;
+    @include transform-rotate(45deg);
+  }
+  @include messages($color-msg-stat);
+}
+.messages.messages--warning {
+  &:after {
+    width   : 7px;
+    height  : 7px;
+    left    : 22px;
+    top     : 30px;
+    outline : 2px solid $base-background-color;
+    @include border-radius(50%);
+  }
+  &:before {
+    height : 16px;
+    width  : 5px;
+    left   : 23px;
+    top    : 14px;
+    @include border-radius(2px);
+  }
+  @include messages(#EFBA2E);
+}
+.messages.messages--error {
+  @include messages($accent-red);
+}

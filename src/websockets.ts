@@ -11,19 +11,25 @@ import {WSInstance, MQTTClientInstance, WSClientInstance} from "./controllers/Br
  */
 
 let WSConnection: any;
-const client = mqtt.connect("mqtt://localhost:1884");
+
+// retain test
+// const client1 = mqtt.connect("mqtt://localhost:1884", {clientId: "controller"});
+// client1.on('connect', function () {
+//     client1.subscribe("controllers/aaa/presence");
+//     client1.publish("controllers/aaa/presence", "1", {retain: true});
+// });
 
 /**
  * Start WebSocket server.
  */
-
 export function startWS() {
-    const wss = new WebSocket.Server({ port: process.env.WS_PORT });
+    const wss = new WebSocket.Server({ port: parseInt(process.env.WS_PORT) });
 
     wss.on("connection", function connection(ws: any) {
         WSConnection = new WSClientInstance(ws);
 
         // Once server started and client, connect to mqtt server
-        WSConnection._mqttClient = client;
+
+        // WSConnection._mqttClient = client;
     });
 }

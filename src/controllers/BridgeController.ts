@@ -1,7 +1,7 @@
 "use strict";
 import {ParseRequest as parse} from "../util/helpers/parseRequest";
 import {JwtToken as token} from "../util/helpers/jwtToken";
-
+import mqtt from "mqtt";
 /**
  * TODO: create more efficient topics so the bridge client doesn't have to sub to many topics
  * (ideal condition: only one topic to sub to needed for the client to know about the present controllers)
@@ -39,8 +39,15 @@ export class WSClientInstance extends BridgeInstance {
 
     private handleMessage(message: any) {
         message = parse.toObject(message);
+        this.validateAPIToken(message.apiToken).then(async () => {
+            const that = this;
+            this._mqttClient = await setupMqttClient();
 
-        this.validateAPIToken(message.apiToken).then(() => {
+            this._mqttClient.on("message", (topic: string, message: Buffer) => {
+                that.response = this.formatMqttMessage(topic);
+                that.returnResponse();
+            });
+
             switch (message.action) {
                 case "subscribe":
                     this.handleSubscribe(message.topics);
@@ -53,9 +60,8 @@ export class WSClientInstance extends BridgeInstance {
             }
         }, () => {
             this.response.error = "Invalid API key";
+            this.returnResponse();
         });
-
-        this.returnResponse();
     }
 
     private handleSubscribe(topics: object) {
@@ -82,29 +88,35 @@ export class WSClientInstance extends BridgeInstance {
 
     private formatMqttMessage(message: any) {
         // TODO: any needed formatting
-        return message;
+        const formatted = {};
+        formatted.item = message.split("/")[1];
+        return formatted;
     }
 
-    private mqttListen(instance: any) {
+    private mqttListen() {
         const that = this;
-
-        instance.on('message', function (topic: string, message: Buffer) {
-            console.log(topic);
-            that.response = that.formatMqttMessage(message);
-            that.returnResponse();
-        });
     }
 
     set mqttClient(instance: any) {
-        this.mqttListen(instance);
         this._mqttClient = instance;
+        this.mqttListen();
     }
 
     get mqttClient(): any {
         return this._mqttClient;
     }
 }
-
+function setupMqttClient() {
+    return new Promise((resolve) => {
+        const client = mqtt.connect(`mqtt://localhost:${parseInt(process.env.MQTT_PORT)}`);
+        client.on('connect', () => {
+            resolve(client);
+        });
+        client.on("error", () => {
+            resolve(null);
+        });
+    });
+}
 export class MQTTClientInstance extends BridgeInstance {
     private _wsClient: any;
 

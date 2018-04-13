@@ -24,21 +24,17 @@ function getPresenceData() {
 
         send(data);
     }
-    $(".controller-page").text("No devices added yet!").addClass("no-devices");
 }
 
 function updateDOM(data: object) {
-    console.log(data);
-    if (data && data.controllers) {
-        for (const controller in data.controllers) {
-            $(`[data-machine-id=${controller.machine_name}]`).find(".status").addClass("connected");
-        }
-    } else
-        console.log("bad response");
+    if (data && data.item) {
+        $(`[id=${data.item}]`).find(".status").removeClass("disconnected").addClass("connected");
+    } else {
+        // $(".controller-page").text("No devices added yet!").addClass("no-devices");
+    }
 }
 
 function send(message: object) {
-    console.log("message sent:", message);
     socket.send(JSON.stringify(message));
 }
 
@@ -47,14 +43,13 @@ function connect() {
         socket = new WebSocket(`ws://${window.location.hostname}:8080`);
 
         // Connection opened
-        socket.addEventListener("open", function (event) {
+        socket.addEventListener("open", function () {
             getPresenceData();
-            console.log(event);
             resolve();
         });
 
         // Listen for messages
-        socket.addEventListener("message", function (event) {
+        socket.addEventListener("message", function (event: any) {
             const data = JSON.parse(event.data);
             updateDOM(data);
         });
@@ -64,17 +59,20 @@ function connect() {
 $(window).on('load', async function () {
     await connect();
 
-    const payload = {
-        action: "publish",
-        topic: "controllers/aaa/presence",
-        payload: "test",
-        apiToken: $("#apiToken").val(),
-        options: {
-            retain: true
-        }
-    };
+    // retain test
+    setTimeout(() => {
+        const payload = {
+            action: "publish",
+            topic: "controllers/aaa/presence",
+            payload: "get",
+            apiToken: $("#apiToken").val(),
+            options: {
+                retain: true
+            }
+        };
 
-    send(payload);
+        send(payload);
+    }, 5000);
 });
 
 

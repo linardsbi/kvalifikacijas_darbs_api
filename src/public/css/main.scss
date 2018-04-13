@@ -1,15 +1,15 @@
-@import "themes/default/variables";
-
+// Base template
+@import "./theme/default/variables";
 @import "lib/bootstrap/bootstrap";
 @import "lib/font-awesome/font-awesome";
+@import "./theme/default/default";
 
-@import "themes/default/default";
-
-@import url('https://fonts.googleapis.com/css?family=Anonymous+Pro:400,700');
+// Custom stuff
+@import "./theme/config/config";
+@import "./theme/theme/theme";
 
 // Scaffolding
 // -------------------------
-
 html {
   position: relative;
   min-height: 100%;
