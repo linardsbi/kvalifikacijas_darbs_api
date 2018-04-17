@@ -1,6 +1,6 @@
 "use strict";
-import {ParseRequest as parse} from "../util/helpers/parseRequest";
-import {JwtToken as token} from "../util/helpers/jwtToken";
+import {ParseRequest as parse } from "../util/helpers/parseRequest";
+import {JwtToken as token } from "../util/helpers/jwtToken";
 import mqtt from "mqtt";
 /**
  * TODO: create more efficient topics so the bridge client doesn't have to sub to many topics
@@ -39,6 +39,7 @@ export class WSClientInstance extends BridgeInstance {
 
     private handleMessage(message: any) {
         message = parse.toObject(message);
+
         this.validateAPIToken(message.apiToken).then(async () => {
             const that = this;
             this._mqttClient = await setupMqttClient();
@@ -109,7 +110,7 @@ export class WSClientInstance extends BridgeInstance {
 function setupMqttClient() {
     return new Promise((resolve) => {
         const client = mqtt.connect(`mqtt://localhost:${parseInt(process.env.MQTT_PORT)}`);
-        client.on('connect', () => {
+        client.on("connect", () => {
             resolve(client);
         });
         client.on("error", () => {
@@ -125,11 +126,11 @@ export class MQTTClientInstance extends BridgeInstance {
     }
 
     listen() {
-        this.instance.on('connect', function () {
+        this.instance.on("connect", function () {
             this.handleConnect();
         });
 
-        this.instance.on('message', function (topic: string, message: Buffer) {
+        this.instance.on("message", function (topic: string, message: Buffer) {
             this.handleMessage(topic, message);
         });
     }

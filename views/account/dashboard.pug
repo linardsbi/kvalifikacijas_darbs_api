@@ -4,15 +4,27 @@ block content
   .page-header
     h3 Dashboard
   input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
-  .controller-page
-    each controller in controllers
-      div.controller(id= controller.machine_name)
-        .controller-name= controller.name
-        .controller-machine-name= controller.machine_name
-        .status.disconnected
-        .controller-devices
-          each device in controller.devices
-            .device= device
+  .page-body
+    .device-overview
+      .buttons
+        .graph-button Graph view
+        button.close x
+      .data
+      .graph
+
+    .controller-page
+      each controller in controllers
+        div.controller(id= controller.machine_name)
+          .info
+            .status.disconnected
+            .controller-name= controller.name
+          .wrapper
+            .controller-machine-name= controller.machine_name
+            .controller-devices
+              .device-new Add device
+              .device Device
+              each device in controller.devices
+                .device= device
   script(src="./js/dashboard/dashboard.js")
    
 

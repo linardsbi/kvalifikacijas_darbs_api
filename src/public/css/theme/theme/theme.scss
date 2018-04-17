@@ -1,10 +1,71 @@
+.page-body {
+  @include display-flex();
+  .device-overview {
+    @include transition(500ms width);
+    width: 0;
+    overflow: hidden;
+    .buttons {
+      @include display-flex();
+      & > * {
+        margin-left: auto;
+      }
+    }
+  }
+  .device {
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+  }
+}
+.controller-devices {
+  @include display-flex();
+  flex-wrap: wrap;
+  & > div {
+    @include border-radius(21px);
+    background: #ededed;
+    width: 145px;
+    text-align: center;
+    cursor: pointer;
+    &:not(.device-new) {
+      margin-left: 30px;
+    }
+    &.device-new {
+      padding-bottom: 10px;
+      &:before {
+        content: "+";
+        display: block;
+        font-size: 60px;
+        line-height: 55px;
+      }
+    }
+  }
+}
 .controller-page {
+  @include display-flex-item(1);
+  .controller-machine-name {
+    display: none
+  }
   .controller {
+    margin-top: 50px;
+    .wrapper {
+      padding: 10px 50px;
+      background: #fbfbfb;
+      display: none;
+    }
+    .info {
+      @include display-flex();
+      cursor: pointer;
+      padding: 10px;
+      -webkit-box-shadow: 0px 5px 30px -13px rgba(0,0,0,0.75);
+      -moz-box-shadow: 0px 5px 30px -13px rgba(0,0,0,0.75);
+      box-shadow: 0px 5px 30px -13px rgba(0,0,0,0.75);
+    }
     .status {
       width: 15px;
       height: 15px;
       border-radius: 100%;
       display: inline-block;
+      margin: auto 30px;
       &.connected {
         background: #17d766;
         background: -moz-linear-gradient(top,  #17d766 0%, #17d766 50%, #16cf62 51%, #16cf62 100%);

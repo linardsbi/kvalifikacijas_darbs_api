@@ -56,23 +56,31 @@ function connect() {
     });
 }
 
-$(window).on('load', async function () {
+function initAccordion() {
+    $(".info").on("click", function () {
+        if ($(this).hasClass("open")) {
+            $(this).removeClass("open");
+            $(this).next().slideUp();
+        } else {
+            $(this).addClass("open");
+            $(this).next().slideDown();
+        }
+    });
+}
+
+function deviceClick() {
+    $(".device").on("click", function () {
+        $(".device-overview").css({"width": "50%"});
+    });
+    $(".device-overview .close").on("click", function () {
+        $(".device-overview").css({"width": "0"});
+    });
+}
+
+$(window).on("load", async function () {
+    initAccordion();
+    deviceClick();
     await connect();
-
-    // retain test
-    setTimeout(() => {
-        const payload = {
-            action: "publish",
-            topic: "controllers/aaa/presence",
-            payload: "get",
-            apiToken: $("#apiToken").val(),
-            options: {
-                retain: true
-            }
-        };
-
-        send(payload);
-    }, 5000);
 });
 
 
