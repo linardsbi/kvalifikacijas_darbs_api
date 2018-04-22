@@ -25,6 +25,8 @@ block content
               .device Device
               each device in controller.devices
                 .device= device
+  include ../partials/modals/device/new
+  include ../partials/modals/device/edit
   script(src="./js/dashboard/dashboard.js")
    
 

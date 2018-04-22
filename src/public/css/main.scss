@@ -17,7 +17,8 @@ html {
 
 body {
   padding-top: 60px;
-  margin-bottom: 75px;
+  height: 100%;
+  min-height: 100vh;
   font-family: 'Anonymous Pro', sans-serif !important;
   letter-spacing: 0.1em;
 }
@@ -71,4 +72,8 @@ textarea {
 
 .fa {
   margin-right: 6px;
+}
+
+.navbar.navbar-default {
+  z-index: 1;
 }

@@ -45,7 +45,7 @@ export class WSClientInstance extends BridgeInstance {
             this._mqttClient = await setupMqttClient();
 
             this._mqttClient.on("message", (topic: string, message: Buffer) => {
-                that.response = this.formatMqttMessage(topic);
+                that.response = this.formatMqttMessage(topic, message);
                 that.returnResponse();
             });
 
@@ -76,7 +76,12 @@ export class WSClientInstance extends BridgeInstance {
     }
 
     private returnResponse() {
-        this.instance.send(JSON.stringify(this.response));
+        if (this.instance.readyState === WebSocket.OPEN) {
+            this.instance.send(JSON.stringify(this.response));
+        } else {
+            console.log("connection closed abruptly");
+            this._mqttClient.end();
+        }
     }
 
     private validateAPIToken(apiToken: string): Promise<boolean> {
@@ -87,10 +92,18 @@ export class WSClientInstance extends BridgeInstance {
         });
     }
 
-    private formatMqttMessage(message: any) {
+    private formatMqttMessage(topic: string, message: any) {
         // TODO: any needed formatting
         const formatted = {};
-        formatted.item = message.split("/")[1];
+        const msgString = message.toString();
+        formatted.item = topic.split("/")[1];
+
+        if (msgString === "1") {
+            formatted.status = "connected";
+        } else {
+            formatted.status = "disconnected";
+        }
+
         return formatted;
     }
 

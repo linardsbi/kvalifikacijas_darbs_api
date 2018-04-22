@@ -27,8 +27,15 @@ function getPresenceData() {
 }
 
 function updateDOM(data: object) {
-    if (data && data.item) {
-        $(`[id=${data.item}]`).find(".status").removeClass("disconnected").addClass("connected");
+    if (data && data.item && data.status) {
+        const status = $(document.getElementById(data.item)).find(".status");
+
+        if (data.status === "connected") {
+            status.removeClass("disconnected").addClass("connected");
+        } else {
+            status.removeClass("connected").addClass("disconnected");
+        }
+
     } else {
         // $(".controller-page").text("No devices added yet!").addClass("no-devices");
     }
@@ -74,6 +81,9 @@ function deviceClick() {
     });
     $(".device-overview .close").on("click", function () {
         $(".device-overview").css({"width": "0"});
+    });
+    $(".device-new").on("click", function () {
+        $("#new-device-modal").modal("show");
     });
 }
 
