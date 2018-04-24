@@ -92,20 +92,42 @@
   }
 }
 
-.modal-background {
-  height: 100%;
-  width: 100%;
-  background: rgba(0,0,0,0.75);
-  z-index: 2;
-  position: absolute;
-  top: 0;
-  .modal {
-    background: white;
-    position: sticky;
-    max-height: 800px;
-    max-width: 800px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
+.pins {
+  @include display-flex();
+  flex-wrap: wrap;
+  .right-form {
+    display: none;
+  }
+  & > div {
+    @include border-radius(21px);
+    background: #ededed;
+    width: 145px;
+    text-align: center;
+    cursor: pointer;
+    &:not(.add-pin) {
+      margin-left: 30px;
+    }
+    &.add-pin {
+      padding-bottom: 10px;
+      &:before {
+        content: "+";
+        display: block;
+        font-size: 60px;
+        line-height: 55px;
+      }
+    }
   }
 }
+  
+.modal {
+  .modal-body {
+    .form-group {
+      clear: both;
+    }
+  }
+}
+
+.nice-select {
+  float: none;
+}
+

@@ -83,7 +83,11 @@ function deviceClick() {
         $(".device-overview").css({"width": "0"});
     });
     $(".device-new").on("click", function () {
-        $("#new-device-modal").modal("show");
+        const modal = $("#new-device-modal");
+        const controller = $(this).parent().parent().parent();
+
+        modal.modal("show");
+        modal.find(`option[value='${controller.attr("id")}']`).attr("selected", "");
     });
 }
 

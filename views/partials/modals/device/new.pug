@@ -1,16 +1,56 @@
 
+mixin info-type
+  select.information-type(name="information-type")
+    option(value="digital") Digital (for custom applications)
+    option(value="D2") Analog (for custom applications)
+    option(value="bar") Temperature (degrees)
+
+mixin pin-name
+  select(name="pin-name")
+    option(value="D1") D1 (placeholder)
+    option(value="D2") D2 (placeholder)
+    option(value="D3") D3 (placeholder)
+
 .modal#new-device-modal(tabindex="-1" role="dialog")
-  .modal-dialog.modal-dialog-centered.fade(role="document")
+  .modal-dialog.modal-dialog-centered(role="document")
     .modal-content
       .modal-header
-      h5.modal-title
+      h5.modal-title Add a new device
       button(type="button" class="close" data-dismiss="modal" aria-label="Close")
         span(aria-hidden="true") &times;
     .modal-body
+      .alert.alert-info.alert-dismissible.fade.in
+        a(href="#" class="close" data-dismiss="alert" aria-label="close") &times;
+        strong Your controller 
+        | might have a special pin mapping! Double check your pins!
       form(action="post")
-        select#device-list(name="device-list")
-          option(value="custom") Custom device
-        input#new-device-name(type="text", name="new-device-name", placeholder="Device name...")
-        
+        .form-group
+          label(for="controller-list") Controller to add device to
+          select#controller-list(name="controller-list")
+            each controller in controllers
+              option(value= controller.machine_name) #{controller.name} (#{controller.machine_name})
+        .form-group
+          label(for="device-list") Choose device
+          select#device-list(name="device-list")
+            option(value="custom") Custom device
+        .form-group
+          label(for="new-device-name") Enter the name of the device
+          input#new-device-name(type="text", name="new-device-name", placeholder="Device name...")
+        .form-group
+          .pins
+            .add-pin 
+              .left-label Add pin
+              .right-form 
+                label(for="information-type") Information type
+                +info-type
+                label(for="pin-name") Pin name:
+                +pin-name
+            .pin
+              .left-label pin name
+              .right-form 
+                label(for="information-type") Information type
+                +info-type
+                label(for="pin-name") Pin name:
+                +pin-name
     .modal-footer
       button(type="button" class="btn btn-primary") Add

@@ -5,7 +5,7 @@ export type DeviceModel = mongoose.Document & {
     machine_name: String,
     _controllerID: mongoose.Schema.Types.ObjectId,
     used_pins: object
-}
+};
 
 const pinSchema = new mongoose.Schema({
     pin_name: String,
