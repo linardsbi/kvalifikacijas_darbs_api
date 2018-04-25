@@ -53,7 +53,7 @@ export class APIController {
             const payload = this.payload;
 
             ParseRequest.getValuesFromJSONString(itemID).then((itemIDs: object) => {
-                this.resource.find({_id: {$in: itemIDs}}, function (err, found: any) {
+                this.resource.find({_id: {$in: itemIDs}}, function (err: Error, found: any) {
                     if (err) {
                         payload.addUnformattedData({error: err});
 
@@ -102,13 +102,34 @@ function generateSignedToken(signingParams: object): string {
     return jwt.sign(signingParams, process.env.APPLICATION_KEY);
 }
 
-function verifyToken(token: string): boolean {
+function verify(token: string) {
     try {
-        const decoded = jwt.verify(token, process.env.APPLICATION_KEY);
+        return jwt.verify(token, process.env.APPLICATION_KEY);
     } catch (e) {
-        return false;
+        return new Error(e);
     }
-    return true;
+}
+
+function verifyToken(token: string | string[]): boolean | Array<object> {
+    if (typeof token === "string") {
+        const verified = verify(token);
+
+        return !(verified instanceof Error);
+
+    } else if (token instanceof Array) {
+        const tokenArray = [];
+        for (const item in token) {
+            const verified = verify(item);
+
+            if (verified instanceof Error)
+                tokenArray.push({token: item, status: "invalid"});
+            else
+                tokenArray.push({token: item, status: "valid"});
+        }
+        return tokenArray;
+    }
+
+    return false;
 }
 
 /**

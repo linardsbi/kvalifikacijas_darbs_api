@@ -6,6 +6,13 @@ import mqtt from "mqtt";
  * TODO: create more efficient topics so the bridge client doesn't have to sub to many topics
  * (ideal condition: only one topic to sub to needed for the client to know about the present controllers)
  */
+
+interface BridgeResponse {
+    item: string,
+    status: string,
+    error: string
+}
+
 class BridgeInstance {
     instance: any;
 
@@ -16,10 +23,17 @@ class BridgeInstance {
 
 export class WSClientInstance extends BridgeInstance {
     private _mqttClient: any;
-    private response: object = {};
+    private response: BridgeResponse;
 
     constructor(instance: any) {
         super(instance);
+
+        this.response = {
+            item: "",
+            status: "initializing",
+            error: ""
+        };
+
         this.listen();
     }
 
@@ -92,9 +106,9 @@ export class WSClientInstance extends BridgeInstance {
         });
     }
 
-    private formatMqttMessage(topic: string, message: any) {
+    private formatMqttMessage(topic: string, message: any): BridgeResponse  {
         // TODO: any needed formatting
-        const formatted = {};
+        const formatted: BridgeResponse = this.response;
         const msgString = message.toString();
         formatted.item = topic.split("/")[1];
 
@@ -107,13 +121,8 @@ export class WSClientInstance extends BridgeInstance {
         return formatted;
     }
 
-    private mqttListen() {
-        const that = this;
-    }
-
     set mqttClient(instance: any) {
         this._mqttClient = instance;
-        this.mqttListen();
     }
 
     get mqttClient(): any {
@@ -131,44 +140,44 @@ function setupMqttClient() {
         });
     });
 }
-export class MQTTClientInstance extends BridgeInstance {
-    private _wsClient: any;
-
-    constructor(client: any) {
-        super(client);
-    }
-
-    listen() {
-        this.instance.on("connect", function () {
-            this.handleConnect();
-        });
-
-        this.instance.on("message", function (topic: string, message: Buffer) {
-            this.handleMessage(topic, message);
-        });
-    }
-
-    private handleConnect() {
-
-    }
-
-    private handleMessage(topic: string, message: Buffer) {
-
-    }
-
-    doSubscribe(topic) {
-
-    }
-
-    doPublish(topic, payload) {
-
-    }
-
-    set wsClient(instance: any) {
-        this._wsClient = instance;
-    }
-
-    get wsClient(): any {
-        return this._wsClient;
-    }
-}
+// export class MQTTClientInstance extends BridgeInstance {
+//     private _wsClient: any;
+//
+//     constructor(client: any) {
+//         super(client);
+//     }
+//
+//     listen() {
+//         this.instance.on("connect", function () {
+//             this.handleConnect();
+//         });
+//
+//         this.instance.on("message", function (topic: string, message: Buffer) {
+//             this.handleMessage(topic, message);
+//         });
+//     }
+//
+//     private handleConnect() {
+//
+//     }
+//
+//     private handleMessage(topic: string, message: Buffer) {
+//
+//     }
+//
+//     doSubscribe(topic) {
+//
+//     }
+//
+//     doPublish(topic, payload) {
+//
+//     }
+//
+//     set wsClient(instance: any) {
+//         this._wsClient = instance;
+//     }
+//
+//     get wsClient(): any {
+//         return this._wsClient;
+//     }
+// }
