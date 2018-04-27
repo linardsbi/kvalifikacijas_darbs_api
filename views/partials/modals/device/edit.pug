@@ -6,7 +6,23 @@
       h5.modal-title
       button(type="button" class="close" data-dismiss="modal" aria-label="Close")
         span(aria-hidden="true") &times;
+
     .modal-body
-    
+      ul.nav.nav-tabs
+        li.active
+          a(href="#device-modal-general-tab")
+            i.fa.fa-cog tset
+            span General
+        li
+          a(href="#device-modal-edit-tab")
+            i.fa.fa-pencil tset
+            span Edit
+
+      .tab-content
+        #device-modal-general-tab.tab-pane.active
+          p test
+        #device-modal-edit-tab.tab-pane
+          p test2
+
     .modal-footer
-      button(type="button" class="btn btn-primary") Add
+      button(type="button" class="btn btn-primary") Ok

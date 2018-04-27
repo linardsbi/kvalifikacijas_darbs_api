@@ -17,6 +17,7 @@
     cursor: pointer;
   }
 }
+
 .controller-devices {
   @include display-flex();
   flex-wrap: wrap;
@@ -40,6 +41,7 @@
     }
   }
 }
+
 .controller-page {
   @include display-flex-item(1);
   .controller-machine-name {
@@ -54,11 +56,9 @@
     }
     .info {
       @include display-flex();
+      @include box-shadow(0 5px 30px -13px rgba(0, 0, 0, 0.75));
       cursor: pointer;
       padding: 10px;
-      -webkit-box-shadow: 0px 5px 30px -13px rgba(0,0,0,0.75);
-      -moz-box-shadow: 0px 5px 30px -13px rgba(0,0,0,0.75);
-      box-shadow: 0px 5px 30px -13px rgba(0,0,0,0.75);
     }
     .status {
       width: 15px;
@@ -67,26 +67,10 @@
       display: inline-block;
       margin: auto 30px;
       &.connected {
-        background: #17d766;
-        background: -moz-linear-gradient(top,  #17d766 0%, #17d766 50%, #16cf62 51%, #16cf62 100%);
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#17d766), color-stop(50%,#17d766), color-stop(51%,#16cf62), color-stop(100%,#16cf62));
-        background: -webkit-linear-gradient(top,  #17d766 0%,#17d766 50%,#16cf62 51%,#16cf62 100%);
-        background: -ms-linear-gradient(top,  #17d766 0%,#17d766 50%,#16cf62 51%,#16cf62 100%);
-        background: linear-gradient(to bottom,  #17d766 0%,#17d766 50%,#16cf62 51%,#16cf62 100%);
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#17d766', endColorsGradientType=0);
-        opacity: 0.8;
-        filter:alpha(opacity=80);
+        @include green-orb();
       }
       &.disconnected {
-        background: #f23311;
-        background: -moz-linear-gradient(top,  #f23311 0%, #f23311 50%, #e32c0c 51%, #e32c0c 100%);
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f23311), color-stop(50%,#f23311), color-stop(51%,#e32c0c), color-stop(100%,#e32c0c));
-        background: -webkit-linear-gradient(top,  #f23311 0%,#f23311 50%,#e32c0c 51%,#e32c0c 100%);
-        background: -ms-linear-gradient(top,  #f23311 0%,#f23311 50%,#e32c0c 51%,#e32c0c 100%);
-        background: linear-gradient(to bottom,  #f23311 0%,#f23311 50%,#e32c0c 51%,#e32c0c 100%);
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f23311', endColorstr='#e32c0c',GradientType=0);
-        opacity: 0.8;
-        filter:alpha(opacity=80);
+        @include red-orb();
       }
     }
   }
@@ -118,7 +102,7 @@
     }
   }
 }
-  
+
 .modal {
   .modal-body {
     .form-group {
@@ -129,5 +113,30 @@
 
 .nice-select {
   float: none;
+}
+
+.graph {
+  @include transition(height 300ms ease-in);
+  height: 0;
+  &.loading,
+  &.opened {
+    height: 200px;
+  }
+}
+
+@keyframes loading {
+  0%, 100% {
+    @include transform(translate(0, 0));
+  }
+
+  50% {
+    @include translate(translate(80px, 0));
+    background-color: #f5634a;
+    width: 25px;
+  }
+}
+
+.overlay .loading-bar {
+  animation: loading 2s cubic-bezier(.17, .37, .43, .67) infinite;
 }
 

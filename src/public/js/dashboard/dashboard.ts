@@ -1,3 +1,5 @@
+import {initChart} from "./charts";
+
 (function ($) {
     "use strict";
 
@@ -98,9 +100,29 @@
         });
     }
 
+    function graphs() {
+        $(".graph-button").on("click", async function () {
+            const graph = $(this).parent().siblings(".graph");
+            if (!graph.hasClass("loading") && !graph.hasClass("opened")) {
+                graph.addClass("loading");
+                $(this).attr("disabled", "");
+
+                await initChart(graph);
+
+                $(this).removeAttr("disabled");
+                graph.removeClass("loading").addClass("opened");
+            } else if (graph.hasClass("opened")) {
+                graph.removeClass("opened");
+            }
+        });
+    }
+
     $(window).on("load", async function () {
         initAccordion();
+
         deviceClick();
+
+        graphs();
 
         await connect();
     });

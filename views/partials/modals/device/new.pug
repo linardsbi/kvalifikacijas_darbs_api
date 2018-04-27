@@ -35,7 +35,7 @@ mixin pin-name
             option(value="custom") Custom device
         .form-group
           label(for="new-device-name") Enter the name of the device
-          input#new-device-name(type="text", name="new-device-name", placeholder="Device name...")
+          input#new-device-name.form-control(type="text", name="new-device-name", placeholder="Device name...")
         .form-group
           .pins
             .add-pin 
@@ -53,4 +53,4 @@ mixin pin-name
                 label(for="pin-name") Pin name:
                 +pin-name
     .modal-footer
-      button(type="button" class="btn btn-primary") Add
+      button#add-device-confirm(type="button" class="btn btn-primary") Add

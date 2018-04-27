@@ -11,7 +11,7 @@ export type UserModel = mongoose.Document & {
     controllers: [mongoose.Schema.Types.ObjectId],
     tokens: AuthToken[],
 
-    comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void,
+    comparePassword: (candidatePassword: string, cb: (err: Error, isMatch: boolean) => {}) => void,
 };
 
 export type AuthToken = {

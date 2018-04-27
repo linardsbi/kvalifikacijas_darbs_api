@@ -1,7 +1,7 @@
 "use strict";
 import mqtt from "mqtt";
 import WebSocket from "ws";
-import {WSInstance, MQTTClientInstance, WSClientInstance} from "./controllers/BridgeController";
+import {WSClientInstance} from "./controllers/BridgeController";
 
 
 /**

@@ -97,7 +97,7 @@ export function authenticate(clientID: string, username: string, password: strin
                     if (!user)
                         cb({error: "invalid username or password"}, null);
                     else {
-                        user.comparePassword(password, (err: Error, isMatch: boolean) => {
+                        user.comparePassword(password, (err: Error, isMatch: boolean): any => {
                             if (err) cb({error: err}, null);
 
                             if (isMatch)

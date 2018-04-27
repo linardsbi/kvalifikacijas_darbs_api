@@ -3,6 +3,9 @@
 import { ErrorHandler } from "./errorHandling";
 import {type} from "os";
 
+interface errorObject {
+    error: string
+}
 
 export class ParseRequest {
     /**
@@ -44,8 +47,8 @@ export class ParseRequest {
         }
     }
 
-    static convertJSONArrayToArray(jsonArray: object): object {
-        let newArray: object = [];
+    static convertJSONArrayToArray(jsonArray: object[] | object): object[] | object {
+        let newArray: string[] = [];
 
         try {
             for (const item of jsonArray) {
@@ -68,8 +71,8 @@ export class ParseRequest {
 
     static getValuesFromJSONString(jsonString: string): object {
         return new Promise((resolve, reject) => {
-            const jsonObject: object = ParseRequest.toObject(jsonString);
-            let convertedString: object = {};
+            const jsonObject: object[] | errorObject = ParseRequest.toObject(jsonString);
+            let convertedString: object | errorObject = {};
 
             if (!jsonObject.error) {
                 convertedString = ParseRequest.convertJSONArrayToArray(jsonObject);
