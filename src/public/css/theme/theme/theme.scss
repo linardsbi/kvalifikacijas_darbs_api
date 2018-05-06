@@ -2,7 +2,7 @@
   @include display-flex();
   .device-overview {
     @include transition(500ms width);
-    width: 0;
+    width: 100%;
     overflow: hidden;
     .buttons {
       @include display-flex();
@@ -19,17 +19,17 @@
 }
 
 .controller-devices {
-  @include display-flex();
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: auto;
   & > div {
     @include border-radius(21px);
     background: #ededed;
     width: 145px;
     text-align: center;
     cursor: pointer;
-    &:not(.device-new) {
-      margin-left: 30px;
-    }
+    height: 89px;
+    margin-top: 15px;
     &.device-new {
       padding-bottom: 10px;
       &:before {
@@ -43,7 +43,7 @@
 }
 
 .controller-page {
-  @include display-flex-item(1);
+  width: 100%;
   .controller-machine-name {
     display: none
   }
@@ -81,19 +81,35 @@
   flex-wrap: wrap;
   .right-form {
     display: none;
+    padding: 5px;
+    text-align: left;
+    .save-pin {
+      margin-top: 10px;
+    }
   }
   & > div {
+    @include transition(width 300ms ease-in);
     @include border-radius(21px);
+    @include display-flex-item(1);
     background: #ededed;
-    width: 145px;
     text-align: center;
     cursor: pointer;
-    &:not(.add-pin) {
-      margin-left: 30px;
+    min-height: 89px;
+    margin-top: 5px;
+    &:nth-child(2n + 2) {
+      margin-left: 5px;
+    }
+    &.opened {
+      @include box-shadow(0 5px 30px -13px rgba(0, 0, 0, 0.75));
+      width: 100%;
+      flex: 0 0 auto;
+      .right-form {
+        display: block;
+      }
     }
     &.add-pin {
       padding-bottom: 10px;
-      &:before {
+      .top-part:before {
         content: "+";
         display: block;
         font-size: 60px;
@@ -117,26 +133,48 @@
 
 .graph {
   @include transition(height 300ms ease-in);
-  height: 0;
   &.loading,
   &.opened {
-    height: 200px;
+
   }
 }
 
 @keyframes loading {
   0%, 100% {
-    @include transform(translate(0, 0));
+    @include transform-translate(0, 0);
   }
 
   50% {
-    @include translate(translate(80px, 0));
+    @include transform-translate(80px, 0);
     background-color: #f5634a;
     width: 25px;
   }
 }
+.graph {
+  @include display-flex();
+  &.opened {
+    .overlay {
+      display: none;
+    }
+  }
+  &.loading {
+    .overlay {
+      opacity: 1;
+    }
+  }
+}
 
-.overlay .loading-bar {
-  animation: loading 2s cubic-bezier(.17, .37, .43, .67) infinite;
+.overlay {
+  opacity: 0;
+  margin: auto;
+  .message {
+    margin: auto;
+  }
+  .loading-bar {
+    @include transition(400ms);
+    height: 10px;
+    width: 25px;
+    animation: loading 2s cubic-bezier(.17, .37, .43, .67) infinite;
+  }
 }
 

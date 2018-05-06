@@ -2,15 +2,18 @@
 import {ParseRequest as parse } from "../util/helpers/parseRequest";
 import {JwtToken as token } from "../util/helpers/jwtToken";
 import mqtt from "mqtt";
+import WebSocket from "ws";
 /**
  * TODO: create more efficient topics so the bridge client doesn't have to sub to many topics
  * (ideal condition: only one topic to sub to needed for the client to know about the present controllers)
  */
 
 interface BridgeResponse {
-    item: string,
-    status: string,
-    error: string
+    item: string;
+    id: string;
+    status: string;
+    error: string;
+    data: string;
 }
 
 class BridgeInstance {
@@ -30,8 +33,10 @@ export class WSClientInstance extends BridgeInstance {
 
         this.response = {
             item: "",
+            id: "",
             status: "initializing",
-            error: ""
+            error: "",
+            data: ""
         };
 
         this.listen();
@@ -58,20 +63,26 @@ export class WSClientInstance extends BridgeInstance {
             const that = this;
             this._mqttClient = await setupMqttClient();
 
-            this._mqttClient.on("message", (topic: string, message: Buffer) => {
-                that.response = this.formatMqttMessage(topic, message);
-                that.returnResponse();
-            });
+            if (typeof this._mqttClient !== Error) {
+                this._mqttClient.on("message", (topic: string, message: Buffer) => {
+                    that.response = this.formatMqttMessage(topic, message);
+                    that.returnResponse();
+                });
 
-            switch (message.action) {
-                case "subscribe":
-                    this.handleSubscribe(message.topics);
-                    break;
-                case "publish":
-                    this.handlePublish(message.topic, message.payload, message.options);
-                    break;
-                default:
-                    this.response.error = "No action specified";
+                switch (message.action) {
+                    case "subscribe":
+                        this.handleSubscribe(message.topics);
+                        break;
+                    case "publish":
+                        this.handlePublish(message.topic, message.payload, message.options);
+                        console.log(message.payload.toString());
+                        break;
+                    default:
+                        this.response.error = "No action specified";
+                }
+            } else {
+                this.response.error = this._mqttClient;
+                this.returnResponse();
             }
         }, () => {
             this.response.error = "Invalid API key";
@@ -90,7 +101,7 @@ export class WSClientInstance extends BridgeInstance {
     }
 
     private returnResponse() {
-        if (this.instance.readyState === WebSocket.OPEN) {
+        if (WebSocket && this.instance.readyState === WebSocket.OPEN) {
             this.instance.send(JSON.stringify(this.response));
         } else {
             console.log("connection closed abruptly");
@@ -110,12 +121,20 @@ export class WSClientInstance extends BridgeInstance {
         // TODO: any needed formatting
         const formatted: BridgeResponse = this.response;
         const msgString = message.toString();
-        formatted.item = topic.split("/")[1];
 
-        if (msgString === "1") {
-            formatted.status = "connected";
-        } else {
-            formatted.status = "disconnected";
+        if (topic.split("/")[2] === "presence") {
+            formatted.item = "controller";
+            formatted.id = topic.split("/")[1];
+
+            if (msgString === "1") {
+                formatted.status = "connected";
+            } else {
+                formatted.status = "disconnected";
+            }
+        } else if (topic.split("/")[2] === "read" && topic.split("/")[3] === "device") {
+            formatted.item = `device`;
+            formatted.data = msgString;
+            formatted.id = topic.split("/")[4];
         }
 
         return formatted;
@@ -130,13 +149,13 @@ export class WSClientInstance extends BridgeInstance {
     }
 }
 function setupMqttClient() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         const client = mqtt.connect(`mqtt://localhost:${parseInt(process.env.MQTT_PORT)}`);
         client.on("connect", () => {
             resolve(client);
         });
-        client.on("error", () => {
-            resolve(null);
+        client.on("error", (e) => {
+            reject(new Error(e));
         });
     });
 }

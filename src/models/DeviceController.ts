@@ -6,8 +6,11 @@ export type ControllerModel = mongoose.Document & {
     _client_id: mongoose.Schema.Types.ObjectId;
     id?: mongoose.Schema.Types.ObjectId;
     name?: String;
-    machine_name: String;
-    devices?: DeviceModel[];
+    machine_name: string;
+    devices?: [{
+        _id: mongoose.Schema.Types.ObjectId,
+        name: string
+    }];
     topics?: TopicModel[];
 };
 
@@ -16,7 +19,10 @@ const deviceControllerSchema = new mongoose.Schema({
     machine_name: {type: String, unique: true, required: true},
     _client_id: mongoose.Schema.Types.ObjectId,
     devices: [
-        {type: mongoose.Schema.Types.ObjectId}
+        {
+            _id: mongoose.Schema.Types.ObjectId,
+            name: String
+        }
     ],
     topics: [
         {

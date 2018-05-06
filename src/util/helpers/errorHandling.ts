@@ -1,5 +1,5 @@
 "use strict";
-
+// TODO: log errors in database, attach logging api endpoints
 export class ErrorHandler {
     static handle(err: Error): void {
         // TODO: finish this

@@ -1,33 +1,47 @@
-import {initChart} from "./charts";
-
 (function ($) {
     "use strict";
 
     interface BridgeData {
-        status: string,
-        item: string
+        item: string;
+        id: string;
+        status: string;
+        error: string;
+        data: string;
     }
 
-    let socket: any = null;
+    let socket: any = undefined;
 
-    function getDevices(): string[] {
+    function getControllers(online?: boolean): string[] {
         const controllerIDs: string[] = [];
-        $(".controller-machine-name").each((index, element) => {
-            if (element.innerText) {
-                controllerIDs.push(`controllers/${element.innerText}/presence`);
-            }
-        });
+        if (online) {
+            $(".controller-machine-name").each((index, element) => {
+                if (element.innerText && $(element).parent().siblings(".info").find(".status").hasClass("connected")) {
+                    controllerIDs.push(element.innerText);
+                }
+            });
+        } else {
+            $(".controller-machine-name").each((index, element) => {
+                if (element.innerText) {
+                    controllerIDs.push(element.innerText);
+                }
+            });
+        }
 
         return controllerIDs;
     }
 
     function getPresenceData() {
-        const devices: string[] = getDevices();
-        if (devices[0]) {
+        let controllers: string[] = getControllers();
+
+        controllers = controllers.map((device) => {
+            return `controllers/${device}/presence`;
+        });
+
+        if (controllers[0]) {
             const data = {
                 apiToken: $("#apiToken").val(),
                 action: "subscribe",
-                topics: devices
+                topics: controllers
             };
 
             send(data);
@@ -36,17 +50,47 @@ import {initChart} from "./charts";
 
     function updateDOM(data: BridgeData) {
         // TODO: make more robust to handle other actions
-        if (data && data.item && data.status) {
-            const status = $(document.getElementById(data.item)).find(".status");
+        if (data && data.item) {
+            switch (data.item) {
+                case "controller":
+                    const status = $(document.getElementById(data.id)).find(".status");
 
-            if (data.status === "connected") {
-                status.removeClass("disconnected").addClass("connected");
-            } else {
-                status.removeClass("connected").addClass("disconnected");
+                    if (data.status === "connected") {
+                        status.removeClass("disconnected").addClass("connected");
+                    } else {
+                        status.removeClass("connected").addClass("disconnected");
+                    }
+
+                    break;
+                case "device":
+                    handleIncomingDeviceData(data);
+                    break;
+                default:
+                    console.log(data.item);
             }
-
         } else {
             // $(".controller-page").text("No devices added yet!").addClass("no-devices");
+        }
+    }
+
+    function handleIncomingDeviceData(data) {
+        const dataContainer = $(".device-overview .data");
+
+        if ($(".graph").hasClass("opened")) {
+            const chart = $(".graph").highcharts();
+            console.log(chart);
+
+            // chart.addSeries({
+            //     name: 'Rainfall',
+            //     type: 'column',
+            //     color: '#08F',
+            //     yAxis: 'rainfall-axis',
+            //     data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4]
+            // }, false, false);
+        } else {
+            if (!document.querySelectorAll(`.${data.id}`).length) {
+                $(".device-overview .data").append(`<div class="${data.id}">${data.data}</div>`);
+            }
         }
     }
 
@@ -85,12 +129,12 @@ import {initChart} from "./charts";
     }
 
     function deviceClick() {
-        $(".device").on("click", function () {
-            $(".device-overview").css({"width": "50%"});
-        });
-        $(".device-overview .close").on("click", function () {
-            $(".device-overview").css({"width": "0"});
-        });
+        // $(".device").on("click", function () {
+        //     $(".device-overview").css({"width": "50%"});
+        // });
+        // $(".device-overview .close").on("click", function () {
+        //     $(".device-overview").css({"width": "0"});
+        // });
         $(".device-new").on("click", function () {
             const modal: any = $("#new-device-modal");
             const controller = $(this).parent().parent().parent();
@@ -100,31 +144,34 @@ import {initChart} from "./charts";
         });
     }
 
-    function graphs() {
-        $(".graph-button").on("click", async function () {
-            const graph = $(this).parent().siblings(".graph");
-            if (!graph.hasClass("loading") && !graph.hasClass("opened")) {
-                graph.addClass("loading");
-                $(this).attr("disabled", "");
+    function incomingDataListener() {
+        let controllers: string[] = getControllers();
 
-                await initChart(graph);
-
-                $(this).removeAttr("disabled");
-                graph.removeClass("loading").addClass("opened");
-            } else if (graph.hasClass("opened")) {
-                graph.removeClass("opened");
-            }
+        controllers = controllers.map((controller) => {
+            return `controllers/${controller}/read/device/#`;
         });
+
+        if (controllers[0]) {
+            const data = {
+                apiToken: $("#apiToken").val(),
+                action: "subscribe",
+                topics: controllers
+            };
+
+            send(data);
+        }
     }
+
 
     $(window).on("load", async function () {
         initAccordion();
 
         deviceClick();
 
-        graphs();
-
         await connect();
+
+        incomingDataListener();
+
     });
 
 })(jQuery);

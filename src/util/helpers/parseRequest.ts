@@ -3,8 +3,8 @@
 import { ErrorHandler } from "./errorHandling";
 import {type} from "os";
 
-interface errorObject {
-    error: string
+interface ErrorObject {
+    error: string;
 }
 
 export class ParseRequest {
@@ -71,8 +71,8 @@ export class ParseRequest {
 
     static getValuesFromJSONString(jsonString: string): object {
         return new Promise((resolve, reject) => {
-            const jsonObject: object[] | errorObject = ParseRequest.toObject(jsonString);
-            let convertedString: object | errorObject = {};
+            const jsonObject: object[] | ErrorObject = ParseRequest.toObject(jsonString);
+            let convertedString: object | ErrorObject = {};
 
             if (!jsonObject.error) {
                 convertedString = ParseRequest.convertJSONArrayToArray(jsonObject);

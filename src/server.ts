@@ -4,15 +4,15 @@ import app from "./app";
 import jwt from "jsonwebtoken";
 import { stringify } from "querystring";
 import { Response } from "superagent";
-import { authenticate as MQTTAuthenticate, handleClientPublish, addController } from "./controllers/MQTTController";
+import { authenticate as MQTTAuthenticate, handleClientPublish, handleClientSubscribe, addController } from "./controllers/MQTTController";
 import { startWS } from "./websockets";
 import mosca from "mosca";
 import * as net from "net";
 
 const ascoltatore = {
-    type: 'mongo',
+    type: "mongo",
     url: `${process.env.MONGODB_URI_LOCAL}/mqtt`,
-    pubsubCollection: 'ascoltatori',
+    pubsubCollection: "ascoltatori",
     mongo: {}
 };
 
@@ -49,14 +49,23 @@ export function start(): void {
     moscaServer.on("clientConnected", function(client) {
         console.log("client connected", client.id);
     });
-
+    moscaServer.on("clientDisconnected", function(client) {
+        console.log("client disconnected", client.id);
+    });
     // fired when a message is received
     moscaServer.on("published", function(packet, client) {
         if (client) {
-            handleClientPublish(packet);
+            handleClientPublish(packet, moscaServer);
         }
 
         // console.log("Published", packet);
+    });
+
+    moscaServer.on("subscribed", (topic: any, client: any) => {
+        if (client) {
+            console.log(client.id, "subscribed to", topic);
+            handleClientSubscribe(topic, moscaServer);
+        }
     });
 
     moscaServer.on("ready", setup);
@@ -87,7 +96,7 @@ export function start(): void {
     };
 
     moscaServer.authorizeSubscribe = function(client, topic, callback) {
-        console.log(topic, client.id);
+        // console.log(topic, client.id);
         callback(null, true);
     };
 }

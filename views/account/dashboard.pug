@@ -7,14 +7,15 @@ block content
   .page-body
     .device-overview
       .buttons
-        .graph-button Graph view
-        .device-edit Properties
+        button.btn.btn-default.graph-button Graph view
+        button.btn.btn-default.device-edit Properties
         button.close x
       .data
-        h3 Data goes here (if enabled)
+
       .graph
         .overlay
           .loading-bar
+          span Loading...
 
     .controller-page
       each controller in controllers
@@ -26,13 +27,15 @@ block content
             .controller-machine-name= controller.machine_name
             .controller-devices
               .device-new Add device
-              .device Device
               each device in controller.devices
-                .device= device
+                .device= device.name
 
   include ../partials/modals/device/new
   include ../partials/modals/device/edit
+  script(src="https://code.highcharts.com/stock/modules/exporting.js")
+  script(src="https://code.highcharts.com/highcharts.src.js")
   script(src="./js/dashboard/dashboard.js")
-   
+  script(src="./js/dashboard/charts.js")
+
 
   

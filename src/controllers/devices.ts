@@ -2,28 +2,46 @@
 
 import async from "async";
 
-import {Request, Response} from "express";
-import {default as Device, DeviceModel} from "../models/Device";
-import {APIResponse} from "../util/helpers/APIResponse";
-import {ControllerModel, default as Controller} from "../models/DeviceController";
-import {APIResponsePayload} from "../util/helpers/APIResponsePayload";
-import {ErrorHandler} from "../util/helpers/errorHandling";
-import {APIController} from "./APIController";
-
+import { Request, Response } from "express";
+import {default as Device, DeviceModel } from "../models/Device";
+import { APIResponse } from "../util/helpers/APIResponse";
+import { ControllerModel, default as Controller } from "../models/DeviceController";
+import { APIResponsePayload } from "../util/helpers/APIResponsePayload";
+import { ErrorHandler } from "../util/helpers/errorHandling";
+import { APIController } from "./APIController";
 
 let payload = new APIResponsePayload();
 
 function createNewDevice(deviceData: DeviceModel): any {
+    // TODO: device duplicate on controller validation
+    // TODO: on device creation, send new device data to clients
     return new Promise((resolve, reject) => {
-        const device = new Device({
-            "name": deviceData.name,
-            "machine_name": deviceData.machine_name,
-            "_controllerID": deviceData._controllerID,
-            "used_pins": deviceData.used_pins
-        });
+        let device: any;
+
+        if (deviceData[0])
+            deviceData = deviceData[0];
+
 
         async.waterfall([
+            function getControllerInfo(done: Function) {
+                Controller.find({machine_name: deviceData._controllerID}, "_id", (err, found) => {
+                    console.log(found);
+                    if (err || !found)
+                        done("error occurred while fetching data");
+                    else {
+                        device = new Device({
+                            "name": deviceData.name,
+                            "machine_name": deviceData.machine_name,
+                            "_controllerID": found[0]._id,
+                            "used_pins": deviceData.used_pins
+                        });
+                        done();
+                    }
+                });
+            },
+
             function saveDevice(done: Function) {
+                console.log(device._controllerID);
                 device.save(function (err, device: DeviceModel) {
                     if (err) {
                         payload.addUnformattedData({error: err});
@@ -34,14 +52,15 @@ function createNewDevice(deviceData: DeviceModel): any {
             },
             function updateControllerWithNewDeviceInfo(device: DeviceModel, done: Function) {
                 try {
-                    Controller.findById(deviceData._controllerID, (err, controller: ControllerModel) => {
+                    Controller.find({machine_name: deviceData._controllerID}, (err, controller: ControllerModel) => {
                         if (err)
                             payload.addUnformattedData({error: err});
                         else if (!controller)
                             payload.addUnformattedData({error: "No controller with that id was found"});
                         else {
-                            controller.devices.push(device._id);
-                            controller.save(function (err) {
+                            console.log(controller);
+                            controller[0].devices.push({_id: device._id, name: device.name});
+                            controller[0].save(function (err) {
                                 if (err) {
                                     payload.addUnformattedData({error: err});
                                 }
