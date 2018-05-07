@@ -21,6 +21,7 @@ import * as deviceController from "./controllers/devices";
 import * as logController from "./controllers/logs";
 import * as topicController from "./controllers/topics";
 import { isAuthenticated } from "./controllers/APIController";
+
 // API keys and Passport configuration
 import * as passportConfig from "./config/passport";
 
@@ -169,6 +170,6 @@ app.post("/topics/create", isAuthenticated, topicController.create);
 /**
  * data
  */
-app.post("/data/post", isAuthenticated, brokerController.postData);
+app.post("/data/post", isAuthenticated, logController.postData);
 
 export default app;

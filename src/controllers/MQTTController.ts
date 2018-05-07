@@ -7,8 +7,8 @@ import {createNewController} from "../controllers/deviceControllers";
 import {default as Device, DeviceModel} from "../models/Device";
 import {ControllerModel, default as Controller} from "../models/DeviceController";
 import {DB} from "../util/helpers/queryHelper";
-import {MqttTopicMatch as strmatch} from "../util/helpers/mqttTopicMatch";
 import {ParseRequest as parse} from "../util/helpers/parseRequest";
+import {MqttTopicMatch as strmatch} from "../util/helpers/mqttTopicMatch";
 import {MongooseDocument} from "mongoose";
 // import { default as Controller, ControllerModel } from "../models/DeviceController";
 

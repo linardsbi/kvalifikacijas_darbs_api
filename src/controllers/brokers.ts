@@ -72,55 +72,6 @@ export const create = (req: Request, res: Response) => {
     payload = new APIResponsePayload();
 };
 
-function savePostData(data: PublishedDataModel) {
-    return new Promise((resolve, reject) => {
-        const publishedData = new PublishedData({
-            "_deviceID": data._deviceID,
-            "payload": data.payload
-        });
-
-        try {
-            publishedData.save((err) => {
-                if (err) {
-                    ErrorHandler.handle(err);
-                    payload.addUnformattedData({error: err});
-                    reject(payload.getFormattedPayload());
-                } else {
-                    payload.addUnformattedData({success: "success"});
-                    resolve(payload.getFormattedPayload());
-                }
-            });
-        } catch (e) {
-            payload.addUnformattedData({error: e});
-            reject(payload.getFormattedPayload());
-        }
-
-        payload = new APIResponsePayload();
-    });
-}
-
-/**
- * GET /data/post
- * Submit data.
- * parameters: controllerID, payload
- *
- */
-export const postData = (req: Request, res: Response) => {
-    // TODO: create a nice flow of error handling ops, minimize async ops
-    const data: PublishedDataModel = req.body;
-    const response = new APIResponse(res);
-
-    savePostData(data).then((result: Payload) => {
-        response.sendSuccess(result);
-        // Temporary solution
-        payload = new APIResponsePayload();
-    }, (err) => {
-        response.sendError(err);
-        // Temporary solution
-        payload = new APIResponsePayload();
-    });
-};
-
 /**
  * GET /brokers/get
  * Get all or a certain broker.
