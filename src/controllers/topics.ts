@@ -14,7 +14,7 @@ import {APIController} from "./APIController";
 
 let payload = new APIResponsePayload();
 
-// client_id/protocol/room_name/controller_id/sensor_id/?callback
+// controllers/<controller_machine_name>/<action>/<subject>
 
 function createNewTopic(topicData: TopicModel): any {
     return new Promise((resolve, reject) => {
@@ -99,6 +99,7 @@ function createNewTopic(topicData: TopicModel): any {
  * @param {e.Request} req
  * @param {e.Response} res
  */
+    // TODO: rework, so topic names can be logged with the corresponding data
 export const create = (req: Request, res: Response) => {
     const topic: TopicModel = req.body;
     const response = new APIResponse(res);

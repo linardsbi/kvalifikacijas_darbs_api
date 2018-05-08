@@ -110,13 +110,13 @@ function verify(token: string) {
     }
 }
 
-function verifyToken(token: string | string[]): boolean | Array<object> {
+function verifyToken(token: string | string[]): boolean | object[] {
     if (typeof token === "string") {
         const verified = verify(token);
 
         return !(verified instanceof Error);
-
-    } else if (token instanceof Array) {
+    }
+    else if (token instanceof Array) {
         const tokenArray = [];
         for (const item in token) {
             const verified = verify(item);

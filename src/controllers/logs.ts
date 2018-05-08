@@ -1,15 +1,12 @@
 "use strict";
 
-import async from "async";
-import request from "request";
-
-import {Response, Request, NextFunction} from "express";
+import {Request, Response} from "express";
 import {default as PublishedData, PublishedDataModel} from "../models/PublishedData";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import {ErrorHandler} from "../util/helpers/errorHandling";
 import {APIResponse} from "../util/helpers/APIResponse";
-import {DB} from "../util/helpers/queryHelper";
 import {ParseRequest as parse} from "../util/helpers/parseRequest";
+import {DB, parseQuery} from "../util/helpers/queryHelper";
 
 let payload = new APIResponsePayload();
 
@@ -73,53 +70,36 @@ export const postData = (req: Request, res: Response) => {
  *      "select": [{
  *          // date is prefix for schema field name
  *          // two dates
- *          "date$between": [{"NOW"},{"12/12/2017"}],
+ *          "date$between": ["NOW","12/12/2017"],
  *          // one date
  *          "date$lt": "01/07/2017",
  *          "date$equals": "02/07/2017"
  *      }],
- *      "fields": {"_id","name"},
+ *      "fields": ["_id","name"],
  *      "limit": "100"
  *  }
  *
  */
-export const getData = (req: Request, res: Response) => {
+const test = {"query": {"select": [{"createdAt$lt": "NOW", "name": "testname"}]}};
+
+export const getData = async (req: Request, res: Response) => {
     // TODO: create a nice flow of error handling ops, minimize async ops
     const data: string = req.query.query;
     const response = new APIResponse(res);
 
-    const result = parseQuery(data);
-    response.sendSuccess(result);
-};
+    try {
+        const result = await parseQuery(data);
+        const queryData = await DB.find(PublishedData, result.select);
+        payload.addUnformattedData(queryData);
 
-type formattedQueryType = {
-    select: object,
-    fields: string,
-    limit: number
-};
-
-function parseQuery(query: string) {
-    const queryObject: any = parse.toObject(query);
-    let formattedQuery: formattedQueryType = {
-        select: {},
-        fields: "",
-        limit: 0
-    };
-
-    if (!queryObject.error && queryObject.query) {
-        queryObject.query.forEach((rootItem: any, index: any) => {
-            switch (index) {
-                case "select": 
-                    // TODO: this
-                    break;
-                case "fields":
-                    formattedQuery.fields = rootItem.fields;
-                    break;
-                case "limit":
-                    formattedQuery.limit = rootItem.limit;
-                    break;
-            }
-        });
+        const responseData = payload.getFormattedPayload();
+        console.log(responseData);
+        response.sendSuccess(responseData);
+    } catch (e) {
+        console.log(e);
+        response.sendError(e);
     }
-}
+};
+
+
 

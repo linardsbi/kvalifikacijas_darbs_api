@@ -4,18 +4,19 @@ import async from "async";
 import {default as User, UserModel} from "../models/User";
 import {APIResponsePayload} from "../util/helpers/APIResponsePayload";
 import {createNewController} from "../controllers/deviceControllers";
-import {default as Device, DeviceModel} from "../models/Device";
-import {ControllerModel, default as Controller} from "../models/DeviceController";
+import {default as Device} from "../models/Device";
+import {default as Controller} from "../models/DeviceController";
 import {DB} from "../util/helpers/queryHelper";
-import {ParseRequest as parse} from "../util/helpers/parseRequest";
 import {MqttTopicMatch as strmatch} from "../util/helpers/mqttTopicMatch";
 import {MongooseDocument} from "mongoose";
+import {savePostData} from "./logs";
 // import { default as Controller, ControllerModel } from "../models/DeviceController";
 
 const payload = new APIResponsePayload();
 
 function handleSys(packet) {
     if (packet.topic.search("/\/new\/clients/")) {
+
     }
 }
 
@@ -42,20 +43,41 @@ export function handleClientPublish(packet: any, serverInstance: any) {
     } else if (strmatch.hasString(topic, "firstConnection")) {
         handleFirstConnection(packet);
         console.log("packet received", packet);
+    } else if (strmatch.hasString(topic, "/read")) {
+        handleIncomingData(packet);
     } else {
         handlePacket(packet);
     }
 }
 
-export function handleClientSubscribe(topic: any, serverInstance: any) {
+export function handleClientSubscribe(topic: string, serverInstance: any) {
     if (strmatch.hasString(topic, "/new")) {
         handleNewDevice(topic, serverInstance);
-    } else {
-
     }
 }
 
-async function handleNewDevice(topic: any, serverInstance: any) {
+async function handleIncomingData(packet: any) {
+    const topic = packet.topic;
+    console.log(packet);
+
+    const controller = await DB.findOne(Controller, {machine_name: topic.split("/")[1]}, "_id");
+    const device = await DB.findOne(Device, {_controllerID: controller.id, used_pins: [{pin_name: topic.split("/")[4]}]}, "_id used_pins");
+    const data = {
+        _deviceID: device._id,
+        payload: {
+            data_type: device.used_pins.information_type,
+            payload_body: packet.payload.toString()
+        }
+    };
+
+    try {
+        const result = savePostData(data);
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+async function handleNewDevice(topic: string, serverInstance: any) {
     const clientID = topic.split("/")[1];
 
     const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: clientID});

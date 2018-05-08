@@ -171,5 +171,6 @@ app.post("/topics/create", isAuthenticated, topicController.create);
  * data
  */
 app.post("/data/post", isAuthenticated, logController.postData);
+app.get("/data/get", isAuthenticated, logController.getData);
 
 export default app;

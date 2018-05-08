@@ -3,13 +3,13 @@
 // TODO: attach as global var, destroy after response sent
 
 export interface Payload {
-    errors?: object;
-    data: object;
+    errors?: object[];
+    data: object[];
 }
 
 export class APIResponsePayload {
     private formattedPayload: Payload;
-    private unformattedPayload: object = [];
+    private unformattedPayload: object[] = [];
 
     addUnformattedData(unformattedData: object): void {
         this.unformattedPayload.push(unformattedData);

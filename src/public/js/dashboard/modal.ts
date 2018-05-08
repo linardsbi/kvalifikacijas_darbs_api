@@ -51,19 +51,19 @@
                 $(this).parent().addClass("opened");
             }
         })
-        .on("click", ".save-pin", function () {
-            // const form = $(this).find(".right-form");
-            const pin = $(this).parent().parent();
+            .on("click", ".save-pin", function () {
+                // const form = $(this).find(".right-form");
+                const pin = $(this).parent().parent();
 
-            pin.removeClass("opened");
-            if (pin.hasClass("add-pin")) {
-                const newPin = pin.clone();
+                pin.removeClass("opened");
+                if (pin.hasClass("add-pin")) {
+                    const newPin = pin.clone();
 
-                newPin.removeClass("add-pin");
-                newPin.find(".left-label").text(pin.find(".pin-name").val());
-                newPin.appendTo(pin.parent());
-            }
-        });
+                    newPin.removeClass("add-pin");
+                    newPin.find(".left-label").text(pin.find(".pin-name").val());
+                    newPin.appendTo(pin.parent());
+                }
+            });
     }
 
     function updateDOM(response, formattedData) {
