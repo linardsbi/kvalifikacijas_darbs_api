@@ -51,7 +51,7 @@ export class WSClientInstance extends BridgeInstance {
 
         this.instance.on("error", function incoming(err: any) {
             this.response.error = err.toString();
-            console.error("error occurred: %s", err.toString());
+            console.error("error occurred:", err.toString());
             this.returnResponse();
         });
     }
@@ -63,7 +63,7 @@ export class WSClientInstance extends BridgeInstance {
             const that = this;
             this._mqttClient = await setupMqttClient();
 
-            if (typeof this._mqttClient !== Error) {
+            if (!(this._mqttClient instanceof Error)) {
                 this._mqttClient.on("message", (topic: string, message: Buffer) => {
                     that.response = this.formatMqttMessage(topic, message);
                     that.returnResponse();
@@ -81,7 +81,7 @@ export class WSClientInstance extends BridgeInstance {
                         this.response.error = "No action specified";
                 }
             } else {
-                this.response.error = this._mqttClient;
+                this.response.error = this._mqttClient.message;
                 this.returnResponse();
             }
         }, () => {
@@ -154,7 +154,7 @@ function setupMqttClient() {
         client.on("connect", () => {
             resolve(client);
         });
-        client.on("error", (e) => {
+        client.on("error", (e: any) => {
             reject(new Error(e));
         });
     });

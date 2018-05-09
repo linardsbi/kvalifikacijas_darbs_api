@@ -60,20 +60,21 @@
                     const newPin = pin.clone();
 
                     newPin.removeClass("add-pin");
-                    newPin.find(".left-label").text(pin.find(".pin-name").val());
+                    newPin.find(".left-label").text(pin.find(".pin-name").val().toString());
                     newPin.appendTo(pin.parent());
                 }
             });
     }
 
-    function updateDOM(response, formattedData) {
+    function updateDOM(response: any, formattedData: any) {
         const device = $("<div class='device'></div>");
         const currentController = $(document.getElementById(formattedData._controllerID));
+        const newDeviceModal: any = $("#new-device-modal");
 
         for (const item of response) {
             if (item && item.device) {
                 device.html(item.device.name).appendTo(currentController.find(".controller-devices"));
-                $("#new-device-modal").modal("hide");
+                newDeviceModal.modal("hide");
             }
         }
     }
@@ -83,7 +84,7 @@
         return new Promise((resolve) => {
             $.ajax({
                 headers: {
-                    authtoken: $("#apiToken").val()
+                    authtoken: $("#apiToken").val().toString()
                 },
                 dataType: "json",
                 method: "post",
@@ -92,7 +93,7 @@
                 success: (response) => {
                     resolve(response);
                 },
-                error: (response) => {
+                error: (response: any) => {
                     throw new Error(response);
                 }
             });

@@ -10,17 +10,18 @@ import {DB} from "../util/helpers/queryHelper";
 import {MqttTopicMatch as strmatch} from "../util/helpers/mqttTopicMatch";
 import {MongooseDocument} from "mongoose";
 import {savePostData} from "./logs";
+import {PublishedDataModel} from "../models/PublishedData";
 // import { default as Controller, ControllerModel } from "../models/DeviceController";
 
 const payload = new APIResponsePayload();
 
-function handleSys(packet) {
+function handleSys(packet: any) {
     if (packet.topic.search("/\/new\/clients/")) {
 
     }
 }
 
-async function handleFirstConnection(packet) {
+async function handleFirstConnection(packet: any) {
     const clientID = packet.topic.split("/")[1];
     const username = packet.payload.toString();
 
@@ -41,10 +42,14 @@ export function handleClientPublish(packet: any, serverInstance: any) {
     if (strmatch.hasString(topic, "/\$SYS\//")) {
         handleSys(packet);
     } else if (strmatch.hasString(topic, "firstConnection")) {
-        handleFirstConnection(packet);
+        handleFirstConnection(packet).catch((reason) => {
+            console.log(reason);
+        });
         console.log("packet received", packet);
     } else if (strmatch.hasString(topic, "/read")) {
-        handleIncomingData(packet);
+        handleIncomingData(packet).catch(reason => {
+            console.log(reason);
+        });
     } else {
         handlePacket(packet);
     }
@@ -52,17 +57,19 @@ export function handleClientPublish(packet: any, serverInstance: any) {
 
 export function handleClientSubscribe(topic: string, serverInstance: any) {
     if (strmatch.hasString(topic, "/new")) {
-        handleNewDevice(topic, serverInstance);
+        handleNewDevice(topic, serverInstance).catch(reason => {
+            console.log(reason);
+        });
     }
 }
 
 async function handleIncomingData(packet: any) {
-    const topic = packet.topic;
+    const topic: string = packet.topic;
     console.log(packet);
 
-    const controller = await DB.findOne(Controller, {machine_name: topic.split("/")[1]}, "_id");
-    const device = await DB.findOne(Device, {_controllerID: controller.id, used_pins: [{pin_name: topic.split("/")[4]}]}, "_id used_pins");
-    const data = {
+    const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: topic.split("/")[1]}, "_id");
+    const device: any = await DB.findOne(Device, {_controllerID: controller.id, used_pins: [{pin_name: topic.split("/")[4]}]}, "_id used_pins");
+    const data: any = {
         _deviceID: device._id,
         payload: {
             data_type: device.used_pins.information_type,
@@ -72,6 +79,9 @@ async function handleIncomingData(packet: any) {
 
     try {
         const result = savePostData(data);
+        result.catch(reason => {
+            console.log(reason);
+        });
     } catch (e) {
         console.log(e);
     }
@@ -83,7 +93,7 @@ async function handleNewDevice(topic: string, serverInstance: any) {
     const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: clientID});
 
     if (controller) {
-        const devices: MongooseDocument[] = await DB.find(Device, {_controllerID: controller.id});
+        const devices: any = await DB.find(Device, {_controllerID: controller.id});
         if (devices[0]) {
             console.log(devices);
             for (const item of devices) {
@@ -136,7 +146,7 @@ export function addController(clientID: string, username: string) {
                 else
                     cb(undefined);
             }
-        ], (err, result) => {
+        ], (err, result: any) => {
             if (err) {
                 payload.addUnformattedData(err);
                 reject(payload.getFormattedPayload());

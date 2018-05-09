@@ -5,7 +5,6 @@ import {default as PublishedData, PublishedDataModel} from "../models/PublishedD
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import {ErrorHandler} from "../util/helpers/errorHandling";
 import {APIResponse} from "../util/helpers/APIResponse";
-import {ParseRequest as parse} from "../util/helpers/parseRequest";
 import {DB, parseQuery} from "../util/helpers/queryHelper";
 
 let payload = new APIResponsePayload();
@@ -80,7 +79,7 @@ export const postData = (req: Request, res: Response) => {
  *  }
  *
  */
-const test = {"query": {"select": [{"createdAt$lt": "NOW", "name": "testname"}]}};
+// const test = {"query": {"select": [{"createdAt$lt": "NOW", "name": "testname"}]}};
 
 export const getData = async (req: Request, res: Response) => {
     // TODO: create a nice flow of error handling ops, minimize async ops
@@ -89,15 +88,19 @@ export const getData = async (req: Request, res: Response) => {
 
     try {
         const result = await parseQuery(data);
-        const queryData = await DB.find(PublishedData, result.select);
+        const queryData = await DB.find(PublishedData, result.select, result.fields);
+
         payload.addUnformattedData(queryData);
 
         const responseData = payload.getFormattedPayload();
         console.log(responseData);
+
         response.sendSuccess(responseData);
     } catch (e) {
-        console.log(e);
-        response.sendError(e);
+        if (e instanceof Error) {
+            payload.addUnformattedData({error: e.message});
+        }
+        response.sendError(payload.getFormattedPayload());
     }
 };
 

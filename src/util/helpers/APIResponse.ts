@@ -8,11 +8,10 @@ export class APIResponse {
 
     constructor(res: Response) {
         this.res = res;
+        this.res.setHeader("Content-Type", "application/json");
     }
 
     sendSuccess(data: Payload) {
-        this.res.setHeader("Content-Type", "application/json");
-
         if (data == undefined) {
             this.res.status(500).send({error: "result is undefined"});
         } else {
@@ -21,6 +20,7 @@ export class APIResponse {
     }
 
     sendError(data: Payload) {
-        this.res.status(500).send(data.errors);
+        console.log(data.errors[0]);
+        this.res.status(500).send(ParseRequest.toString(data.errors[0]));
     }
 }

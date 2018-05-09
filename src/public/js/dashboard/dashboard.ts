@@ -60,7 +60,6 @@
                     } else {
                         status.removeClass("connected").addClass("disconnected");
                     }
-
                     break;
                 case "device":
                     handleIncomingDeviceData(data);
@@ -73,7 +72,7 @@
         }
     }
 
-    function handleIncomingDeviceData(data) {
+    function handleIncomingDeviceData(data: any) {
         const dataContainer = $(".device-overview .data");
 
         if ($(".graph").hasClass("opened")) {
@@ -171,7 +170,6 @@
         await connect();
 
         incomingDataListener();
-
     });
 
 })(jQuery);

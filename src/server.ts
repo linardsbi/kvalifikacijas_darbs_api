@@ -1,30 +1,11 @@
 import errorHandler from "errorhandler";
 
 import app from "./app";
-import jwt from "jsonwebtoken";
-import { stringify } from "querystring";
-import { Response } from "superagent";
-import { authenticate as MQTTAuthenticate, handleClientPublish, handleClientSubscribe, addController } from "./controllers/MQTTController";
-import { startWS } from "./websockets";
+import {handleClientPublish, handleClientSubscribe} from "./controllers/MQTTController";
+import {startWS} from "./websockets";
 import mosca from "mosca";
-import * as net from "net";
 
-const ascoltatore = {
-    type: "mongo",
-    url: `${process.env.MONGODB_URI_LOCAL}/mqtt`,
-    pubsubCollection: "ascoltatori",
-    mongo: {}
-};
-
-const moscaSettings = {
-    port: parseInt(process.env.MQTT_PORT),
-    persistence: {
-        factory: mosca.persistence.Memory
-    },
-    backend: ascoltatore
-};
-
-const moscaServer = new mosca.Server(moscaSettings);
+let moscaServer: any;
 
 /**
  * Error Handler. Provides full stack - remove for production
@@ -43,17 +24,38 @@ app.use(errorHandler());
  * Need to implement retained messages (LWT), so when client subscribes to presence topic, it gets the payload sent by the
  * other client
  */
-start();
+
+if (process.env.BUILT_IN_BROKER === "YES") {
+    const ascoltatore = {
+        type: "mongo",
+        url: `${process.env.MONGODB_URI_LOCAL}/mqtt`,
+        pubsubCollection: "ascoltatori",
+        mongo: {}
+    };
+
+    const moscaSettings = {
+        port: parseInt(process.env.MQTT_PORT),
+        persistence: {
+            factory: mosca.persistence.Memory
+        },
+        backend: ascoltatore
+    };
+
+    moscaServer = new mosca.Server(moscaSettings);
+
+    start();
+}
+
 export function start(): void {
 
-    moscaServer.on("clientConnected", function(client) {
+    moscaServer.on("clientConnected", function (client) {
         console.log("client connected", client.id);
     });
-    moscaServer.on("clientDisconnected", function(client) {
+    moscaServer.on("clientDisconnected", function (client) {
         console.log("client disconnected", client.id);
     });
     // fired when a message is received
-    moscaServer.on("published", function(packet, client) {
+    moscaServer.on("published", function (packet, client) {
         if (client) {
             handleClientPublish(packet, moscaServer);
         }
@@ -73,6 +75,7 @@ export function start(): void {
     // fired when the mqtt server is ready
     function setup() {
         console.log("Mosca server is up and running");
+
         startWS();
     }
 
@@ -87,15 +90,15 @@ export function start(): void {
         //         callback(err, null);
         //     });
         // } else
-            callback(null, true);
+        callback(null, true);
     };
 
-    moscaServer.authorizePublish = function(client, topic, payload, callback) {
+    moscaServer.authorizePublish = function (client, topic, payload, callback) {
 
         callback(null, true);
     };
 
-    moscaServer.authorizeSubscribe = function(client, topic, callback) {
+    moscaServer.authorizeSubscribe = function (client, topic, callback) {
         // console.log(topic, client.id);
         callback(null, true);
     };
@@ -106,12 +109,12 @@ export function start(): void {
  * Start Express server.
  */
 const server = app.listen(app.get("port"), () => {
-  console.log(
-    "  App is running at http://localhost:%d in %s mode",
-    app.get("port"),
-    app.get("env")
-  );
-  console.log("  Press CTRL-C to stop\n");
+    console.log(
+        "  App is running at http://localhost:%d in %s mode",
+        app.get("port"),
+        app.get("env")
+    );
+    console.log("  Press CTRL-C to stop\n");
 });
 
 export default server;

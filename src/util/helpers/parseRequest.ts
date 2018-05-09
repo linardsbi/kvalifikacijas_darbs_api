@@ -48,7 +48,7 @@ export class ParseRequest {
     }
 
     static convertJSONArrayToArray(jsonArray: object[] | object): object[] | object {
-        let newArray: string[] = [];
+        const newArray: any = [];
 
         try {
             for (const item of jsonArray) {
@@ -71,8 +71,8 @@ export class ParseRequest {
 
     static getValuesFromJSONString(jsonString: string): object {
         return new Promise((resolve, reject) => {
-            const jsonObject: object[] | ErrorObject = ParseRequest.toObject(jsonString);
-            let convertedString: object | ErrorObject = {};
+            const jsonObject: any = ParseRequest.toObject(jsonString);
+            let convertedString: any = {};
 
             if (!jsonObject.error) {
                 convertedString = ParseRequest.convertJSONArrayToArray(jsonObject);
