@@ -18,43 +18,45 @@ export class DB {
         });
     }
 
-    static findOne(model: Model<any>, query: object, fields?: string): Promise<MongooseDocument> {
+    static findOne(model: Model<any>, query: object, fields?: string, limit?: number): Promise<MongooseDocument> {
         return new Promise((resolve, reject) => {
-            if (fields) {
-                model.findOne(query, fields, (err, found) => {
-                    if (err)
-                        reject(err);
-                    else if (!found)
-                        reject(false);
-                    else
-                        resolve(found);
-                });
-            } else {
-                model.findOne(query, (err, found) => {
-                    if (err)
-                        reject(err);
-                    else if (!found)
-                        reject(false);
-                    else
-                        resolve(found);
-                });
-            }
+            const modelQuery = model.findOne(query);
 
-        });
-    }
+            if (fields)
+                modelQuery.select(fields);
 
-    static find(model: Model<any>, query: object, fields?: string): Promise<MongooseDocument[]> {
-        return new Promise((resolve, reject) => {
+            if (limit)
+                modelQuery.limit(limit);
 
-            model.find(query, fields, (err, found) => {
+            modelQuery.exec( (err, found) => {
                 if (err)
-                    reject(err);
+                    throw new Error(err);
                 else if (!found)
                     reject(false);
                 else
                     resolve(found);
             });
+        });
+    }
 
+    static find(model: Model<any>, query: object, fields?: string, limit?: number): Promise<MongooseDocument[]> {
+        return new Promise((resolve, reject) => {
+            const modelQuery = model.find(query);
+
+            if (fields)
+                modelQuery.select(fields);
+
+            if (limit)
+                modelQuery.limit(limit);
+
+            modelQuery.exec( (err, found) => {
+                if (err)
+                    throw new Error(err);
+                else if (!found)
+                    reject(false);
+                else
+                    resolve(found);
+            });
         });
     }
 }
@@ -88,7 +90,7 @@ export async function parseQuery(query: string): Promise<any> {
                             const operation = key.split("$")[1];
                             const convertText = (text: string) => {
                                 const date = new Date();
-                                
+
                                 if (text.toLowerCase() === "now")
                                     return date;
                                 else if (text.split(" ")[1]) {

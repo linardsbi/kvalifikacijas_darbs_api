@@ -69,7 +69,7 @@ export class ParseRequest {
         return newArray;
     }
 
-    static getValuesFromJSONString(jsonString: string): object {
+    static getValuesFromJSONString(jsonString: string): Promise<object> {
         return new Promise((resolve, reject) => {
             const jsonObject: any = ParseRequest.toObject(jsonString);
             let convertedString: any = {};

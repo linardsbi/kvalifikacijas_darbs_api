@@ -41,7 +41,6 @@
     "express-flash": "0.0.2",
     "express-session": "^1.15.6",
     "express-validator": "^4.3.0",
-    "highcharts": "^6.1.0",
     "jsonwebtoken": "^8.2.0",
     "lodash": "^4.17.4",
     "lusca": "^1.5.2",

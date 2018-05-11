@@ -1,0 +1,93 @@
+extends ../layout
+
+mixin devicesSelect
+    select device
+        each device in devices
+            each pin in device
+                option(value= pin.pin_name + '@' + device._controllerID)= pin.pin_name (device.controller_machine_name)
+
+mixin conditionSelect
+    select.conditions condition
+        option(value="equals") Equals
+        option(value="lt") Less than
+        option(value="gt") Greater than
+        option(value="between") Between
+
+mixin subjectSelect
+    select.subjects subject
+        each controller in controllers
+            option(value= controller._id)= controller.name (controller.machine_name)
+
+mixin newPanel
+    .panel.panel-default
+        .panel-heading
+            a(href="#collapseNew" data-toggle="collapse")
+                i.fa.fa-plus
+                | New Conditional
+        #collapseNew.panel-collapse.collapse
+            .panel-body.condition
+                form(method="POST")
+                    .form-group
+                        input(type="text" placeholder="Give this conditional a name...")
+                    span if
+                    +devicesSelect
+                    span is
+                    +conditionSelect
+                    input(type="text", placeholder="ex. 40")
+                    span.hidden AND
+                    input.hidden(type="text", placeholder="ex. 40")
+                    label Apply pin specific calculation to value?
+                    input(type="checkbox")
+                    .container.actions
+                        .condition-action
+                            select.action-select action
+                                option(value="email") Email
+                                option(value="textMessage") Send text message
+                                option(value="write") Write to pin
+                            .input-group
+                                +devicesSelect.hidden
+                                input.email(type="email", placeholder="Enter an email address")
+                                input.phone.hidden(type="text", placeholder="Enter a phone number to send text to")
+                                button.add-another-field.btn.btn-default
+                                    i.fa.fa-plus
+                                    | Add another
+                        .condition-action
+                            button.btn.add-another-action.btn-primary
+                                i.fa.fa-plus
+                                | Add another action
+            .panel-footer
+                button.add-new-conditional.btn.btn-primary Add
+
+block content
+    #conditionals-page
+        .container-fluid
+            .conditions-wrapper
+                .heading
+                h1 Conditions
+                .panel-group
+                    +newPanel
+                each conditional in conditionals
+                    .panel-group
+                        .panel.panel-default
+                            .panel-heading
+                                a(href= conditional._id data-toggle="collapse")
+                                    i.fa.fa-plus
+                                    span.conditional-name= conditional.name
+                            .panel-collapse.collapse(id= conditional._id)
+                                .panel-body.condition
+                                    span if
+                                    span.controller-id.hidden= conditional.listenSubject.subjectControllerID
+                                    span.device-name= conditional.listenSubject.pin_name
+                                    span is
+                                    span.trigger-condition= conditional.triggerOn.condition
+                                    span.trigger-value= conditional.triggerOn.value
+                                    .container.actions
+                                        each item in conditional.run
+                                            .condition-action
+                                                span.action-name= item.action
+                                                span.action-value= item.value
+                                                each subject in item.subjects
+                                                    span.action-subject= subject
+                                .panel-footer
+                                    button.hidden.save-conditional.btn.btn-primary Save
+                                    button.edit-conditional.btn.btn-default Edit

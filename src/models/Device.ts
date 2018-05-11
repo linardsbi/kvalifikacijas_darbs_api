@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
+import {DB} from "../util/helpers/queryHelper";
+import DeviceController from "./DeviceController";
 
 export type DeviceModel = mongoose.Document & {
     name: String,
     machine_name: String,
     _controllerID: mongoose.Schema.Types.ObjectId,
     used_pins: PinModel
+    controller_machine_name?: string
 };
 
 export type PinModel = mongoose.Document & {
@@ -27,6 +30,14 @@ const deviceSchema = new mongoose.Schema({
     _controllerID: mongoose.Schema.Types.ObjectId,
     used_pins: { type: [pinSchema], required: true }
 }, { timestamps: true });
+
+deviceSchema.virtual("controller_machine_name").get(async function() {
+    return await DB.findById(DeviceController, this._controllerID);
+});
+
+deviceSchema.set("toJSON", {
+    virtuals: true
+});
 
 const Device = mongoose.model("Device", deviceSchema);
 export default Device;

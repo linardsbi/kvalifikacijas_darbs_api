@@ -12,7 +12,7 @@ export class APIController {
     private res: Response;
     private apiResponse: APIResponse;
 
-    constructor(response: Response, resource: any) {
+    constructor(response: any, resource: any) {
         this.resource = resource;
         this.res = response;
         this.apiResponse = new APIResponse(response);

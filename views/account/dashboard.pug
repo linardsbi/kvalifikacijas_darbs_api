@@ -19,7 +19,7 @@ block content
 
     .controller-page
       each controller in controllers
-        div.controller(id= controller.machine_name)
+        .controller(id= controller.machine_name)
           .info
             .status.disconnected
             .controller-name= controller.name

@@ -12,10 +12,11 @@ import passport from "passport";
 import expressValidator from "express-validator";
 import bluebird from "bluebird";
 import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
-// Controllers (route handlers)
+// Controllers (& route handlers)
 import * as homeController from "./controllers/home";
 import * as userController from "./controllers/user";
 import * as brokerController from "./controllers/brokers";
+import * as conditionalController from "./controllers/ConditionalController";
 import * as deviceControllers from "./controllers/deviceControllers";
 import * as deviceController from "./controllers/devices";
 import * as logController from "./controllers/logs";
@@ -110,6 +111,8 @@ app.post("/account/profile", passportConfig.isAuthenticated, userController.post
 app.post("/account/password", passportConfig.isAuthenticated, userController.postUpdatePassword);
 app.post("/account/delete", passportConfig.isAuthenticated, userController.postDeleteAccount);
 app.get("/dashboard", passportConfig.isAuthenticated, userController.getDashboard);
+app.get("/conditionals", passportConfig.isAuthenticated, conditionalController.getConditionalView);
+
 /**
  * API routes
  */
@@ -157,9 +160,12 @@ app.post("/brokers/edit", isAuthenticated, brokerController.update);
 app.post("/brokers/delete", isAuthenticated, brokerController.remove);
 
 /**
- * logs
+ * Conditionals
  */
-app.get("/logs/get", userController.postLogin);
+app.post("/conditionals/create", isAuthenticated, conditionalController.create);
+app.get("/conditionals/get", isAuthenticated, conditionalController.read);
+app.patch("/conditionals/edit", isAuthenticated, conditionalController.update);
+app.post("/conditionals/delete", isAuthenticated, conditionalController.remove);
 
 /**
  * topics

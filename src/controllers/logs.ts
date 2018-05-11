@@ -12,7 +12,6 @@ let payload = new APIResponsePayload();
 /**
  * Handles all the routes associated with the PublishedData models
  */
-
 export function savePostData(data: PublishedDataModel) {
     return new Promise((resolve, reject) => {
         const publishedData = new PublishedData({
@@ -81,7 +80,7 @@ export const postData = (req: Request, res: Response) => {
  */
 // const test = {"query": {"select": [{"createdAt$lt": "NOW", "name": "testname"}]}};
 
-export const getData = async (req: Request, res: Response) => {
+export const getData = async (req: Request, res: any) => {
     // TODO: create a nice flow of error handling ops, minimize async ops
     const data: string = req.query.query;
     const response = new APIResponse(res);

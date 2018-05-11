@@ -32,16 +32,16 @@
     }
 
     function addModalListeners() {
-        $("#add-device-confirm").off().on("click", async function () {
+        $("#add-device-confirm").off().on("click", function () {
             // TODO: Loading animation, loading scaffold
             const formattedData = getFormData();
 
-            try {
-                const response: any = await sendApiPost("/devices/create", formattedData);
+            sendApiPost("/devices/create", formattedData).then((response: any) => {
                 updateDOM(response, formattedData);
-            } catch (err) {
-                console.error(err);
-            }
+            })
+            .catch((err: any) => {
+                console.log(err);
+            });
         });
         $(".pins").off().on("click", ".top-part", function () {
             // const form = $(this).find(".right-form");
@@ -81,7 +81,7 @@
 
 
     function sendApiPost(url: string, formData: object): any {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             $.ajax({
                 headers: {
                     authtoken: $("#apiToken").val().toString()
@@ -94,7 +94,7 @@
                     resolve(response);
                 },
                 error: (response: any) => {
-                    throw new Error(response);
+                    reject(response);
                 }
             });
         });
