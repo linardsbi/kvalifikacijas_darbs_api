@@ -6,22 +6,24 @@ export type DeviceModel = mongoose.Document & {
     name: String,
     machine_name: String,
     _controllerID: mongoose.Schema.Types.ObjectId,
-    used_pins: PinModel
-    controller_machine_name?: string
+    used_pins: PinModel,
+    associated_controller?: any
 };
 
 export type PinModel = mongoose.Document & {
     pin_name: string,
     information_type: string,
     pin_mode: string,
-    suffix: string
+    suffix: string,
+    lastWrite: string
 };
 
 const pinSchema = new mongoose.Schema({
-    pin_name: String,
+    pin_name: {type: String, max: 3},
     information_type: {type: String, required: true, default: "digital"},
     pin_mode: String,
-    suffix: String
+    suffix: {type: String, max: 20},
+    lastWrite: String
 });
 
 const deviceSchema = new mongoose.Schema({
@@ -31,7 +33,7 @@ const deviceSchema = new mongoose.Schema({
     used_pins: { type: [pinSchema], required: true }
 }, { timestamps: true });
 
-deviceSchema.virtual("controller_machine_name").get(async function() {
+deviceSchema.virtual("associated_controller").get(async function() {
     return await DB.findById(DeviceController, this._controllerID);
 });
 

@@ -3,21 +3,21 @@ extends ../layout
 block content
   .page-header
     h3 Dashboard
-  input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
   .page-body
-    .device-overview
-      .buttons
-        button.btn.btn-default.graph-button Graph view
-        button.btn.btn-default.device-edit Properties
-        button.close x
-      .data
-
-      .graph
-        .overlay
-          .loading-bar
-          span Loading...
-
-    .controller-page
+    input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
+    .row
+      .device-overview.col-lg-12
+        .buttons
+          button.btn.btn-default.graph-button Graph view
+          button.btn.btn-default.device-edit Properties
+        .graph
+          .overlay
+            .loading-bar
+            span Loading...
+  .page-header
+    h3 Controllers
+  .row
+    .controller-page.col-lg-12
       each controller in controllers
         .controller(id= controller.machine_name)
           .info
@@ -25,10 +25,12 @@ block content
             .controller-name= controller.name
           .wrapper
             .controller-machine-name= controller.machine_name
-            .controller-devices
-              .device-new Add device
+            .controller-devices.row
+              button.btn.btn-block.btn-primary.device-new
+                i.fa.fa-plus
+                | Add device
               each device in controller.devices
-                .device= device.name
+                .device.col-lg-2.col-md-3.col-sm-6= device.name
 
   include ../partials/modals/device/new
   include ../partials/modals/device/edit

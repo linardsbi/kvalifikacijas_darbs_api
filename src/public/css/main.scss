@@ -9,8 +9,6 @@
 @import "./theme/config/config";
 @import "./theme/theme/theme";
 
-// Scaffolding
-// -------------------------
 html {
   position: relative;
   min-height: 100%;
@@ -20,8 +18,9 @@ body {
   padding-top: 60px;
   height: 100%;
   min-height: 100vh;
-  font-family: 'Anonymous Pro', sans-serif !important;
+  font-family: 'Open Sans', sans-serif;
   letter-spacing: 0.1em;
+  font-size: 15px;
 }
 
 footer {
@@ -36,15 +35,28 @@ footer {
   }
 }
 
-// Input Fields
-// -------------------------
-
 textarea {
-  resize: vertical;
+  resize: none;
 }
 
-// Navbar
-// -------------------------
+input.form-control, .nice-select, textarea.form-control {
+  @include box-shadow(none);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-size: 15px;
+  border-width: 2px;
+  border-color: #eee;
+  &:focus, &:hover {
+    @include box-shadow(none);
+    border-color: $mint-green;
+  }
+}
+
+label.control-label {
+  font-family: $heading-font-family;
+  font-weight: normal;
+}
 
 .navbar-nav img {
   width: 30px;
@@ -52,15 +64,17 @@ textarea {
   margin: -15px 15px -15px;
 }
 
-// Alerts
-// -------------------------
+.navbar-brand {
+  font-family: $heading-font-family;
+}
+
+.navbar-nav li:not(.dropdown) a {
+  font-weight: 600 !important;
+}
 
 .alert {
   margin-top: 20px;
 }
-
-// Thumbnails
-// -------------------------
 
 .thumbnail {
   padding: 0;
@@ -68,13 +82,15 @@ textarea {
   box-shadow: 0 0 5px #ccc, inset 0 0 0 #000;
 }
 
-// Font Icons
-// -------------------------
-
 .fa {
   margin-right: 6px;
 }
 
 .navbar.navbar-default {
   z-index: 1;
+}
+
+.modal-title {
+  font-family: $heading-font-family;
+  font-size: 17px;
 }

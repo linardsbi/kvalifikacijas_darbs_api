@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 // controllers/<controller_machine_name>/<action>/<subject>
 
 const topicSchema = new mongoose.Schema({
-    controller_machine_name: String,
     action: String,
     subject: String,
     pin: {

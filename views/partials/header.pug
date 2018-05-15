@@ -29,6 +29,10 @@
               span= user.email || user.id
               i.caret
             ul.dropdown-menu
+              if user.role === "admin"
+                li
+                  a(href='/stats') Site stats
+                li.divider
               li
                 a(href='/account') My Account
               li.divider

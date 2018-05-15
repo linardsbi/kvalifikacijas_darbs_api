@@ -5,7 +5,7 @@ import { TopicModel } from "../models/Topic";
 export type ControllerModel = mongoose.Document & {
     _client_id: mongoose.Schema.Types.ObjectId;
     id?: mongoose.Schema.Types.ObjectId;
-    name?: String;
+    name?: string;
     machine_name: string;
     devices?: [{
         _id: mongoose.Schema.Types.ObjectId,

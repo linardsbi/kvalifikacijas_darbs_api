@@ -1,0 +1,44 @@
+extends ../layout
+
+block content
+    .page-header
+        h3 Statistics
+    .page-body
+        input(type='hidden', name='_csrf', value=_csrf id="_csrf")
+        .row
+            #total-stats-graph
+        .controller-stats.row
+            .col-md-12.currently-online
+                label Microcontrollers currently connected to the app:
+                span.online-controllers  0
+        .row
+            #totals
+                .col-md-4
+                    label Total controllers:
+                    span.controllers #{controllerTotal}
+                .col-md-4
+                    label Total devices:
+                    span.devices #{deviceTotal}
+                .col-md-4
+                    label Total users:
+                    span.users #{userTotal}
+    .page-header
+        h3 Users
+    .container-fluid
+        .row
+            .user-stats.col-lg-12
+                .row
+                    .admins.col-lg-6
+                        each admin in admins
+                            .name #{admin.email}
+                            if (admin._id !== user._id)
+                                button.revoke-admin.btn.btn-danger(data-uid= admin._id) Revoke admin
+                    .users.col-lg-6
+                        each user in users
+                            .name #{user.email}
+                            button.make-admin.btn.btn-success(data-uid= user._id) Make admin
+                            button.delete-user.btn.btn-danger(data-uid= user._id) Delete user
+
+    script(src="https://code.highcharts.com/highcharts.src.js")
+    script(src="https://code.highcharts.com/stock/modules/exporting.js")
+    script(src="./js/stats.js")

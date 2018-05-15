@@ -4,7 +4,7 @@ mixin devicesSelect
     select device
         each device in devices
             each pin in device
-                option(value= pin.pin_name + '@' + device._controllerID)= pin.pin_name (device.controller_machine_name)
+                option(value= pin.pin_name + '@' + device._controllerID)= `${pin.pin_name} (${device.controller_machine_name})`
 
 mixin conditionSelect
     select.conditions condition

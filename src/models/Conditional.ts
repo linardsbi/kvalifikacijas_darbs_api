@@ -34,8 +34,12 @@ export interface ConditionalInterface {
 
 
 const ConditionalSchema = new mongoose.Schema({
-    name: String,
-    listenSubject: {subjectControllerID: mongoose.Schema.Types.ObjectId, pin_name: String, subjectControllerMachineName: {type: String, default: "Conditional"}},
+    name: {type: String, max: 30},
+    listenSubject: {
+        subjectControllerID: mongoose.Schema.Types.ObjectId,
+        pin_name: String,
+        subjectControllerMachineName: {type: String, default: "Conditional"}
+    },
     triggerOn: {
         value: [Number],
         condition: String,

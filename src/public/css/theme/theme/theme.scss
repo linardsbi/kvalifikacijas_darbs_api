@@ -1,15 +1,15 @@
 .page-body {
-  @include display-flex();
   .device-overview {
     @include transition(500ms width);
-    width: 100%;
     overflow: hidden;
     .buttons {
       @include display-flex();
-      & > * {
-        margin-left: auto;
-      }
+
     }
+  }
+  .device-edit {
+    margin-right: auto;
+    margin-left: 20px;
   }
   .device {
     position: relative;
@@ -19,17 +19,15 @@
 }
 
 .controller-devices {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  grid-template-rows: auto;
+  //display: grid;
+  //grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  //grid-template-rows: auto;
   & > div {
     @include border-radius(21px);
-    background: #ededed;
-    width: 145px;
     text-align: center;
     cursor: pointer;
     height: 89px;
-    margin-top: 15px;
+    margin: 15px 0;
     &.device-new {
       padding-bottom: 10px;
       &:before {
@@ -43,7 +41,6 @@
 }
 
 .controller-page {
-  width: 100%;
   .controller-machine-name {
     display: none
   }
@@ -118,7 +115,11 @@
     }
   }
 }
-
+#new-device-modal {
+  .modal-dialog {
+    width: 800px;
+  }
+}
 .modal {
   .modal-body {
     .form-group {
@@ -178,3 +179,6 @@
   }
 }
 
+.Home {
+  margin-top: 50px;
+}

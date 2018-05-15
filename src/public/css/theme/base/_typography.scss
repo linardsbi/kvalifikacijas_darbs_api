@@ -7,11 +7,11 @@ body {
 }
 
 *::-moz-selection{
-  background-color: $accent-red-dark;
+  background-color: $mint-green;
   color: white;
 }
 *::selection{
-  background-color: $accent-red;
+  background-color: $mint-green;
   color: white;
 }
 
@@ -58,14 +58,14 @@ p {
 }
 
 a {
-  color: $accent-red;
+  color: $mint-green;
   text-decoration: none;
   transition: color $base-duration $base-timing;
 
   &:active,
   &:focus,
   &:hover {
-    color: $accent-red-dark;
+    color: #0a4;
   }
 }
 

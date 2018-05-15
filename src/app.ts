@@ -112,6 +112,7 @@ app.post("/account/password", passportConfig.isAuthenticated, userController.pos
 app.post("/account/delete", passportConfig.isAuthenticated, userController.postDeleteAccount);
 app.get("/dashboard", passportConfig.isAuthenticated, userController.getDashboard);
 app.get("/conditionals", passportConfig.isAuthenticated, conditionalController.getConditionalView);
+app.get("/stats", passportConfig.isAuthenticated, userController.getSiteStats);
 
 /**
  * API routes
@@ -131,16 +132,6 @@ app.get("/controllers/get/devices", isAuthenticated, deviceControllers.getContro
 app.get("/controllers/get/data", isAuthenticated, deviceControllers.getControllerData);
 app.patch("/controllers/edit", isAuthenticated, deviceControllers.update);
 app.delete("/controllers/delete", isAuthenticated, deviceControllers.remove);
-
-/**
- * users
- */
-app.post("/clients/create", userController.postLogin);
-app.get("/clients/get", userController.postLogin);
-app.get("/clients/get/permissions", userController.postLogin);
-app.get("/clients/get/controllers", userController.postLogin);
-app.post("/clients/edit", userController.postLogin);
-app.post("/clients/delete", userController.postLogin);
 
 /**
  * devices

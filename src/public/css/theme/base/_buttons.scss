@@ -37,3 +37,32 @@ input[type="submit"] {
   }
 }
 
+button.btn, a.btn {
+  @include border-radius(4px);
+  @include transition(150ms ease-in);
+  padding: 8px 14px;
+  &.btn-primary {
+    background-color: $mint-green;
+    color: #fff;
+    border-color: transparent;
+    &:hover {
+      background-color: $mint-green-darker;
+    }
+  }
+  &.btn-default {
+    background-color: #222;
+    color: #fff;
+    border-color: transparent;
+    background-image: none;
+    &:hover {
+      background-color: #333;
+    }
+  }
+  &.btn-link {
+    color: $mint-green;
+    &:hover {
+      color: $mint-green-darker;
+    }
+  }
+}
+

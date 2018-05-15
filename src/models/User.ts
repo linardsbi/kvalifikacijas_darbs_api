@@ -9,30 +9,23 @@ export type UserModel = mongoose.Document & {
     apiKey: string,
     role: string,
     controllers: [mongoose.Schema.Types.ObjectId],
-    tokens: AuthToken[],
 
     comparePassword: (candidatePassword: string, cb: (err: Error, isMatch: boolean) => {}) => void,
 };
 
-export type AuthToken = {
-    accessToken: string,
-    kind: string
-};
 
 const userSchema = new mongoose.Schema({
-    email: {type: String, unique: true},
+    email: {type: String, unique: true, max: 30},
     password: String,
     passwordResetToken: String,
     passwordResetExpires: Date,
     apiKey: String,
-    role: {type: String, default: "user"},
+    role: {type: String, default: "user", max: 30},
 
     controllers: [{
         _id: mongoose.Schema.Types.ObjectId,
-        machine_name: String
+        machine_name: {type: String, max: 30}
     }],
-
-    tokens: Array,
 }, {timestamps: true, usePushEach: true});
 
 /**
