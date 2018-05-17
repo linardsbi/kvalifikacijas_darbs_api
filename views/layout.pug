@@ -13,7 +13,7 @@ html(lang='')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js')
     script(src='./js/lib/bootstrap.min.js')
     script(src='./js/lib/jquery.nice-select.min.js')
-    script const exports = {};
+    script(src='./js/main.js')
   body
     include partials/header
 
@@ -22,6 +22,6 @@ html(lang='')
       block content
 
     include partials/footer
+    include partials/modals/blank
 
     script(async defer src="https://buttons.github.io/buttons.js")
-    script(src='./js/main.js')

@@ -1,0 +1,13 @@
+.modal.action-modal(tabindex="-1" role="dialog")
+  .modal-dialog.modal-dialog-centered(role="document")
+    .modal-content
+      .modal-header
+        span.modal-title Confirm
+        button(type="button" class="close" data-dismiss="modal" aria-label="Close")
+          span(aria-hidden="true") &times;
+      .modal-body
+
+      .modal-footer
+        button.button-true(type="button" class="btn btn-primary") Yes
+        button.button-false(type="button" class="btn btn-default") No
+        button.button-ok(type="button" class="btn btn-primary") Ok

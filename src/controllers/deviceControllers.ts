@@ -9,7 +9,6 @@ import {default as Device, DeviceModel} from "../models/Device";
 import {default as PublishedData, PublishedDataModel} from "../models/PublishedData";
 import {default as User, UserModel} from "../models/User";
 import { APIController } from "./APIController";
-
 import { ParseRequest } from "../util/helpers/parseRequest";
 import { ErrorHandler } from "../util/helpers/errorHandling";
 import { APIResponsePayload, Payload } from "../util/helpers/APIResponsePayload";
@@ -182,12 +181,12 @@ function getControllerDataByID(controllerID: string, parameters: string) {
             function parseParameters(next: Function) {
                 ParseRequest.getValuesFromJSONString(parameters).then((formattedParameters: object) => {
                     console.log(formattedParameters);
-                    next(null, formattedParameters);
+                    next(undefined, formattedParameters);
                 });
             },
             function parseControllerIDs(formattedParameters: object, next: Function) {
                 ParseRequest.getValuesFromJSONString(controllerID).then((controllerIDs: object) => {
-                    next(null, formattedParameters, controllerIDs);
+                    next(undefined, formattedParameters, controllerIDs);
                 });
             },
             function getData(formattedParameters: object, controllerIDs: object, done: Function) {
@@ -246,7 +245,7 @@ export let getControllerData = (req: Request, res: Response) => {
  */
 export const read = (req: Request, res: Response) => {
     const controllerID: string = req.query.id;
-    const api = new APIController(res, Controller);
+    const api = new APIController(req, res, Controller);
 
     api.read(controllerID);
 };
@@ -257,9 +256,9 @@ export const read = (req: Request, res: Response) => {
  * parameters: controller id, update parameters
  *
  */
-export let update = (req: Request, res: Response) => {
+export let update = async (req: Request, res: Response) => {
     const parameters: ControllerModel = req.body;
-    const api = new APIController(res, Controller);
+    const api = new APIController(req, res, Controller);
 
     api.update(parameters);
 };
@@ -271,8 +270,8 @@ export let update = (req: Request, res: Response) => {
  *
  */
 export let remove = (req: Request, res: Response) => {
-    const controllerID: string = req.body;
-    const api = new APIController(res, Controller);
+    const controllerID: string = req.body._id;
+    const api = new APIController(req, res, Controller);
 
     api.remove(controllerID);
 };

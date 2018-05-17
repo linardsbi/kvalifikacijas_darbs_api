@@ -9,6 +9,7 @@ import { ControllerModel, default as Controller } from "../models/DeviceControll
 import { APIResponsePayload } from "../util/helpers/APIResponsePayload";
 import { ErrorHandler } from "../util/helpers/errorHandling";
 import { APIController } from "./APIController";
+import app from "../app";
 
 let payload = new APIResponsePayload();
 
@@ -115,8 +116,8 @@ export const create = (req: Request, res: Response) => {
  *
  */
 export const read = (req: Request, res: Response) => {
-    const deviceID: string = req.query.id;
-    const api = new APIController(res, Device);
+    const deviceID: string = req.query._id;
+    const api = new APIController(req, res, Device);
 
     api.read(deviceID);
 };
@@ -129,7 +130,7 @@ export const read = (req: Request, res: Response) => {
  */
 export let update = (req: Request, res: Response) => {
     const parameters: DeviceModel = req.body;
-    const api = new APIController(res, Controller);
+    const api = new APIController(req, res, Controller);
 
     api.update(parameters);
 };
@@ -141,8 +142,8 @@ export let update = (req: Request, res: Response) => {
  *
  */
 export let remove = (req: Request, res: Response) => {
-    const deviceID: string = req.body;
-    const api = new APIController(res, Device);
+    const deviceID: string = req.body._id;
+    const api = new APIController(req, res, Device);
 
     api.remove(deviceID);
 };

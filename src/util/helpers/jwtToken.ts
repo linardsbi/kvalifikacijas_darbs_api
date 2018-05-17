@@ -17,7 +17,38 @@ export class JwtToken {
         });
     }
 
-    static checkIfTokenAssigned(token: string): Promise<boolean> {
+    static decodeToken(token: string): Promise<any> {
+        return new Promise(async (resolve) => {
+            try {
+                const decoded = jwt.decode(token);
+                resolve(decoded);
+            } catch (err) {
+                resolve(false);
+            }
+        });
+    }
+
+    static getRole(token: string) {
+        return new Promise(async (resolve) => {
+            const decoded = await this.decodeToken(token);
+            if (decoded)
+                return decoded.role;
+            else
+                return false;
+        });
+    }
+
+    static getUid(token: string) {
+        return new Promise(async (resolve) => {
+            const decoded = await this.decodeToken(token);
+            if (decoded)
+                return decoded._id;
+            else
+                return false;
+        });
+    }
+
+    static checkIfTokenAssigned(token: any): Promise<boolean> {
         return new Promise(async (resolve) => {
             const validToken = await this.validateToken(token);
 

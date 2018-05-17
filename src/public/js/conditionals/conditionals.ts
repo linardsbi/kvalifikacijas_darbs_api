@@ -134,7 +134,10 @@
                 console.log(result);
             })
             .catch((err) => {
-                console.log(err);
+                const errorMessage = `An error occurred while fetching the device you clicked on.\n
+                 the error: <pre>${err}</pre>`;
+
+                ModalDialog.alert("An error occurred", errorMessage, true);
             });
         }
     }

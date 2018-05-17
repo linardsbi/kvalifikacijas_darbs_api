@@ -23,6 +23,11 @@ block content
           .info
             .status.disconnected
             .controller-name= controller.name
+            .edit-controller
+              i.fa.fa-pencil
+            button.hidden.btn.btn-primary.save-controller Save
+            .delete-controller
+              i.fa.fa-trash
           .wrapper
             .controller-machine-name= controller.machine_name
             .controller-devices.row
@@ -31,6 +36,7 @@ block content
                 | Add device
               each device in controller.devices
                 .device.col-lg-2.col-md-3.col-sm-6
+                  .device-id.hidden= device._id
                   .delete-device
                     i.fa.fa-trash
                   .device-name= device.name

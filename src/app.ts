@@ -91,7 +91,6 @@ app.use(
 );
 
 
-
 /**
  * Primary app routes.
  */
@@ -139,7 +138,7 @@ app.delete("/controllers/delete", isAuthenticated, deviceControllers.remove);
 app.post("/devices/create", isAuthenticated, deviceController.create);
 app.get("/devices/get", isAuthenticated, deviceController.read);
 app.post("/devices/edit", isAuthenticated, deviceController.update);
-app.post("/devices/delete", isAuthenticated, deviceController.remove);
+app.delete("/devices/delete", isAuthenticated, deviceController.remove);
 
 /**
  * brokers

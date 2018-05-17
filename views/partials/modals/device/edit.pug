@@ -1,28 +1,89 @@
+mixin pin_name
+  select.pin-name(name="pin_name")
+    option(value="D0") D0
+    option(value="D1") D1
+    option(value="D2") D2
+    option(value="D3") D3
+    option(value="D4") D4
+    option(value="D5") D5
+    option(value="D6") D6
+    option(value="D7") D7
+    option(value="D8") D8
+mixin pin_mode
+  select.pin-mode(name="pin_mode")
+    option(value="INPUT") Read
+    option(value="OUTPUT") Write
 
-.modal(tabindex="-1" role="dialog")
-  .modal-dialog.modal-dialog-centered.fade(role="document")
+.modal#new-device-modal(tabindex="-1" role="dialog")
+  .modal-dialog.modal-dialog-centered(role="document")
     .modal-content
       .modal-header
-      h5.modal-title
-      button(type="button" class="close" data-dismiss="modal" aria-label="Close")
-        span(aria-hidden="true") &times;
+        span.modal-title
+        button(type="button" class="close" data-dismiss="modal" aria-label="Close")
+          span(aria-hidden="true") &times;
+      .modal-body
+        .alert.alert-info.alert-dismissible.fade.in
+          a(href="#" class="close" data-dismiss="alert" aria-label="close") &times;
+          strong Your controller 
+          | might have a special pin mapping! Double check your pins!
+        div
+          .form-group
+            .row
+              .col-sm-3.control-label
+                label(for="controller-list") Controller to add device to
+              .col-sm-9
+                select#controller-list(name="_controllerID")
+                  each controller in controllers
+                    option(value= controller.machine_name) #{controller.name} (#{controller.machine_name})
+          .form-group
+            .row
+              .col-sm-3.control-label
+                label(for="device-list") Choose device
+              .col-sm-9
+                select#device-list(name="machine_name")
+                  option(value="custom") Custom device
+          .form-group
+            .row
+              .col-sm-3.control-label
+                label(for="new-device-name") Enter the name of the device
+              .col-sm-9
+                input#new-device-name.form-control(type="text", name="name", placeholder="Device name...", required="")
+          .form-group
+            .pin
+              .form-group
+                .row
+                  .col-sm-3.control-label
+                    label(for="information_type") Information type
+                  .col-sm-9
+                    select.information_type#information_type(name="information_type")
+                      option(value="digital") Digital
+                      option(value="analog") Analog
+              .form-group
+                .row
+                  .col-sm-3.control-label
+                    label(for="data-equation") Custom equation
+                  .col-sm-9
+                    input#data-equation.form-control(name="data-equation", type="text")
+              .form-group
+                .row
+                  .col-sm-3.control-label
+                    label(for="data-suffix") A suffix to be displayed after the data
+                  .col-sm-9
+                    input#data-suffix.form-control(name="data-suffix", type="text")
+              .form-group
+                .row
+                  .col-sm-3.control-label
+                    label(for="pin_name") Pin name:
+                  .col-sm-9
+                    +pin_name
+              .form-group
+                .row
+                  .col-sm-3.control-label
+                    label Pin mode:
+                  .col-sm-9
+                    +pin_mode
 
-    .modal-body
-      ul.nav.nav-tabs
-        li.active
-          a(href="#device-modal-general-tab")
-            i.fa.fa-cog tset
-            span General
-        li
-          a(href="#device-modal-edit-tab")
-            i.fa.fa-pencil tset
-            span Edit
 
-      .tab-content
-        #device-modal-general-tab.tab-pane.active
-          p test
-        #device-modal-edit-tab.tab-pane
-          p test2
-
-    .modal-footer
-      button(type="button" class="btn btn-primary") Ok
+      .modal-footer
+        button#add-device-confirm(type="button" class="btn btn-primary") Add
+  script(src="./js/dashboard/modal.js")

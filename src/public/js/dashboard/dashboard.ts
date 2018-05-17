@@ -161,6 +161,34 @@
         }
     }
 
+    function addUDListeners() {
+        const input = $("<input class='controller-name-input' type='text'>");
+        let temp: any;
+        $(".delete-controller").on("click", function () {
+            const id = $(this).parent().next().find(".controller-machine-name").text();
+
+
+        });
+        $(".edit-controller").on("click", function () {
+            const name = $(this).siblings(".controller-name");
+            $(this).hide();
+            $(this).next().show();
+
+            input.val(name.text());
+            temp = name;
+
+            name.replaceWith(input);
+        });
+        $(".save-controller").on("click", function () {
+            const name = $(this).siblings(".controller-name-input");
+            $(this).hide();
+            $(this).prev().show();
+            temp.text(name.val());
+
+            name.replaceWith(temp);
+        });
+    }
+
 
     $(window).on("load", async function () {
         initAccordion();
@@ -170,6 +198,8 @@
         await connect();
 
         incomingDataListener();
+
+        addUDListeners();
     });
 
 })(jQuery);
