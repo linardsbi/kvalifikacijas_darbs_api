@@ -30,7 +30,7 @@ const deviceSchema = new mongoose.Schema({
     name: String,
     machine_name: String,
     _controllerID: mongoose.Schema.Types.ObjectId,
-    used_pins: { type: [pinSchema], required: true }
+    used_pins: { type: pinSchema, required: true }
 }, { timestamps: true });
 
 deviceSchema.virtual("associated_controller").get(async function() {

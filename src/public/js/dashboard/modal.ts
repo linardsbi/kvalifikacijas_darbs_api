@@ -9,39 +9,39 @@
 
     function getFormData() {
         const used_pins: object[] = [];
-        const allPins = $("#new-device-modal .pin:not(.add-pin)");
+        const deviceName = $("#new-device-name");
 
-        const info_types = allPins.find("div.information_type");
-        const pin_names = allPins.find("div.pin-name");
-        const pin_modes = allPins.find("div.pin-mode");
+        if (deviceName.val() === "") {
+            return {error: "name is not defined"};
+        }
 
-        info_types.each(function (index) {
-            used_pins.push({
-                pin_name: $(pin_names[index]).find(".selected").data("value"),
-                information_type: $(this).find(".selected").data("value"),
-                pin_mode: $(pin_modes[index]).find(".selected").data("value"),
-            });
-        });
-        console.log(used_pins);
         return {
             "_controllerID": $("#controller-list").val(),
             "machine_name": $("#device-list").val(),
             "name": $("#new-device-name").val(),
-            "used_pins": used_pins
+            "used_pins": {
+                "pin_name": $("div.pin-name").find(".selected").data("value"),
+                "information_type": $("div.information_type").find(".selected").data("value"),
+                "pin_mode": $("div.pin-mode").find(".selected").data("value"),
+            },
+            "suffix": $("#data-suffix").val(),
+            "equation": $("#data-equation").val()
         };
     }
 
     function addModalListeners() {
         $("#add-device-confirm").off().on("click", function () {
             // TODO: Loading animation, loading scaffold
-            const formattedData = getFormData();
+            const formattedData: any = getFormData();
 
-            sendApiPost("/devices/create", formattedData).then((response: any) => {
-                updateDOM(response, formattedData);
-            })
-            .catch((err: any) => {
-                console.log(err);
-            });
+            if (!formattedData.error) {
+                sendApiPost("/devices/create", formattedData).then((response: any) => {
+                    updateDOM(response, formattedData);
+                })
+                    .catch((err: any) => {
+                        console.log(err);
+                    });
+            }
         });
         $(".pins").off().on("click", ".top-part", function () {
             // const form = $(this).find(".right-form");
@@ -67,7 +67,7 @@
     }
 
     function updateDOM(response: any, formattedData: any) {
-        const device = $("<div class='device'></div>");
+        const device = $("<div class='device col-lg-2 col-md-3 col-sm-6'></div>");
         const currentController = $(document.getElementById(formattedData._controllerID));
         const newDeviceModal: any = $("#new-device-modal");
 

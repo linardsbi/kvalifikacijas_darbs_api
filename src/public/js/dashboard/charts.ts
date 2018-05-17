@@ -3,6 +3,7 @@
 
 (function ($) {
     "use strict";
+    let chart: any;
 
     function getSeries() {
         // TODO: auto series detection, data plotting
@@ -77,7 +78,7 @@
                 method: "get",
                 url: url,
                 success: (response) => {
-                    resolve(response[0]);
+                    resolve(response);
                 },
                 error: (response: any) => {
                     throw new Error(response);
@@ -87,13 +88,43 @@
     }
 
     async function getLatestData() {
-        const response = await queryLatestData();
+        const response: any = await queryLatestData();
+        const series: any = [];
+        const currentSeries: any = {};
+
         console.log(response);
+        response.forEach((value: any, index: number) => {
+            if (!value.success) {
+                value = value[index - 1];
+
+                if (!currentSeries[`${value.device.name} (${value.device.pin_name})`]) {
+                    currentSeries[`${value.device.name} (${value.device.pin_name})`] = [
+                        [`${value.device.name} (${value.device.pin_name})`, value.createdAt, parseFloat(value.payload.payload_body)]
+                    ];
+                } else {
+                    currentSeries[`${value.device.name} (${value.device.pin_name})`]
+                        .push(
+                            [`${value.device.name} (${value.device.pin_name})`, value.createdAt, parseFloat(value.payload.payload_body)]);
+                }
+            }
+        });
+
+        Object.keys(currentSeries).forEach((value) => {
+            chart.addSeries({
+                name: value,
+                keys: ["name", "x", "y"],
+                data: [
+                    currentSeries[value]
+                ]
+            });
+        });
+
+        console.log(currentSeries);
     }
 
-    function initChart(chartObject: any) {
+    function initChart() {
         return new Promise((resolve) => {
-            chartObject.highcharts({
+            chart = Highcharts.chart("sensor-graph", {
                 chart: {
                     type: 'spline',
                     events: {
@@ -106,7 +137,9 @@
                 title: {
                     text: 'Sensor Data'
                 },
-                xAxis: {},
+                xAxis: {
+                    type: "datetime"
+                },
                 yAxis: {},
                 tooltip: {
                     formatter: function () {
@@ -120,8 +153,11 @@
                     enabled: true
                 },
                 series: [{
-                    name: 'Data',
-                    data: []
+                    name: "",
+                    keys: ["name", "x", "y", "selected"],
+                    data: [
+
+                    ]
                 }]
             });
         });
@@ -134,7 +170,7 @@
                 graph.addClass("loading");
                 $(this).attr("disabled", "");
 
-                await initChart(graph);
+                await initChart();
 
                 $(this).removeAttr("disabled");
                 graph.removeClass("loading").addClass("opened");

@@ -77,7 +77,6 @@
 
         if ($(".graph").hasClass("opened")) {
             const chart = $(".graph").highcharts();
-            console.log(chart);
 
             // chart.addSeries({
             //     name: 'Rainfall',
@@ -110,6 +109,7 @@
             // Listen for messages
             socket.addEventListener("message", function (event: any) {
                 const data: BridgeData = JSON.parse(event.data);
+                console.log(data);
                 updateDOM(data);
             });
         });

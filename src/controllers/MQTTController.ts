@@ -33,7 +33,7 @@ async function handleFirstConnection(packet: any) {
 }
 
 function handlePacket(packet: any) {
-    // console.log("packet received", packet);
+    console.log("packet received", packet);
 }
 
 export function handleClientPublish(packet: any, serverInstance: any) {
@@ -43,12 +43,12 @@ export function handleClientPublish(packet: any, serverInstance: any) {
         handleSys(packet);
     } else if (strmatch.hasString(topic, "firstConnection")) {
         handleFirstConnection(packet).catch((reason) => {
-            console.log(reason);
+            console.log("firstConnection error occurred:", reason);
         });
         console.log("packet received", packet);
     } else if (strmatch.hasString(topic, "/read")) {
         handleIncomingData(packet).catch(reason => {
-            console.log(reason);
+            console.log("read error occurred:", reason);
         });
     } else {
         handlePacket(packet);
@@ -65,22 +65,27 @@ export function handleClientSubscribe(topic: string, serverInstance: any) {
 
 async function handleIncomingData(packet: any) {
     const topic: string = packet.topic;
-    console.log(packet);
 
     const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: topic.split("/")[1]}, "_id");
-    const device: any = await DB.findOne(Device, {_controllerID: controller.id, used_pins: [{pin_name: topic.split("/")[4]}]}, "_id used_pins");
+    const device: any = await DB.findOne(Device, {_controllerID: controller.id, "used_pins.pin_name": topic.split("/")[4]}, "_id used_pins");
+
     const data: any = {
-        _deviceID: device._id,
+        device: {
+            _id: device._id,
+            name: device.name || "default",
+            pin_name: device.used_pins.pin_name
+        },
         payload: {
             data_type: device.used_pins.information_type,
             payload_body: packet.payload.toString()
         }
     };
+    console.log("data: ", data);
 
     try {
         const result = savePostData(data);
         result.catch(reason => {
-            console.log(reason);
+            console.log("error occurred:", reason);
         });
     } catch (e) {
         console.log(e);
@@ -97,15 +102,12 @@ async function handleNewDevice(topic: string, serverInstance: any) {
         if (devices[0]) {
             console.log(devices);
             for (const item of devices) {
-                for (const pin of item.used_pins) {
-
-                    const message = {
-                        topic: `controllers/${clientID}/new/device/${pin.information_type}/${pin.pin_mode}/${item.machine_name}/${pin.pin_name}`,
-                        payload: item.id,
-                        retain: true
-                    };
-                    serverInstance.publish(message);
-                }
+                const message = {
+                    topic: `controllers/${clientID}/new/device/${item.used_pins.information_type}/${item.used_pins.pin_mode}/${item.machine_name}/${item.used_pins.pin_name}`,
+                    payload: item.id,
+                    retain: true
+                };
+                serverInstance.publish(message);
             }
 
         } else {

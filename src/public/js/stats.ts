@@ -40,12 +40,23 @@
                     text: "Database statistics"
                 },
                 xAxis: {
-                    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
                 },
                 yAxis: {},
                 tooltip: {
-                    formatter: function () {
 
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: "<b>{point.name}</b>: {point.y}",
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
                     }
                 },
                 legend: {
@@ -55,8 +66,7 @@
                     enabled: true
                 },
                 series: [{
-                    name: 'Data',
-                    allowPointSelect: true,
+                    name: "Data",
                     keys: ["name", "y", "selected", "sliced"],
                     data: getSeries(),
                     showInLegend: true

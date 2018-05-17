@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import {default as Device, DeviceModel } from "../models/Device";
+import {DB} from "../util/helpers/queryHelper";
 
 type payloadModel = mongoose.Document & {
     data_type: String,
@@ -6,8 +8,13 @@ type payloadModel = mongoose.Document & {
 };
 
 export type PublishedDataModel = mongoose.Document & {
-    _deviceID: mongoose.Schema.Types.ObjectId,
+    device: {
+        _id: mongoose.Schema.Types.ObjectId,
+        name: string,
+        pin_name: string
+    },
     payload: payloadModel,
+    pin_name: string,
 };
 
 const payloadSchema = new mongoose.Schema({
@@ -16,13 +23,21 @@ const payloadSchema = new mongoose.Schema({
 });
 
 const publishedDataSchema = new mongoose.Schema({
-    _deviceID: mongoose.Schema.Types.ObjectId,
+    device: {
+        _id: mongoose.Schema.Types.ObjectId,
+        name: String,
+        pin_name: String
+    },
+    pin_name: String,
     payload: payloadSchema,
 }, {timestamps: true});
 
 publishedDataSchema.virtual("formatted_value").get(function () {
     // TODO: create data type formatting
-    return `${this.payload.payload_body} ${this.payload.data_type}`;
+    if (this.payload.data_type)
+        return `${this.payload.payload_body} ${this.payload.data_type}`;
+    else
+        return `${this.payload.payload_body}`;
 });
 
 publishedDataSchema.set("toJSON", {

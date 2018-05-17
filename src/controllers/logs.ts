@@ -15,7 +15,7 @@ let payload = new APIResponsePayload();
 export function savePostData(data: PublishedDataModel) {
     return new Promise((resolve, reject) => {
         const publishedData = new PublishedData({
-            "_deviceID": data._deviceID,
+            "device": data.device,
             "payload": data.payload
         });
 

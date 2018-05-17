@@ -10,7 +10,7 @@ block content
         .buttons
           button.btn.btn-default.graph-button Graph view
           button.btn.btn-default.device-edit Properties
-        .graph
+        #sensor-graph
           .overlay
             .loading-bar
             span Loading...
@@ -30,7 +30,10 @@ block content
                 i.fa.fa-plus
                 | Add device
               each device in controller.devices
-                .device.col-lg-2.col-md-3.col-sm-6= device.name
+                .device.col-lg-2.col-md-3.col-sm-6
+                  .delete-device
+                    i.fa.fa-trash
+                  .device-name= device.name
 
   include ../partials/modals/device/new
   include ../partials/modals/device/edit
