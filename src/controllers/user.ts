@@ -83,11 +83,14 @@ export const postAdmin = async (req: Request, res: Response) => {
  * Dashboard page.
  */
 export let getDashboard = (req: Request, res: Response) => {
-    DeviceController.find({_client_id: req.user.id}, (err, controllers: ControllerModel) => {
+    DeviceController.find({_client_id: req.user.id})
+        .populate("devices._id")
+        .exec((err, controllers: ControllerModel) => {
         if (err) {
             req.flash("errors", err);
             return res.redirect("/");
         }
+
 
         res.render("account/dashboard", {
             title: "Dashboard",

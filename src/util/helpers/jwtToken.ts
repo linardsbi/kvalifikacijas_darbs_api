@@ -17,15 +17,12 @@ export class JwtToken {
         });
     }
 
-    static decodeToken(token: string): Promise<any> {
-        return new Promise(async (resolve) => {
-            try {
-                const decoded = jwt.decode(token);
-                resolve(decoded);
-            } catch (err) {
-                resolve(false);
-            }
-        });
+    static decodeToken(token: string): any {
+        try {
+            return jwt.decode(token);
+        } catch (err) {
+            return "";
+        }
     }
 
     static getRole(token: string) {

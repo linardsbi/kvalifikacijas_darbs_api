@@ -15,7 +15,8 @@ export type PinModel = mongoose.Document & {
     information_type: string,
     pin_mode: string,
     suffix: string,
-    lastWrite: string
+    lastWrite: string,
+    equation: string
 };
 
 const pinSchema = new mongoose.Schema({
@@ -23,13 +24,14 @@ const pinSchema = new mongoose.Schema({
     information_type: {type: String, required: true, default: "digital"},
     pin_mode: String,
     suffix: {type: String, max: 20},
-    lastWrite: String
+    lastWrite: String,
+    equation: String
 });
 
 const deviceSchema = new mongoose.Schema({
     name: String,
     machine_name: String,
-    _controllerID: mongoose.Schema.Types.ObjectId,
+    _controllerID: {type: mongoose.Schema.Types.ObjectId, ref: "DeviceController"},
     used_pins: { type: pinSchema, required: true }
 }, { timestamps: true });
 

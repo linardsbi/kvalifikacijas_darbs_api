@@ -49,6 +49,8 @@ export class DB {
             if (limit)
                 modelQuery.limit(limit);
 
+            modelQuery.sort([["createdAt", "ascending"]]);
+
             modelQuery.exec( (err, found) => {
                 if (err)
                     throw new Error(err);
@@ -69,7 +71,6 @@ type formattedQueryType = {
 
 export async function parseQuery(query: string): Promise<any> {
     const queryObject: any = parse.toObject(query);
-
     const formattedQuery: formattedQueryType = {
         select: {},
         fields: "",
@@ -162,13 +163,10 @@ export async function parseQuery(query: string): Promise<any> {
             } else if (element instanceof Array) {
                 element = element[arrayIndex];
                 arrayIndex++;
-            } else if (element.fields) {
-                element.fields.forEach((el: string, index: number) => {
-                    formattedQuery.fields += el;
-                    if (element.fields[index + 1]) {
-                        formattedQuery.fields += " ";
-                    }
-                });
+            }
+
+            if (element.fields) {
+                formattedQuery.fields = element.fields;
             } else if (element.limit) {
                 formattedQuery.limit = element.limit;
             }
@@ -182,6 +180,6 @@ export async function parseQuery(query: string): Promise<any> {
     } else {
         throw new Error(queryObject.error || "Invalid query string");
     }
-    console.log(formattedQuery);
+
     return formattedQuery;
 }

@@ -75,8 +75,27 @@
     function handleIncomingDeviceData(data: any) {
         const dataContainer = $(".device-overview .data");
 
-        if ($(".graph").hasClass("opened")) {
-            const chart = $(".graph").highcharts();
+
+        const chart = $("#sensor-graph").highcharts();
+        if (chart) {
+            const existingSeries = chart.get(data.id);
+            if (existingSeries) {
+                existingSeries.addPoint([(new Date()).getTime(), parseInt(data.data.payload)]);
+            } else {
+                chart.addSeries({
+                    name: `${data.data.device.name} (${data.data.device.pin_name})`,
+                    type: "line",
+                    yAxis: "1",
+                    id: data.id,
+                    data: [
+                        [(new Date()).getTime(), parseInt(data.data.payload)]
+                    ]
+                });
+            }
+        }
+
+        if (!$("#sensor-graph").find(".overlay").length) {
+
 
             // chart.addSeries({
             //     name: 'Rainfall',
@@ -86,9 +105,7 @@
             //     data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4]
             // }, false, false);
         } else {
-            if (!document.querySelectorAll(`.${data.id}`).length) {
-                $(".device-overview .data").append(`<div class="${data.id}">${data.data}</div>`);
-            }
+
         }
     }
 
@@ -167,7 +184,6 @@
         $(".delete-controller").on("click", function () {
             const id = $(this).parent().next().find(".controller-machine-name").text();
 
-
         });
         $(".edit-controller").on("click", function () {
             const name = $(this).siblings(".controller-name");
@@ -189,6 +205,29 @@
         });
     }
 
+    function writeActionListeners() {
+        $(".device-toggle").on("click", function (item) {
+            const target = $(item.target);
+            const machineName = target.parent().parent().parent().siblings(".controller-machine-name").text();
+            const data = {
+                apiToken: $("#apiToken").val(),
+                topic: `controllers/${machineName}/write/device/digital/${$(this).attr("id")}`,
+                action: "publish",
+                payload: "",
+                options: {
+                    retain: true
+                }
+            };
+
+            if (target.is(":checked")) {
+                data.payload = "HIGH";
+            } else {
+                data.payload = "LOW";
+            }
+
+            send(data);
+        });
+    }
 
     $(window).on("load", async function () {
         initAccordion();
@@ -200,6 +239,8 @@
         incomingDataListener();
 
         addUDListeners();
+
+        writeActionListeners();
     });
 
 })(jQuery);

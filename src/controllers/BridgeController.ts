@@ -3,6 +3,9 @@ import {ParseRequest as parse } from "../util/helpers/parseRequest";
 import {JwtToken as token } from "../util/helpers/jwtToken";
 import mqtt from "mqtt";
 import WebSocket from "ws";
+import {DB} from "../util/helpers/queryHelper";
+import Device from "../models/Device";
+import DeviceController from "../models/DeviceController";
 /**
  * TODO: create more efficient topics so the bridge client doesn't have to sub to many topics
  * (ideal condition: only one topic to sub to needed for the client to know about the present controllers)
@@ -13,7 +16,7 @@ interface BridgeResponse {
     id: string;
     status: string;
     error: string;
-    data: string;
+    data: object;
 }
 
 class BridgeInstance {
@@ -36,7 +39,7 @@ export class WSClientInstance extends BridgeInstance {
             id: "",
             status: "initializing",
             error: "",
-            data: ""
+            data: {}
         };
 
         this.listen();
@@ -50,9 +53,9 @@ export class WSClientInstance extends BridgeInstance {
         });
 
         this.instance.on("error", function incoming(err: any) {
-            this.response.error = err.toString();
+            that.response.error = err.toString();
             console.error("error occurred:", err.toString());
-            this.returnResponse();
+            that.returnResponse();
         });
     }
 
@@ -64,8 +67,8 @@ export class WSClientInstance extends BridgeInstance {
             this._mqttClient = await setupMqttClient();
 
             if (!(this._mqttClient instanceof Error)) {
-                this._mqttClient.on("message", (topic: string, message: Buffer) => {
-                    that.response = this.formatMqttMessage(topic, message);
+                this._mqttClient.on("message", async (topic: string, message: Buffer) => {
+                    that.response = await this.formatMqttMessage(topic, message);
                     that.returnResponse();
                 });
 
@@ -75,7 +78,6 @@ export class WSClientInstance extends BridgeInstance {
                         break;
                     case "publish":
                         this.handlePublish(message.topic, message.payload, message.options);
-                        console.log(message.payload.toString());
                         break;
                     default:
                         this.response.error = "No action specified";
@@ -117,7 +119,7 @@ export class WSClientInstance extends BridgeInstance {
         });
     }
 
-    private formatMqttMessage(topic: string, message: any): BridgeResponse  {
+    private async formatMqttMessage(topic: string, message: any): Promise<BridgeResponse>  {
         // TODO: any needed formatting
         const formatted: BridgeResponse = this.response;
         const msgString = message.toString();
@@ -133,8 +135,25 @@ export class WSClientInstance extends BridgeInstance {
             }
         } else if (topic.split("/")[2] === "read" && topic.split("/")[3] === "device") {
             formatted.item = `device`;
-            formatted.data = msgString;
-            formatted.id = topic.split("/")[4];
+
+            const controller: any = await DB.findOne(DeviceController, {machine_name: topic.split("/")[1]}, "_id");
+            const device: any = DB.findOne(Device, {_controllerID: controller._id, "used_pins.pin_name": topic.split("/")[4]}, "_id name used_pins");
+
+            device.then((result: any) => {
+                formatted.data = {
+                    payload: msgString,
+                    device: {
+                        name: result.name,
+                        pin_name: result.used_pins.pin_name
+                    }
+                };
+                formatted.id = result._id;
+            });
+
+            device.catch((rejection: boolean) => {
+                this.response.error = "Device not assigned";
+                this.returnResponse();
+            });
         }
 
         return formatted;
@@ -159,44 +178,3 @@ function setupMqttClient() {
         });
     });
 }
-// export class MQTTClientInstance extends BridgeInstance {
-//     private _wsClient: any;
-//
-//     constructor(client: any) {
-//         super(client);
-//     }
-//
-//     listen() {
-//         this.instance.on("connect", function () {
-//             this.handleConnect();
-//         });
-//
-//         this.instance.on("message", function (topic: string, message: Buffer) {
-//             this.handleMessage(topic, message);
-//         });
-//     }
-//
-//     private handleConnect() {
-//
-//     }
-//
-//     private handleMessage(topic: string, message: Buffer) {
-//
-//     }
-//
-//     doSubscribe(topic) {
-//
-//     }
-//
-//     doPublish(topic, payload) {
-//
-//     }
-//
-//     set wsClient(instance: any) {
-//         this._wsClient = instance;
-//     }
-//
-//     get wsClient(): any {
-//         return this._wsClient;
-//     }
-// }

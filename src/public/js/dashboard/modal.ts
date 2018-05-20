@@ -36,24 +36,36 @@
         if (errorArray[0])
             return errorArray;
 
+        const pinMode = formElement.find("#pin-mode").val();
+
         return {
             "_controllerID": formElement.find("#controller-list").val(),
             "machine_name": formElement.find("#device-list").val(),
             "name": formElement.find("#new-device-name").val(),
             "used_pins": {
-                "pin_name": formElement.find("div.pin-name").find(".selected").data("value"),
-                "information_type": formElement.find("div.information_type").find(".selected").data("value"),
-                "pin_mode": formElement.find("div.pin-mode").find(".selected").data("value"),
-            },
-            "suffix": formElement.find("#data-suffix").val(),
-            "equation": formElement.find("#data-equation").val()
+                "pin_name": formElement.find("#pin-name").val(),
+                "information_type": formElement.find("#information_type").val(),
+                "pin_mode": pinMode,
+                "suffix": (pinMode.toLowerCase() === "input") ? formElement.find("#data-suffix").val() : "",
+                "equation": (pinMode.toLowerCase() === "input") ? formElement.find("#data-equation").val() : ""
+            }
         };
     }
 
     function addModalListeners() {
+        $("#pin-mode").on("change", function () {
+            const value = $(this).next().find(".selected").data("value");
+
+            if (value.toString().toLowerCase() === "input") {
+                $(".read-group").show();
+            } else {
+                $(".read-group").hide();
+            }
+        });
         $("#add-device-confirm").off().on("click", function () {
             // TODO: Loading animation, loading scaffold
-            const formattedData: any = getFormData($(this));
+            const formattedData: any = getFormData($("#new-device-modal"));
+            console.log(formattedData);
 
             if (!formattedData.error) {
                 sendAjaxRequest("/devices/create", formattedData, "POST").then((response: any) => {
@@ -61,6 +73,10 @@
                 })
                     .catch((err: any) => {
                         console.log(err);
+                        const errorMessage = `An error occurred while fetching the device you clicked on.\n
+                        the error: <pre>${err.responseJSON.error.message}</pre>`;
+
+                        ModalDialog.alert("An error occurred", errorMessage, true);
                     });
             } else {
                 updateDOM(undefined, formattedData);
@@ -103,9 +119,9 @@
                     device.find(".device-name").html(item.device.name);
                     device.find(".device-id").html(item.device._id);
                     device.appendTo(currentController.find(".controller-devices"));
-                    newDeviceModal.modal("hide");
                 }
             }
+            newDeviceModal.modal("hide");
         }
     }
 

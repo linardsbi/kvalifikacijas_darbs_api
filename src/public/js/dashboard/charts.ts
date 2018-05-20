@@ -5,54 +5,9 @@
     "use strict";
     let chart: any;
 
-    function getSeries() {
-        // TODO: auto series detection, data plotting
-        return [
-            {
-                name: 'Temperature',
-                data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6],
-                color: '#F33'
-                //     name: 'VOLTAGE',
-                //     yAxis: 0,
-                //     style: {
-                //         color: '#2b908f'
-                //     },
-                //     data: (function () {
-                //         // generate an array of random data
-                //         const data = [];
-                //         return data;
-                //     }())
-                // }, {
-                //     name: 'CURRENT',
-                //     yAxis: 1,
-                //     data: (function () {
-                //         const data = [];
-                //         return data;
-                //     }())
-                // }, {
-                //     name: 'Moisture',
-                //     yAxis: 2,
-                //     data: (function () {
-                //         const data = [];
-                //         return data;
-                //     }())
-            }
-        ];
-    }
-
     Highcharts.setOptions({
         global: {
             useUTC: false
-        },
-        plotOptions: {
-            series: {
-                marker: {
-                    enabled: false
-                }
-            }
-        },
-        tooltip: {
-            enabled: false
         }
     });
 
@@ -64,9 +19,7 @@
                         {
                             createdAt$between: ["NOW", "5d ago"]
                         }
-                    ],
-                    fields: "_id",
-                    limit: "999"
+                    ]
                 }
             };
             const url = `data/get?query=${JSON.stringify(query)}`;
@@ -81,7 +34,10 @@
                     resolve(response);
                 },
                 error: (response: any) => {
-                    throw new Error(response);
+                    const errorMessage = `An error occurred while fetching the device you clicked on.\n
+                    the error: <pre>${response.responseJSON.error}</pre>`;
+
+                    ModalDialog.alert("An error occurred", errorMessage, true);
                 }
             });
         });
@@ -89,22 +45,30 @@
 
     async function getLatestData() {
         const response: any = await queryLatestData();
-        const series: any = [];
+        const deviceIDs: any = {};
         const currentSeries: any = {};
 
+
+        if (response[0] && response[0].success) {
+            response.splice(0, 1);
+        }
         console.log(response);
+
         response.forEach((value: any, index: number) => {
-            if (!value.success) {
-                value = value[index - 1];
+
+            if (value[index]) {
+                value = value[index];
+
+                if (!deviceIDs[`${value.device.name} (${value.device.pin_name})`]) {
+                    deviceIDs[`${value.device.name} (${value.device.pin_name})`] = value.device._id;
+                }
 
                 if (!currentSeries[`${value.device.name} (${value.device.pin_name})`]) {
-                    currentSeries[`${value.device.name} (${value.device.pin_name})`] = [
-                        [`${value.device.name} (${value.device.pin_name})`, value.createdAt, parseFloat(value.payload.payload_body)]
-                    ];
+                    currentSeries[`${value.device.name} (${value.device.pin_name})`] = [[Date.parse(value.createdAt), parseFloat(value.payload.payload_body)]];
                 } else {
                     currentSeries[`${value.device.name} (${value.device.pin_name})`]
                         .push(
-                            [`${value.device.name} (${value.device.pin_name})`, value.createdAt, parseFloat(value.payload.payload_body)]);
+                            [Date.parse(value.createdAt), parseFloat(value.payload.payload_body)]);
                 }
             }
         });
@@ -112,21 +76,30 @@
         Object.keys(currentSeries).forEach((value) => {
             chart.addSeries({
                 name: value,
-                keys: ["name", "x", "y"],
-                data: [
-                    currentSeries[value]
-                ]
+                type: "line",
+                yAxis: "1",
+                id: deviceIDs[value],
+                data: currentSeries[value]
             });
         });
 
-        console.log(currentSeries);
     }
 
     function initChart() {
-        return new Promise((resolve) => {
-            chart = Highcharts.chart("sensor-graph", {
+        return new Promise(async (resolve) => {
+            // const dataSeries = await getLatestData();
+            // const firstSeriesName = Object.keys(dataSeries)[0];
+            // console.log(firstSeriesName, dataSeries[firstSeriesName]);
+            Highcharts.error = function (code) {
+                // See https://github.com/highcharts/highcharts/blob/master/errors/errors.xml
+                // for error id's
+                $("#sensor-graph").text(`An error occurred: ${code}`);
+            };
+
+            chart = Highcharts.stockChart("sensor-graph", {
                 chart: {
                     type: 'spline',
+                    animation: Highcharts.svg,
                     events: {
                         load: async function () {
                             await getLatestData();
@@ -138,13 +111,22 @@
                     text: 'Sensor Data'
                 },
                 xAxis: {
-                    type: "datetime"
+                    type: "datetime",
+                    tickPixelInterval: 150
                 },
-                yAxis: {},
-                tooltip: {
-                    formatter: function () {
-
-                    }
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    id: "1",
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                rangeSelector: {
+                    enabled: true
                 },
                 legend: {
                     enabled: true
@@ -152,13 +134,9 @@
                 exporting: {
                     enabled: true
                 },
-                series: [{
-                    name: "",
-                    keys: ["name", "x", "y", "selected"],
-                    data: [
+                series: [
 
-                    ]
-                }]
+                ]
             });
         });
     }
@@ -172,6 +150,7 @@
 
                 await initChart();
 
+                $(this).text("Refresh");
                 $(this).removeAttr("disabled");
                 graph.removeClass("loading").addClass("opened");
             } else if (graph.hasClass("opened")) {
@@ -183,4 +162,6 @@
     $(window).on("load", function () {
         graphs();
     });
+
+
 })(jQuery);

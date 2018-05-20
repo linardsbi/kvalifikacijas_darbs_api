@@ -10,28 +10,37 @@ class ModalDialog {
         this.modal.find(".button-true").hide();
         this.modal.find(".button-false").hide();
 
+        if (buttons[0] instanceof Array)
+            buttons = buttons[0];
+
         buttons.forEach((button) => {
             let {html} = button;
             const {cb} = button;
             html = $(html);
 
-            html.off().on("click", () => {
-                if (cb instanceof Function) {
-                    cb();
-                }
-                this.hide(this.modal);
-            });
+            if ($(html[0])) {
+                $(html[0]).off().on("click", () => {
+                    if (cb instanceof Function) {
+                        cb();
+                    }
+                    this.hide(this.modal);
+                });
+            }
 
             this.modal.find(".modal-footer").append(html);
         });
+
+        this.show(this.modal);
     }
 
     static confirm(title: string, body: any, danger: boolean = false, cbTrue: Function, cbFalse?: Function) {
+        const modalClass = removeScriptTags(title).split(" ").join("-").toLowerCase();
+
         this.modal = $(".action-modal");
 
         this.modal.find(".modal-title").text(title);
         this.modal.find(".modal-body").html(body);
-        this.modal.find(".button-ok").hide();
+        this.modal.find(".modal-dialog").addClass(`modal-${modalClass}`);
         this.modal.find(".button-true").show();
         this.modal.find(".button-false").show();
 
@@ -43,30 +52,37 @@ class ModalDialog {
             confirmButton.removeClass("btn-danger").addClass("btn-primary");
         }
 
-        confirmButton.off().on("click", function () {
-            if (cbTrue() instanceof Function) {
+        confirmButton.off().on("click", () => {
+            if (cbTrue) {
                 cbTrue();
             }
             this.hide(this.modal);
+
+            this.modal.find(".modal-dialog").removeClass(`modal-${modalClass}`);
         });
-        this.modal.find(".button-false").off().on("click", function () {
-            if (cbFalse() instanceof Function) {
+        this.modal.find(".button-false").off().on("click", () => {
+            if (cbFalse) {
                 cbFalse();
             }
             this.hide(this.modal);
+
+            this.modal.find(".modal-dialog").removeClass(`modal-${modalClass}`);
         });
 
         this.show(this.modal);
     }
 
     static alert(title: string, body: any, danger: boolean = false, cb?: Function) {
+        const modalClass = removeScriptTags(title).split(" ").join("-").toLowerCase();
+        body = removeScriptTags(body);
+
         this.modal = $(".action-modal");
 
         this.modal.find(".modal-title").text(title);
+        this.modal.find(".modal-dialog").addClass("modal-sm");
+        this.modal.find(".modal-dialog").addClass(`modal-${modalClass}`);
         this.modal.find(".modal-body").html(body);
         this.modal.find(".button-ok").show();
-        this.modal.find(".button-true").hide();
-        this.modal.find(".button-false").hide();
 
         const confirmButton = this.modal.find(".button-ok");
 
@@ -76,21 +92,38 @@ class ModalDialog {
             confirmButton.removeClass("btn-danger").addClass("btn-primary");
         }
 
-        confirmButton.off().on("click", function () {
-            if (cb() instanceof Function) {
+        this.show(this.modal);
+
+        confirmButton.off().on("click", () => {
+            if (cb) {
                 cb();
             }
+
             this.hide(this.modal);
+            this.modal.find(".modal-dialog").removeClass("modal-sm");
+            this.modal.find(".modal-dialog").removeClass(`modal-${modalClass}`);
         });
     }
 
     static hide(element: any) {
+        this.modal.find(".modal-footer > button").each((button: any) => {
+            if (!($(button).hasClass("button-true") || $(button).hasClass("button-false") || $(button).hasClass("button-ok"))) {
+                $(button).remove();
+            } else {
+                $(button).hide();
+            }
+        });
+
         element.modal("hide");
     }
 
     static show(element: any) {
         element.modal("show");
     }
+}
+
+function removeScriptTags(string: string): string {
+    return string.replace("/<(\\/|)script.*?(>|)/gi", "");
 }
 
 function sendAjaxRequest() {

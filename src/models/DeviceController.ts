@@ -17,10 +17,10 @@ export type ControllerModel = mongoose.Document & {
 const deviceControllerSchema = new mongoose.Schema({
     name: String,
     machine_name: {type: String, unique: true, required: true},
-    _client_id: mongoose.Schema.Types.ObjectId,
+    _client_id: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
     devices: [
         {
-            _id: mongoose.Schema.Types.ObjectId,
+            _id: {type: mongoose.Schema.Types.ObjectId, ref: "Device"},
             name: String
         }
     ],

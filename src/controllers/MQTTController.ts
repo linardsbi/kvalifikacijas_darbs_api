@@ -50,8 +50,29 @@ export function handleClientPublish(packet: any, serverInstance: any) {
         handleIncomingData(packet).catch(reason => {
             console.log("read error occurred:", reason);
         });
+    } else if (strmatch.hasString(topic, "/write")) {
+        handleDeviceWrite(packet).catch(reason => {
+            console.log("write error occurred:", reason);
+        });
     } else {
         handlePacket(packet);
+    }
+}
+
+async function handleDeviceWrite(packet: any) {
+    const topic: string = packet.topic;
+    const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: topic.split("/")[1]}, "_id");
+    const device: any = await DB.findOne(Device, {
+        _controllerID: controller.id,
+        "used_pins.pin_name": topic.split("/")[5]
+    }, "used_pins");
+
+    if (device) {
+        device.used_pins.lastWrite = packet.payload.toString();
+
+        device.save((err: any) => {
+            if (err) return err;
+        });
     }
 }
 
@@ -65,9 +86,12 @@ export function handleClientSubscribe(topic: string, serverInstance: any) {
 
 async function handleIncomingData(packet: any) {
     const topic: string = packet.topic;
-
+    console.log(topic);
     const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: topic.split("/")[1]}, "_id");
-    const device: any = await DB.findOne(Device, {_controllerID: controller.id, "used_pins.pin_name": topic.split("/")[4]}, "_id used_pins");
+    const device: any = await DB.findOne(Device, {
+        _controllerID: controller.id,
+        "used_pins.pin_name": topic.split("/")[4]
+    }, "_id used_pins name");
 
     const data: any = {
         device: {
@@ -80,7 +104,6 @@ async function handleIncomingData(packet: any) {
             payload_body: packet.payload.toString()
         }
     };
-    console.log("data: ", data);
 
     try {
         const result = savePostData(data);

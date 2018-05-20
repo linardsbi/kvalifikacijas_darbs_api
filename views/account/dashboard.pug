@@ -36,14 +36,22 @@ block content
                 | Add device
               each device in controller.devices
                 .device.col-lg-2.col-md-3.col-sm-6
-                  .device-id.hidden= device._id
+                  .device-id.hidden= device._id._id
                   .delete-device
                     i.fa.fa-trash
-                  .device-name= device.name
+                  .device-name= `${device.name} (${device._id.used_pins.pin_name})`
+                  if (device._id.used_pins && device._id.used_pins.pin_mode.toLowerCase() === "output" && device._id.used_pins.information_type.toLowerCase() === "digital")
+                    .device-toggle-wrapper
+                      if (device._id.used_pins.lastWrite && device._id.used_pins.lastWrite.toLowerCase() === "high")
+                        input.device-toggle(type="checkbox" autocomplete="off" id= device._id.used_pins.pin_name checked="")
+                      else
+                        input.device-toggle(type="checkbox" autocomplete="off" id= device._id.used_pins.pin_name)
+                      label(for= device._id.used_pins.pin_name)
 
   include ../partials/modals/device/new
   include ../partials/modals/device/edit
-  script(src="https://code.highcharts.com/highcharts.src.js")
+
+  script(src="https://code.highcharts.com/stock/highstock.js")
   script(src="https://code.highcharts.com/stock/modules/exporting.js")
   script(src="./js/dashboard/dashboard.js")
   script(src="./js/dashboard/charts.js")

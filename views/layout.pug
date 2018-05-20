@@ -14,10 +14,10 @@ html(lang='')
     script(src='./js/lib/bootstrap.min.js')
     script(src='./js/lib/jquery.nice-select.min.js')
     script(src='./js/main.js')
-  body
+  body(class= title.toString().toLowerCase().split(" ").join("-"))
     include partials/header
 
-    .container(class= title)
+    .container
       include partials/flash
       block content
 

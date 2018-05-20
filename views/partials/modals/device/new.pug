@@ -1,7 +1,7 @@
 
 
 mixin pin_name
-  select.pin-name(name="pin_name")
+  select#pin-name(name="pin_name")
     option(value="D0") D0
     option(value="D1") D1
     option(value="D2") D2
@@ -11,9 +11,10 @@ mixin pin_name
     option(value="D6") D6
     option(value="D7") D7
     option(value="D8") D8
+    option(value="A0") A0
 mixin pin_mode
-  select.pin-mode(name="pin_mode")
-    option(value="INPUT") Read
+  select#pin-mode(name="pin_mode")
+    option(value="INPUT" selected="") Read
     option(value="OUTPUT") Write
 
 .modal#new-device-modal(tabindex="-1" role="dialog")
@@ -63,27 +64,28 @@ mixin pin_mode
               .form-group
                 .row
                   .col-sm-3.control-label
-                    label(for="data-equation") Custom equation
-                  .col-sm-9
-                    input#data-equation.form-control(name="data-equation", type="text")
-              .form-group
-                .row
-                  .col-sm-3.control-label
-                    label(for="data-suffix") A suffix to be displayed after the data
-                  .col-sm-9
-                    input#data-suffix.form-control(name="data-suffix", type="text")
-              .form-group
-                .row
-                  .col-sm-3.control-label
-                    label(for="pin_name") Pin name:
-                  .col-sm-9
-                    +pin_name
-              .form-group
-                .row
-                  .col-sm-3.control-label
                     label Pin mode:
                   .col-sm-9
                     +pin_mode
+              .read-group
+                .form-group
+                  .row
+                    .col-sm-3.control-label
+                      label(for="data-equation") Custom equation
+                    .col-sm-9
+                      input#data-equation.form-control(name="data-equation", type="text")
+                .form-group
+                  .row
+                    .col-sm-3.control-label
+                      label(for="data-suffix") A suffix to be displayed after the data
+                    .col-sm-9
+                      input#data-suffix.form-control(name="data-suffix", type="text")
+              .form-group
+                .row
+                  .col-sm-3.control-label
+                    label(for="pin-name") Pin name:
+                  .col-sm-9
+                    +pin_name
 
 
       .modal-footer

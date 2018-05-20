@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
     role: {type: String, default: "user", max: 30},
 
     controllers: [{
-        _id: mongoose.Schema.Types.ObjectId,
+        _id: {type: mongoose.Schema.Types.ObjectId, ref: "DeviceController"},
         machine_name: {type: String, max: 30}
     }],
 }, {timestamps: true, usePushEach: true});
