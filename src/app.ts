@@ -117,6 +117,8 @@ app.get("/stats", passportConfig.isAuthenticated, userController.getSiteStats);
  * API routes
  */
 
+app.get("/admin/statistics", isAuthenticated, userController.getAdminStats);
+
 /**
  * TODO: Generalize authentication and create routes
  */

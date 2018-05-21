@@ -5,6 +5,7 @@ block content
         h3 Statistics
     .page-body
         input(type='hidden', name='_csrf', value=_csrf id="_csrf")
+        input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
         .row
             #total-stats-graph
         .controller-stats.row
@@ -15,13 +16,13 @@ block content
             #totals
                 .col-md-4
                     label Total controllers:
-                    span.controllers #{controllerTotal}
+                    span.controllers 1
                 .col-md-4
                     label Total devices:
-                    span.devices #{deviceTotal}
+                    span.devices 1
                 .col-md-4
                     label Total users:
-                    span.users #{userTotal}
+                    span.users 1
     .page-header
         h3 Users
     .container-fluid

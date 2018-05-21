@@ -13,6 +13,7 @@ import {default as Device} from "../models/Device";
 const request = require("express-validator");
 import {JwtToken as jwt} from "../util/helpers/jwtToken";
 import {DB} from "../util/helpers/queryHelper";
+import PublishedData from "../models/PublishedData";
 
 /**
  * GET /login
@@ -32,9 +33,6 @@ export let getLogin = (req: Request, res: Response) => {
  * Statistics page.
  */
 export const getSiteStats = async (req: Request, res: Response) => {
-    const controllerTotal = await DeviceController.count({});
-    const deviceTotal = await Device.count({});
-    const userTotal = await User.count({});
     const users = await DB.find(User, {role: "user"});
     const admins = await DB.find(User, {role: "admin"});
 
@@ -45,12 +43,95 @@ export const getSiteStats = async (req: Request, res: Response) => {
 
     res.render("account/stats", {
         title: "Site statistics",
-        controllerTotal: controllerTotal,
-        userTotal: userTotal,
-        deviceTotal: deviceTotal,
         users: users,
         admins: admins
     });
+};
+
+type formattedSizeObj = {
+    value: string;
+    suffix: string;
+};
+
+function formatSize(size: number): formattedSizeObj {
+    const formatted: formattedSizeObj = {
+        value: "",
+        suffix: "",
+    };
+
+    if ((size / 10000) > 1024) {
+        formatted.value = (size / 100000).toFixed(1);
+        formatted.suffix = "GB";
+    } else if ((size / 1000) > 1024) {
+        formatted.value = (size / 10000).toFixed(1);
+        formatted.suffix = "MB";
+    } else if (size > 1024) {
+        formatted.value = (size / 1000).toFixed(1);
+        formatted.suffix = "KB";
+    } else {
+        formatted.value = size.toString();
+        formatted.suffix = "B";
+    }
+
+    return formatted;
+}
+
+function getAllStats() {
+    return new Promise((resolve) => {
+        async.parallel({
+            users: async (cb) => {
+                const user = await User.findOne({});
+                const stats = await user.collection.stats();
+                cb(undefined, {size: formatSize(stats.size), count: stats.count, avgObjSize: formatSize(stats.avgObjSize)});
+            },
+            devices: async (cb) => {
+                const device = await Device.findOne({});
+                const stats = await device.collection.stats();
+                cb(undefined, {size: formatSize(stats.size), count: stats.count, avgObjSize: formatSize(stats.avgObjSize)});
+            },
+            controllers: async (cb) => {
+                const controller = await DeviceController.findOne({});
+                const stats = await controller.collection.stats();
+                cb(undefined, {size: formatSize(stats.size), count: stats.count, avgObjSize: formatSize(stats.avgObjSize)});
+            },
+            publishedData: async (cb) => {
+                const data = await PublishedData.findOne({});
+                const stats = await data.collection.stats();
+                cb(undefined, {size: formatSize(stats.size), count: stats.count, avgObjSize: formatSize(stats.avgObjSize)});
+            }
+        }, function (err, result) {
+            resolve(result);
+        });
+    });
+}
+
+/**
+ * GET /admin/stats
+ * Admin statistics route.
+ */
+export const getAdminStats = async (req: Request, res: Response) => {
+    res.setHeader("Content-Type", "application/json");
+    let decoded;
+
+    if (req.headers.authtoken) {
+        try {
+            decoded = jwt.decodeToken(req.headers.authtoken.toString());
+        } catch (e) {
+            res.send(JSON.stringify({error: e.message}));
+        }
+    }
+
+    if (req.user.role === "admin" || (decoded && decoded.role === "admin")) {
+        try {
+            const stats = await getAllStats();
+
+            res.send(JSON.stringify(stats));
+        } catch (e) {
+            res.send(JSON.stringify({error: e.message}));
+        }
+    } else {
+        res.send(JSON.stringify({error: "auth error"}));
+    }
 };
 
 /**

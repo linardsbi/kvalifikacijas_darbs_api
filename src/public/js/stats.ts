@@ -1,5 +1,7 @@
 (function ($) {
     "use strict";
+    let chart: any;
+
     Highcharts.setOptions({
         global: {
             useUTC: false
@@ -25,13 +27,42 @@
         return series;
     }
 
-    function initChart(chartObject: any) {
+    async function loadPieSeries() {
+        let result;
+
+        try {
+            result = await sendAjaxRequest("/admin/statistics", {});
+        } catch (e) {
+            const errorMessage = `An error occurred while fetching the device you clicked on.\n
+                    the error: <pre>${e.message}</pre>`;
+
+            ModalDialog.alert("An error occurred", errorMessage, true);
+        }
+
+        if (result) {
+            const series = chart.get("statsSeries");
+
+            for (const key in result) {
+                if (result.hasOwnProperty(key)) {
+                    series.addPoint({
+                        name: key,
+                        y: result[key].count,
+                        avgSize: `${result[key].avgObjSize.value}${result[key].avgObjSize.suffix}`,
+                        size: `${result[key].size.value}${result[key].size.suffix}`,
+                    });
+                }
+            }
+        }
+    }
+
+    function initChart(chartName: string) {
         return new Promise((resolve) => {
-            chartObject.highcharts({
+            chart = Highcharts.chart(chartName, {
                 chart: {
                     type: "pie",
                     events: {
                         load: async function () {
+                            await loadPieSeries();
                             resolve();
                         }
                     }
@@ -39,16 +70,17 @@
                 title: {
                     text: "Database statistics"
                 },
-                xAxis: {
-
-                },
-                yAxis: {},
                 tooltip: {
-
+                    formatter: function () {
+                        console.log("key", this.key);
+                        return "test";
+                        // 'name: ' + this.key + ' <br/>y:' + this.y + '<br/>Size' + this.point.options.size + '<br/>Avg. object size' + this.point.options.size;
+                        // else return 'name: ' + this.key + ' <br/>y:' + this.y;
+                    }
                 },
                 plotOptions: {
                     pie: {
-                        allowPointSelect: true,
+                        allowPointSelect: false,
                         cursor: 'pointer',
                         dataLabels: {
                             enabled: true,
@@ -59,17 +91,14 @@
                         }
                     }
                 },
-                legend: {
-                    enabled: true
-                },
                 exporting: {
                     enabled: true
                 },
                 series: [{
-                    name: "Data",
-                    keys: ["name", "y", "selected", "sliced"],
-                    data: getSeries(),
-                    showInLegend: true
+                    name: "Statistics",
+                    id: "statsSeries",
+                    type: "pie",
+                    data: []
                 }]
             });
         });
@@ -79,7 +108,8 @@
         return new Promise((resolve, reject) => {
             $.ajax({
                 headers: {
-                    _csrf: $("#_csrf").val().toString()
+                    _csrf: $("#_csrf").val().toString(),
+                    authtoken: $("#apiToken").val().toString()
                 },
                 dataType: "json",
                 method: method || "get",
@@ -96,8 +126,7 @@
     }
 
     $(window).on("load", async function () {
-        console.log(getSeries());
-        await initChart($("#total-stats-graph"));
+        await initChart("total-stats-graph");
 
         $(".make-admin").on("click", function () {
             const payload = {
