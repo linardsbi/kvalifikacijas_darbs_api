@@ -139,7 +139,7 @@ export const getConditionalView = async (req: Request, res: Response) => {
             controllerIDs.push(controller._id);
     });
 
-    const devices = await DB.find(Device, {_controllerID: {$in: controllerIDs}});
+    const devices = await Device.find({_controllerID: {$in: controllerIDs}}).populate("_controllerID");
     const conditionals = await DB.find(Conditional, {"listenSubject.subjectControllerID": {$in: controllerIDs}});
 
     res.render("account/conditionals", {

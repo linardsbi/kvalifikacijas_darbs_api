@@ -1,6 +1,15 @@
 (function ($) {
     "use strict";
+    interface BridgeData {
+        item: string;
+        id: string;
+        status: string;
+        error: string;
+        data: string;
+    }
+
     let chart: any;
+    let socket: any = undefined;
 
     Highcharts.setOptions({
         global: {
@@ -14,17 +23,48 @@
             }
         },
         tooltip: {
-            enabled: false
+            enabled: true
+        },
+        legend: {
+            enabled: true
         }
     });
 
-    function getSeries() {
-        const series: Array<Array<any>> = [];
-        $("#totals span").each((index, element) => {
-            series.push([element.className, parseInt(element.innerText), true]);
+    function connect() {
+        return new Promise((resolve) => {
+            socket = new WebSocket(`ws://${window.location.hostname}:8080`);
+
+            // Connection opened
+            socket.addEventListener("open", function () {
+                getPresenceData();
+                resolve();
+            });
+
+            // Listen for messages
+            socket.addEventListener("message", function (event: any) {
+                const data: BridgeData = JSON.parse(event.data);
+                console.log(data);
+                updateDOM(data);
+            });
+        });
+    }
+
+    function getPresenceData() {
+        let controllers: string[] = getControllers();
+
+        controllers = controllers.map((device) => {
+            return `controllers/${device}/presence`;
         });
 
-        return series;
+        if (controllers[0]) {
+            const data = {
+                apiToken: $("#apiToken").val(),
+                action: "subscribe",
+                topics: controllers
+            };
+
+            send(data);
+        }
     }
 
     async function loadPieSeries() {
@@ -72,15 +112,17 @@
                 },
                 tooltip: {
                     formatter: function () {
-                        console.log("key", this.key);
-                        return "test";
-                        // 'name: ' + this.key + ' <br/>y:' + this.y + '<br/>Size' + this.point.options.size + '<br/>Avg. object size' + this.point.options.size;
-                        // else return 'name: ' + this.key + ' <br/>y:' + this.y;
+                        return `Collection: ${this.key}<br />
+                                total documents: ${this.y}<br />
+                                total collection size: ${this.point.options.size}<br />
+                                avg. document size: ${this.point.options.avgSize}`;
                     }
                 },
                 plotOptions: {
                     pie: {
                         allowPointSelect: false,
+                        size: "90%",
+                        center:['25%', '40%'],
                         cursor: 'pointer',
                         dataLabels: {
                             enabled: true,
@@ -88,11 +130,28 @@
                             style: {
                                 color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                             }
-                        }
-                    }
+                        },
+                        showInLegend: true
+                    },
                 },
                 exporting: {
                     enabled: true
+                },
+                legend: {
+                    enabled: true,
+                    floating: true,
+                    align:'right',
+                    layout: 'vertical',
+                    x: -150,
+                    y: -50,
+                    labelFormatter : function() {
+                        console.log(this);
+                        return `Collection: <span style="color: ${this.color}">${this.name}</span><br />
+                                total documents: <span style="color: ${this.color}">${this.y}</span><br />
+                                total collection size: <span style="color: ${this.color}">${this.size}</span><br />
+                                avg. document size: <span style="color: ${this.color}">${this.avgSize}</span>`;
+                    }
+
                 },
                 series: [{
                     name: "Statistics",

@@ -60,12 +60,12 @@ function formatSize(size: number): formattedSizeObj {
     };
 
     if ((size / 10000) > 1024) {
-        formatted.value = (size / 100000).toFixed(1);
+        formatted.value = (size / 1000000000000).toFixed(1);
         formatted.suffix = "GB";
-    } else if ((size / 1000) > 1024) {
-        formatted.value = (size / 10000).toFixed(1);
+    } else if ((size / 100) > 1000) {
+        formatted.value = (size / 1000000).toFixed(1);
         formatted.suffix = "MB";
-    } else if (size > 1024) {
+    } else if (size > 1000) {
         formatted.value = (size / 1000).toFixed(1);
         formatted.suffix = "KB";
     } else {

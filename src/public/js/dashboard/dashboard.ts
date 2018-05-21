@@ -75,7 +75,6 @@
     function handleIncomingDeviceData(data: any) {
         const dataContainer = $(".device-overview .data");
 
-
         const chart = $("#sensor-graph").highcharts();
         if (chart) {
             const existingSeries = chart.get(data.id);

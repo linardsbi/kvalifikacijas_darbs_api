@@ -1,10 +1,9 @@
 extends ../layout
 
 mixin devicesSelect
-    select device
+    select#if-device
         each device in devices
-            each pin in device
-                option(value= `${pin.pin_name}@${device._controllerID}`)= `${pin.pin_name} (${device.controller_machine_name})`
+            option(value= `${device.used_pins.pin_name}@${device._controllerID}`)= `${device.used_pins.pin_name} (${device._controllerID.name})`
 
 mixin conditionSelect
     select.conditions condition
@@ -28,33 +27,71 @@ mixin newPanel
             .panel-body.condition
                 form(method="POST")
                     .form-group
-                        input(type="text" placeholder="Give this conditional a name...")
-                    span if
-                    +devicesSelect
-                    span is
-                    +conditionSelect
-                    input(type="text", placeholder="ex. 40")
-                    span.hidden AND
-                    input.hidden(type="text", placeholder="ex. 40")
-                    label Apply pin specific calculation to value?
-                    input(type="checkbox")
-                    .container.actions
+                        .row
+                            .col-sm-3.control-label
+                                label(for="conditional-name") Name
+                            .col-sm-9
+                                input#conditional-name.form-control(type="text" placeholder="Give this conditional a name...")
+                    .form-group
+                        .row
+                            .col-sm-3.control-label
+                                label(for="if-device") IF
+                            .col-sm-9
+                                +devicesSelect
+                    .form-group
+                        .row
+                            .col-sm-3.control-label
+                                label(for="if-device") IS
+                            .col-sm-9
+                                +conditionSelect
+                    .form-group
+                        .row
+                            .col-sm-3.control-label
+                                label(for="is-device") Value
+                            .col-sm-9
+                                input#is-device.form-control(type="text", placeholder="ex. 40")
+                    .form-group.and-group
+                        .row
+                            .col-sm-3.control-label
+                                label(for="and-condition") AND
+                            .col-sm-9
+                                input#and-condition.form-control(type="text", placeholder="ex. 40")
+                    .form-group
+                        .row
+                            .col-sm-3.control-label
+                                label(for="apply-calc") Apply pin specific calculation to value?
+                            .col-sm-9
+                                input#apply-calc.form-control(type="checkbox")
+                    .actions
                         .condition-action
-                            select.action-select action
-                                option(value="email") Email
-                                option(value="textMessage") Send text message
-                                option(value="write") Write to pin
-                            .input-group
-                                +devicesSelect.hidden
-                                input.email(type="email", placeholder="Enter an email address")
-                                input.phone.hidden(type="text", placeholder="Enter a phone number to send text to")
+                            .form-group
+                                label(for="action-select") Action
+                                select.action-select
+                                    option(value="email") Email
+                                    option(value="textMessage") Send text message
+                                    option(value="write") Write to pin
+                            .action-fields
+                                .form-group.write-group
+                                    .form-group
+                                        label(for="device-select") Device
+                                        +devicesSelect
+                                    .form-group
+                                        label(for="write-value") Write value
+                                        input.write-value.form-control(type="text", placeholder="ex. 40 or HIGH")
+                                .form-group.email-group
+                                    label(for="email-field") Email
+                                    input.email.form-control(type="email", placeholder="Enter an email address")
+                                .form-group.phone-group
+                                    label(for="phone-field") Phone number
+                                    input.phone.form-control(type="tel", placeholder="Enter a phone number to send text to")
+                            .form-group
                                 button.add-another-field.btn.btn-default
                                     i.fa.fa-plus
-                                    | Add another
-                        .condition-action
-                            button.btn.add-another-action.btn-primary
-                                i.fa.fa-plus
-                                | Add another action
+                                    | Add another field
+                    .condition-action
+                        button.btn.add-another-action.btn-primary
+                            i.fa.fa-plus
+                            | Add another action
             .panel-footer
                 button.add-new-conditional.btn.btn-primary Add
 
@@ -63,7 +100,7 @@ block content
         .container-fluid
             .conditions-wrapper
                 .heading
-                h1 Conditions
+                h1 Conditionals
                 .panel-group
                     +newPanel
                 each conditional in conditionals
@@ -91,3 +128,5 @@ block content
                                 .panel-footer
                                     button.hidden.save-conditional.btn.btn-primary Save
                                     button.edit-conditional.btn.btn-default Edit
+
+    script(src="./js/conditionals/conditionals.js")

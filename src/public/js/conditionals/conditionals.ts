@@ -23,36 +23,14 @@
                 that.save();
             });
 
-            $(".conditions").on("change", function () {
-                const value = $(this).val();
+            $(".add-another-field").on("click", function (e) {
+                e.preventDefault();
+                const toCopy = $(this).parent().parent();
+                const clone = toCopy.clone(true);
 
-                if (value === "between") {
-                    $(this).siblings(".hidden").show();
-                } else {
-                    $(this).siblings(".hidden").hide();
-                }
-            });
-
-            $(".action-select").on("change", function () {
-                const value = $(this).val();
-                if (value === "email") {
-                    $(this).siblings("*:not(.email)").addClass("hidden");
-                    $(this).siblings(".email").removeClass("hidden");
-                } else if (value === "write") {
-                    $(this).siblings("*:not(.subjects)").addClass("hidden");
-                    $(this).siblings(".subjects").removeClass("hidden");
-                } else if (value === "sendMessage") {
-                    $(this).siblings("*:not(.phone)").addClass("hidden");
-                    $(this).siblings(".phone").removeClass("hidden");
-                }
-            });
-
-            $(".add-another-field").on("click", function () {
-                const toCopy = $(this).siblings("*:not(.hidden)");
-                const clone = toCopy.clone();
-
-                toCopy.find("input").val("");
-                clone.appendTo($(this).parent());
+                toCopy.find(".add-another-field").parent().remove();
+                clone.find("input").val("");
+                clone.appendTo(toCopy.parent());
             });
 
             $(".add-another-action").on("click", function () {
@@ -142,7 +120,50 @@
         }
     }
 
+    function hideAnd(item: any) {
+        const andGroup = item.parent().parent().parent().siblings(".and-group");
+        if (item.val().toString() === "between") {
+            andGroup.show();
+        } else {
+            andGroup.hide();
+        }
+    }
+
+    function hideActions(item: any) {
+        const writeGroup = item.parent().siblings(".action-fields").find(".write-group");
+        const emailGroup = item.parent().siblings(".action-fields").find(".email-group");
+        const phoneGroup = item.parent().siblings(".action-fields").find(".phone-group");
+
+        if (item.val().toString() === "email") {
+            writeGroup.hide();
+            emailGroup.show();
+            phoneGroup.hide();
+        } else if (item.val().toString() === "textMessage") {
+            writeGroup.hide();
+            emailGroup.hide();
+            phoneGroup.show();
+        } else if (item.val().toString() === "write") {
+            writeGroup.show();
+            emailGroup.hide();
+            phoneGroup.hide();
+        }
+    }
+
+    function hideFields() {
+        hideAnd($(".conditions"));
+        hideActions($(".action-select"));
+
+        $(".action-select").on("change", function () {
+            hideActions($(this));
+        });
+
+        $(".conditions").on("change", function () {
+            hideAnd($(this));
+        });
+    }
+
     $(window).on("load", function () {
+        hideFields();
         Conditional.listen();
     });
 })(jQuery);
