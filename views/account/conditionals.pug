@@ -1,9 +1,9 @@
 extends ../layout
 
 mixin devicesSelect
-    select#if-device
+    select.devices
         each device in devices
-            option(value= `${device.used_pins.pin_name}@${device._controllerID}`)= `${device.used_pins.pin_name} (${device._controllerID.name})`
+            option(value= `${device.used_pins.pin_name}@${device._controllerID._id}`)= `${device.used_pins.pin_name} (${device._controllerID.name})`
 
 mixin conditionSelect
     select.conditions condition
@@ -25,43 +25,48 @@ mixin newPanel
                 | New Conditional
         #collapseNew.panel-collapse.collapse
             .panel-body.condition
+                .validation.alert.alert-danger.fade.in
+                    button.close(type='button', data-dismiss='alert')
+                        i.fa.fa-times-circle-o
+                    .msg
                 form(method="POST")
-                    .form-group
-                        .row
-                            .col-sm-3.control-label
-                                label(for="conditional-name") Name
-                            .col-sm-9
-                                input#conditional-name.form-control(type="text" placeholder="Give this conditional a name...")
-                    .form-group
-                        .row
-                            .col-sm-3.control-label
-                                label(for="if-device") IF
-                            .col-sm-9
-                                +devicesSelect
-                    .form-group
-                        .row
-                            .col-sm-3.control-label
-                                label(for="if-device") IS
-                            .col-sm-9
-                                +conditionSelect
-                    .form-group
-                        .row
-                            .col-sm-3.control-label
-                                label(for="is-device") Value
-                            .col-sm-9
-                                input#is-device.form-control(type="text", placeholder="ex. 40")
-                    .form-group.and-group
-                        .row
-                            .col-sm-3.control-label
-                                label(for="and-condition") AND
-                            .col-sm-9
-                                input#and-condition.form-control(type="text", placeholder="ex. 40")
-                    .form-group
-                        .row
-                            .col-sm-3.control-label
-                                label(for="apply-calc") Apply pin specific calculation to value?
-                            .col-sm-9
-                                input#apply-calc.form-control(type="checkbox")
+                    .conditions
+                        .form-group
+                            .row
+                                .col-sm-3.control-label
+                                    label(for="conditional-name") Name
+                                .col-sm-9
+                                    input.conditional-name.form-control(type="text" placeholder="Give this conditional a name...")
+                        .form-group
+                            .row
+                                .col-sm-3.control-label
+                                    label(for="if-device") IF
+                                .col-sm-9
+                                    +devicesSelect
+                        .form-group
+                            .row
+                                .col-sm-3.control-label
+                                    label(for="if-device") IS
+                                .col-sm-9
+                                    +conditionSelect
+                        .form-group
+                            .row
+                                .col-sm-3.control-label
+                                    label(for="is-device") Value
+                                .col-sm-9
+                                    input.is-device.form-control(type="text", placeholder="ex. 40")
+                        .form-group.and-group
+                            .row
+                                .col-sm-3.control-label
+                                    label(for="and-condition") AND
+                                .col-sm-9
+                                    input.and-condition.form-control(type="text", placeholder="ex. 40")
+                        .form-group
+                            .row
+                                .col-sm-3.control-label
+                                    label(for="apply-calc") Apply pin specific calculation to value?
+                                .col-sm-9
+                                    input.apply-calc.form-control(type="checkbox")
                     .actions
                         .condition-action
                             .form-group
@@ -74,7 +79,7 @@ mixin newPanel
                                 .form-group.write-group
                                     .form-group
                                         label(for="device-select") Device
-                                        +devicesSelect
+                                        +devicesSelect.write-devices
                                     .form-group
                                         label(for="write-value") Write value
                                         input.write-value.form-control(type="text", placeholder="ex. 40 or HIGH")
@@ -97,6 +102,7 @@ mixin newPanel
 
 block content
     #conditionals-page
+        input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
         .container-fluid
             .conditions-wrapper
                 .heading
@@ -107,24 +113,25 @@ block content
                     .panel-group
                         .panel.panel-default
                             .panel-heading
-                                a(href= conditional._id data-toggle="collapse")
+                                a(href=`#${conditional._id}` data-toggle="collapse")
                                     i.fa.fa-plus
                                     span.conditional-name= conditional.name
                             .panel-collapse.collapse(id= conditional._id)
                                 .panel-body.condition
                                     span if
-                                    span.controller-id.hidden= conditional.listenSubject.subjectControllerID
-                                    span.device-name= conditional.listenSubject.pin_name
+                                    b.controller-id.hidden= conditional.listenSubject.subjectControllerID
+                                    b.device-name= conditional.listenSubject.pin_name
                                     span is
-                                    span.trigger-condition= conditional.triggerOn.condition
-                                    span.trigger-value= conditional.triggerOn.value
+                                    b.trigger-condition= conditional.triggerOn.condition
+                                    b.trigger-value= conditional.triggerOn.value
                                     .container.actions
                                         each item in conditional.run
                                             .condition-action
-                                                span.action-name= item.action
-                                                span.action-value= item.value
+                                                b.action-name= item.action
+                                                b.action-value= item.value
+                                                span to
                                                 each subject in item.subjects
-                                                    span.action-subject= subject
+                                                    b.action-subject= subject
                                 .panel-footer
                                     button.hidden.save-conditional.btn.btn-primary Save
                                     button.edit-conditional.btn.btn-default Edit

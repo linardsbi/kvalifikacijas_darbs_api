@@ -1,7 +1,5 @@
 "use strict";
 
-import async from "async";
-
 import {Request, Response} from "express";
 import {ControllerModel, default as Controller} from "../models/DeviceController";
 import {ConditionalInterface, default as Conditional} from "../models/Conditional";
@@ -15,46 +13,19 @@ let payload = new APIResponsePayload();
 
 function createNewConditional(conditional: ConditionalInterface): any {
     return new Promise((resolve, reject) => {
-        async.waterfall([
-            async function getControllerID(next: Function) {
-                try {
-                    const result: any = await DB.findOne(Controller, {machine_name: conditional.listenSubject.subjectControllerID}, "_id");
-                    if (result)
-                        next(undefined, result._id);
-                    else
-                        next();
-                } catch (e) {
-                    next(e.message);
-                }
-            },
-            function formatDataForDatabase(controllerID: ConditionalInterface, next: Function) {
-                // TODO: formatting
-                if (controllerID)
-                    next(undefined, controllerID);
-                else
-                    next();
-            },
-            async function insertConditionalIntoDatabase(controllerID: any, done: Function) {
-                if (controllerID) {
-                    Conditional.save((err: any, result: ConditionalInterface) => {
-                        if (err)
-                            done(err);
-                        else if (!result)
-                            done();
-                        else
-                            done(undefined, result);
-                    });
-                } else
-                    done();
-            }
-        ], (err, result) => {
-            if (err) {
-                console.log(err);
+        console.log(conditional.run);
+        const newConditional: any = new Conditional({
+            "name": conditional.name,
+            "listenSubject": conditional.listenSubject,
+            "triggerOn": conditional.triggerOn,
+            "run": conditional.run
+        });
+
+        newConditional.save((err: any, result: any) => {
+            if (err)
                 reject(err);
-            } else {
-                payload.addUnformattedData(result);
+            else
                 resolve(result);
-            }
         });
     });
 }
@@ -73,22 +44,20 @@ export const create = async (req: Request, res: any) => {
     const conditional: ConditionalInterface = req.body;
     const response = new APIResponse(res);
 
-    const result = await createNewConditional(conditional);
+    try {
+        const result = await createNewConditional(conditional);
 
-    result.catch((err: any) => {
-        payload.addUnformattedData({error: err});
-        response.sendError(payload.getFormattedPayload());
-
-        payload = new APIResponsePayload();
-    });
-
-    result.then((result: any) => {
         payload.addUnformattedData({result: result});
         response.sendError(payload.getFormattedPayload());
 
         response.sendSuccess(result);
         payload = new APIResponsePayload();
-    });
+    } catch (e) {
+        payload.addUnformattedData({error: e.message});
+        response.sendError(payload.getFormattedPayload());
+
+        payload = new APIResponsePayload();
+    }
 };
 
 /**
@@ -99,7 +68,7 @@ export const create = async (req: Request, res: any) => {
  */
 export const read = (req: Request, res: Response) => {
     const conditionalID: string = req.query.id;
-    const api = new APIController(res, Conditional);
+    const api = new APIController(req, res, Conditional);
 
     api.read(conditionalID);
 };
@@ -112,7 +81,7 @@ export const read = (req: Request, res: Response) => {
  */
 export let update = (req: Request, res: Response) => {
     const parameters: ConditionalInterface = req.body;
-    const api = new APIController(res, Conditional);
+    const api = new APIController(req, res, Conditional);
 
     api.update(parameters);
 };
@@ -125,7 +94,7 @@ export let update = (req: Request, res: Response) => {
  */
 export let remove = (req: Request, res: Response) => {
     const conditionalID: string = req.body;
-    const api = new APIController(res, Conditional);
+    const api = new APIController(req, res, Conditional);
 
     api.remove(conditionalID);
 };

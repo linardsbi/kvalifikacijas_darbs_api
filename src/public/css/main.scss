@@ -98,3 +98,7 @@ label.control-label {
 .highcharts-credits {
   display: none !important;
 }
+
+.action-modal .modal-footer > button {
+  display: none;
+}

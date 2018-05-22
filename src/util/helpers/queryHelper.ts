@@ -1,11 +1,11 @@
 "use strict";
-
-import {Model, MongooseDocument} from "mongoose";
-import {ParseRequest as parse} from "./parseRequest";
+import { Model, MongooseDocument } from "mongoose";
+import { ParseRequest as parse } from "./parseRequest";
+import mongoose from "mongoose";
 
 export class DB {
 
-    static findById(model: Model<any>, id: string): Promise<MongooseDocument> {
+    static findById(model: Model<any>, id: mongoose.Schema.Types.ObjectId): Promise<MongooseDocument> {
         return new Promise((resolve, reject) => {
             model.findById(id, function (err, found) {
                 if (err)

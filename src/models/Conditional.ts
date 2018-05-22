@@ -23,7 +23,10 @@ import mongoose from "mongoose";
  */
 export interface ConditionalInterface {
     name: string;
-    listenSubject: {subjectControllerID: mongoose.Schema.Types.ObjectId, pin_name: string, subjectControllerMachineName: string};
+    listenSubject: {
+        subjectControllerID: mongoose.Schema.Types.ObjectId,
+        pin_name: string
+    };
     triggerOn: {
         value: number[],
         condition: string,
@@ -32,20 +35,24 @@ export interface ConditionalInterface {
     run: { action: string, value: string, subjects: string[] }[];
 }
 
+const RunSchema = new mongoose.Schema({
+    action: String,
+    value: String,
+    subjects: [String]
+}, { _id : false });
 
 const ConditionalSchema = new mongoose.Schema({
     name: {type: String, max: 30},
     listenSubject: {
-        subjectControllerID: mongoose.Schema.Types.ObjectId,
-        pin_name: String,
-        subjectControllerMachineName: {type: String, default: "Conditional"}
+        subjectControllerID: {type: mongoose.Schema.Types.ObjectId, ref: "DeviceController"},
+        pin_name: String
     },
     triggerOn: {
         value: [Number],
         condition: String,
         applyCalculation: Boolean
     },
-    run: [{ action: String, value: String, subjects: [String] }]
+    run: [RunSchema]
 }, {timestamps: true});
 
 const Conditional = mongoose.model("Conditional", ConditionalSchema);

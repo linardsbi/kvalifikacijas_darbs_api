@@ -112,10 +112,9 @@
                 },
                 tooltip: {
                     formatter: function () {
-                        return `Collection: ${this.key}<br />
-                                total documents: ${this.y}<br />
-                                total collection size: ${this.point.options.size}<br />
-                                avg. document size: ${this.point.options.avgSize}`;
+                        return `Total documents: ${this.y}<br />
+                                Total collection size: ${this.point.options.size}<br />
+                                Avg. document size: ${this.point.options.avgSize}`;
                     }
                 },
                 plotOptions: {
