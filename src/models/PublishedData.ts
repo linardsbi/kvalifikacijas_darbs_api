@@ -14,13 +14,12 @@ export type PublishedDataModel = mongoose.Document & {
         pin_name: string
     },
     payload: payloadModel,
-    pin_name: string,
 };
 
 const payloadSchema = new mongoose.Schema({
     data_type: String,
     payload_body: String
-});
+}, {_id: false});
 
 const publishedDataSchema = new mongoose.Schema({
     device: {
@@ -28,7 +27,6 @@ const publishedDataSchema = new mongoose.Schema({
         name: String,
         pin_name: String
     },
-    pin_name: String,
     payload: payloadSchema,
 }, {timestamps: true});
 

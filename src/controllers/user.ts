@@ -13,6 +13,7 @@ import {default as Device} from "../models/Device";
 const request = require("express-validator");
 import {JwtToken as jwt} from "../util/helpers/jwtToken";
 import {DB} from "../util/helpers/queryHelper";
+import { Email } from "../util/helpers/sendEmail";
 import PublishedData from "../models/PublishedData";
 
 /**
@@ -439,8 +440,19 @@ export let postReset = (req: Request, res: Response, next: NextFunction) => {
                 });
         },
         function sendResetPasswordEmail(user: UserModel, done: Function) {
+            Email
+                .from("admin@site.com")
+                .to(user.email)
+                .subject("Reset your password")
+                .text("Your password was successfully reset!")
+                .send(function (err: undefined | string[]) {
+                    if (err)
+                        req.flash("errors", err);
+                    else
+                        req.flash("success", {msg: "Success! Your password has been changed."});
 
-
+                    done(err);
+                });
         }
     ], (err) => {
         if (err) {
@@ -502,24 +514,21 @@ export let postForgot = (req: Request, res: Response, next: NextFunction) => {
             });
         },
         function sendForgotPasswordEmail(token: AuthToken, user: UserModel, done: Function) {
-            const transporter = nodemailer.createTransport({
-                service: "SendGrid",
-                auth: {
-                    user: process.env.SENDGRID_USER,
-                    pass: process.env.SENDGRID_PASSWORD
-                }
-            });
-            const mailOptions = {
-                to: user.email,
-                from: "admin@site.com",
-                subject: "Reset your password",
-                text: `You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n
+            const emailText = `You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n
           Please click on the following link, or paste this into your browser to complete the process:\n\n
           http://${req.headers.host}/reset/${token}\n\n
-          If you did not request this, please ignore this email and your password will remain unchanged.\n`
-            };
-            transporter.sendMail(mailOptions, (err) => {
-                req.flash("info", {msg: `An e-mail has been sent to ${user.email} with further instructions.`});
+          If you did not request this, please ignore this email and your password will remain unchanged.\n`;
+
+        Email
+            .from("admin@site.com")
+            .to(user.email)
+            .subject("Reset your password")
+            .text(emailText)
+            .send(function (err: undefined | string[]) {
+                if (err)
+                    req.flash("errors", err);
+                else
+                    req.flash("info", {msg: `An e-mail has been sent to ${user.email} with further instructions.`});
                 done(err);
             });
         }

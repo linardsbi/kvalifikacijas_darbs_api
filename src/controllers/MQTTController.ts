@@ -11,6 +11,7 @@ import {MqttTopicMatch as strmatch} from "../util/helpers/mqttTopicMatch";
 import {MongooseDocument} from "mongoose";
 import {savePostData} from "./logs";
 import Conditional from "../models/Conditional";
+import {Email} from "../util/helpers/sendEmail";
 // import { default as Controller, ControllerModel } from "../models/DeviceController";
 
 const payload = new APIResponsePayload();
@@ -151,6 +152,13 @@ async function runConditionals(conditional: any, payload: string, info_type: str
         switch (runObject.action) {
             case "email":
                 console.log("send email with", payload, "to", runObject.subjects);
+                for (const subject of runObject.subjects) {
+                    try {
+                        sendEmail(payload, subject, conditional.listenSubject.pin_name);
+                    } catch (e) {
+                        console.log(e.message);
+                    }
+                }
                 break;
             case "textMessage":
                 console.log("send text with", payload, "to", runObject.subjects);
@@ -164,6 +172,18 @@ async function runConditionals(conditional: any, payload: string, info_type: str
                 break;
         }
     }
+}
+
+function sendEmail(payload: string, email: string, pin_name: string) {
+    Email
+        .from("admin@site.com")
+        .to(email)
+        .subject("Home automation event")
+        .text(`An event just occurred to ${pin_name}: the value - ${payload}`)
+        .send(function (err: undefined | string[]) {
+            if (err)
+                throw new Error("Email error");
+        });
 }
 
 async function publishWrite(machine_name: string, info_type: string, pin_name: string, payload: string) {
