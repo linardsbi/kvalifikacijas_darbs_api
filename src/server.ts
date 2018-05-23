@@ -84,26 +84,25 @@ export function start(): void {
         //     client.username = username;
         //     MQTTAuthenticate(client.id, username, password.toString()).then((result) => {
         //         // addController(client.id, username);
-        //         callback(null, true);
+        //         callback(undefined, true);
         //     }).catch((err) => {
         //         err.returnCode = 1;
-        //         callback(err, null);
+        //         callback(err, undefined);
         //     });
         // } else
-        callback(null, true);
+        callback(undefined, true);
     };
 
     moscaServer.authorizePublish = function (client, topic, payload, callback) {
 
-        callback(null, true);
+        callback(undefined, true);
     };
 
     moscaServer.authorizeSubscribe = function (client, topic, callback) {
         // console.log(topic, client.id);
-        callback(null, true);
+        callback(undefined, true);
     };
 }
-
 
 /**
  * Start Express server.

@@ -10,10 +10,11 @@ import {DB} from "../util/helpers/queryHelper";
 import {MqttTopicMatch as strmatch} from "../util/helpers/mqttTopicMatch";
 import {MongooseDocument} from "mongoose";
 import {savePostData} from "./logs";
-import {PublishedDataModel} from "../models/PublishedData";
+import Conditional from "../models/Conditional";
 // import { default as Controller, ControllerModel } from "../models/DeviceController";
 
 const payload = new APIResponsePayload();
+let mqttInstance: any;
 
 function handleSys(packet: any) {
     if (packet.topic.search("/\/new\/clients/")) {
@@ -38,6 +39,7 @@ function handlePacket(packet: any) {
 
 export function handleClientPublish(packet: any, serverInstance: any) {
     const topic = packet.topic;
+    mqttInstance = serverInstance;
 
     if (strmatch.hasString(topic, "/\$SYS\//")) {
         handleSys(packet);
@@ -92,11 +94,21 @@ async function handleIncomingData(packet: any) {
         _controllerID: controller.id,
         "used_pins.pin_name": topic.split("/")[4]
     }, "_id used_pins name");
+    const conditionals: MongooseDocument[] = await DB.find(Conditional, {
+        "listenSubject.subjectControllerID": controller.id,
+        "listenSubject.pin_name": device.used_pins.pin_name
+    });
+
+    try {
+        handleConditionals(packet, conditionals, device.used_pins.information_type);
+    } catch (e) {
+        console.log("conditionals error:", e.message);
+    }
 
     const data: any = {
         device: {
             _id: device._id,
-            name: device.name || "default",
+            name: device.name || "Pin",
             pin_name: device.used_pins.pin_name
         },
         payload: {
@@ -106,13 +118,69 @@ async function handleIncomingData(packet: any) {
     };
 
     try {
-        const result = savePostData(data);
-        result.catch(reason => {
-            console.log("error occurred:", reason);
-        });
+        const result = await savePostData(data);
     } catch (e) {
-        console.log(e);
+        console.log("error occurred:", e);
     }
+}
+
+async function handleConditionals(packet: any, conditionals: MongooseDocument[], info_type: string) {
+    const payload = packet.payload.toString();
+
+    for (const conditional of conditionals) {
+        const condition = conditional.triggerOn.condition;
+        let send = false;
+
+        if (condition === "lt" && payload < conditional.triggerOn.value[0]) send = true;
+        if (condition === "gt" && payload > conditional.triggerOn.value[0]) send = true;
+        if (condition === "equals" && payload === conditional.triggerOn.value[0]) send = true;
+        if (condition === "equals" && payload > conditional.triggerOn.value[0] && payload > conditional.triggerOn.value[1]) send = true;
+
+        if (send) {
+            runConditionals(conditional, payload, info_type).catch((err) => {
+                console.log("error while running conditionals", err);
+            });
+        } else {
+            console.log(payload, condition, conditional.triggerOn.value[0], "not met");
+        }
+    }
+}
+
+async function runConditionals(conditional: any, payload: string, info_type: string) {
+    for (const runObject of conditional.run) {
+        switch (runObject.action) {
+            case "email":
+                console.log("send email with", payload, "to", runObject.subjects);
+                break;
+            case "textMessage":
+                console.log("send text with", payload, "to", runObject.subjects);
+                break;
+            case "write":
+                console.log("write", runObject.value, "to pins", runObject.subjects);
+                publishWrite(conditional.listenSubject.subjectControllerID, info_type, conditional.listenSubject.pin_name, runObject.value)
+                    .catch((err) => {
+                        console.log("error while publishing data: ", err);
+                    });
+                break;
+        }
+    }
+}
+
+async function publishWrite(machine_name: string, info_type: string, pin_name: string, payload: string) {
+    const topic = `controllers/${machine_name}/write/device/${info_type}/${$(this).attr("id")}`;
+    // await publishToTopic(topic, payload);
+}
+
+function publishToTopic(topic: string, body: string) {
+    return new Promise((resolve) => {
+        mqttInstance.publish({
+            topic: topic,
+            payload: new Buffer(body),
+            qos: 1
+        }, undefined, function done() {
+            resolve();
+        });
+    });
 }
 
 async function handleNewDevice(topic: string, serverInstance: any) {
@@ -123,7 +191,6 @@ async function handleNewDevice(topic: string, serverInstance: any) {
     if (controller) {
         const devices: any = await DB.find(Device, {_controllerID: controller.id});
         if (devices[0]) {
-            console.log(devices);
             for (const item of devices) {
                 const message = {
                     topic: `controllers/${clientID}/new/device/${item.used_pins.information_type}/${item.used_pins.pin_mode}/${item.machine_name}/${item.used_pins.pin_name}`,
@@ -132,7 +199,6 @@ async function handleNewDevice(topic: string, serverInstance: any) {
                 };
                 serverInstance.publish(message);
             }
-
         } else {
             console.log("Controller had no devices");
         }

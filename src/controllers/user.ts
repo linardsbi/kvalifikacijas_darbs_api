@@ -439,23 +439,8 @@ export let postReset = (req: Request, res: Response, next: NextFunction) => {
                 });
         },
         function sendResetPasswordEmail(user: UserModel, done: Function) {
-            const transporter = nodemailer.createTransport({
-                service: "SendGrid",
-                auth: {
-                    user: process.env.SENDGRID_USER,
-                    pass: process.env.SENDGRID_PASSWORD
-                }
-            });
-            const mailOptions = {
-                to: user.email,
-                from: "admin@site.com",
-                subject: "Your password has been changed",
-                text: `Hello,\n\nThe password for your account ${user.email} has just been changed.\n`
-            };
-            transporter.sendMail(mailOptions, (err) => {
-                req.flash("success", {msg: "Success! Your password has been changed."});
-                done(err);
-            });
+
+
         }
     ], (err) => {
         if (err) {
