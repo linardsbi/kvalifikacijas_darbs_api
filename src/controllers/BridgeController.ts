@@ -52,6 +52,10 @@ export class WSClientInstance extends BridgeInstance {
             that.handleMessage(message);
         });
 
+        this.instance.on("close", (code: number, reason: string) => {
+            console.log(`connection closed with code ${code} - ${reason}`);
+        });
+
         this.instance.on("error", function incoming(err: any) {
             that.response.error = err.toString();
             console.error("error occurred:", err.toString());

@@ -3,7 +3,7 @@
 import async from "async";
 
 import {Request, Response} from "express";
-import {default as Topic, TopicModel} from "../models/Topic";
+import {default as Topic} from "../models/Topic";
 import {ControllerModel, default as Controller} from "../models/DeviceController";
 import {default as Client} from "../models/User";
 import {APIResponse} from "../util/helpers/APIResponse";
@@ -11,27 +11,25 @@ import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import {ErrorHandler} from "../util/helpers/errorHandling";
 import {ParseRequest} from "../util/helpers/parseRequest";
 import {APIController} from "./APIController";
+import {DB} from "../util/helpers/queryHelper";
 
 let payload = new APIResponsePayload();
 
 // controllers/<controller_machine_name>/<action>/<subject>
 
-function createNewTopic(topicData: TopicModel): any {
+function createNewTopic(topicData: any): any {
     return new Promise((resolve, reject) => {
         async.waterfall([
-            function getControllerBySensorID(done: Function) {
-                Controller.find({devices: topicData._sensorID}, "_id _client_id", (err, controller: ControllerModel) => {
-                    if (err)
-                        payload.addUnformattedData({error: err});
-                    else if (!controller)
-                        payload.addUnformattedData({error: "No controllers were found with that sensor id"});
-                    else {
-                        topicData._controllerID = controller[0]._id;
-                        topicData._clientID = controller[0]._client_id;
-                    }
+            async function getControllerBySensorID(done: Function) {
+                const controller = await DB.findOne<ControllerModel>(Controller, {devices: topicData._sensorID}, "_id _client_id");
+                if (!controller)
+                    payload.addUnformattedData({error: "No controllers were found with that sensor id"});
+                else {
+                    topicData._controllerID = controller._id;
+                    topicData._clientID = controller._client_id;
+                }
 
-                    done(err);
-                });
+                done();
             },
             function saveTopic(done: Function) {
                 try {
@@ -43,7 +41,7 @@ function createNewTopic(topicData: TopicModel): any {
                         "_sensorID": topicData._sensorID,
                     });
 
-                    topic.save(function (err, topic: TopicModel) {
+                    topic.save(function (err, topic: any) {
                         if (err) {
                             ErrorHandler.handle(err);
                             payload.addUnformattedData({error: err});
@@ -58,7 +56,7 @@ function createNewTopic(topicData: TopicModel): any {
                     done(e);
                 }
             },
-            function updateControllerWithTopic(topic: TopicModel, done: Function) {
+            function updateControllerWithTopic(topic: any, done: Function) {
                 try {
                     Controller.findById(topicData._controllerID, (err, controller: ControllerModel) => {
                         controller.topics.push({
@@ -100,15 +98,15 @@ function createNewTopic(topicData: TopicModel): any {
  * @param {e.Response} res
  */
     // TODO: rework, so topic names can be logged with the corresponding data
-export const create = (req: Request, res: Response) => {
-    const topic: TopicModel = req.body;
+export const create = (req: Request, res: any) => {
+    const topic: any = req.body;
     const response = new APIResponse(res);
 
-    createNewTopic(topic).then((result) => {
+    createNewTopic(topic).then((result: any) => {
         response.sendSuccess(result);
 
         payload = new APIResponsePayload();
-    }).catch((err) => {
+    }).catch((err: any) => {
         response.sendError(err);
 
         payload = new APIResponsePayload();
@@ -123,7 +121,7 @@ export const create = (req: Request, res: Response) => {
  */
 export const read = (req: Request, res: Response) => {
     const topicID: string = req.query.id;
-    const api = new APIController(res, Topic);
+    const api = new APIController(req, res, Topic);
 
     api.read(topicID);
 };
@@ -136,7 +134,7 @@ export const read = (req: Request, res: Response) => {
  */
 export let update = (req: Request, res: Response) => {
     const parameters: ControllerModel = req.body;
-    const api = new APIController(res, Topic);
+    const api = new APIController(req, res, Topic);
 
     api.update(parameters);
 };
@@ -149,7 +147,7 @@ export let update = (req: Request, res: Response) => {
  */
 export let remove = (req: Request, res: Response) => {
     const topicID: string = req.body;
-    const api = new APIController(res, Topic);
+    const api = new APIController(req, res, Topic);
 
     api.remove(topicID);
 };

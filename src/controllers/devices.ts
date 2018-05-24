@@ -6,10 +6,11 @@ import { Request, Response } from "express";
 import {default as Device, DeviceModel } from "../models/Device";
 import { APIResponse } from "../util/helpers/APIResponse";
 import { ControllerModel, default as Controller } from "../models/DeviceController";
-import { APIResponsePayload } from "../util/helpers/APIResponsePayload";
+import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import { ErrorHandler } from "../util/helpers/errorHandling";
 import { APIController } from "./APIController";
 import app from "../app";
+import {DB} from "../util/helpers/queryHelper";
 
 let payload = new APIResponsePayload();
 
@@ -43,7 +44,7 @@ function createNewDevice(deviceData: DeviceModel): any {
 
             function saveDevice(done: Function) {
                 console.log(device._controllerID);
-                device.save(function (err, device: DeviceModel) {
+                device.save(function (err: any, device: DeviceModel) {
                     if (err) {
                         payload.addUnformattedData({error: err});
                     }
@@ -51,24 +52,21 @@ function createNewDevice(deviceData: DeviceModel): any {
                     done(err, device);
                 });
             },
-            function updateControllerWithNewDeviceInfo(device: DeviceModel, done: Function) {
+            async function updateControllerWithNewDeviceInfo(device: DeviceModel, done: Function) {
                 try {
-                    Controller.find({machine_name: deviceData._controllerID}, (err, controller: ControllerModel) => {
-                        if (err)
-                            payload.addUnformattedData({error: err});
-                        else if (!controller)
-                            payload.addUnformattedData({error: "No controller with that id was found"});
-                        else {
-                            console.log(controller);
-                            controller[0].devices.push({_id: device._id, name: device.name});
-                            controller[0].save(function (err) {
-                                if (err) {
-                                    payload.addUnformattedData({error: err});
-                                }
-                            });
-                        }
-                        done(err);
-                    });
+                    const controller = await DB.findOne<ControllerModel>(Controller, {machine_name: deviceData._controllerID});
+
+                    if (!controller) {
+                        payload.addUnformattedData({error: "No controller with that id was found"});
+                        done();
+                    } else {
+                        controller.devices.push({_id: device._id, name: device.name});
+                        controller.save(function (err: any, result) {
+                            if (err)
+                                payload.addUnformattedData({error: err});
+                            done(undefined, result);
+                        });
+                    }
                 } catch (e) {
                     payload.addUnformattedData({error: e});
                     done(e);
@@ -94,15 +92,15 @@ function createNewDevice(deviceData: DeviceModel): any {
  * @param {e.Request} req
  * @param {e.Response} res
  */
-export const create = (req: Request, res: Response) => {
+export const create = (req: Request, res: any) => {
     const device: DeviceModel = req.body;
     const response = new APIResponse(res);
 
-    createNewDevice(device).then((result) => {
+    createNewDevice(device).then((result: Payload) => {
         response.sendSuccess(result);
 
         payload = new APIResponsePayload();
-    }).catch((err) => {
+    }).catch((err: any) => {
         response.sendError(err);
 
         payload = new APIResponsePayload();

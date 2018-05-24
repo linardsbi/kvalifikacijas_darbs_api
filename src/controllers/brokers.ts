@@ -13,6 +13,7 @@ import crypto from "crypto";
 import {ControllerModel, default as Controller} from "../models/DeviceController";
 import {APIController} from "./APIController";
 import {default as Device, DeviceModel} from "../models/Device";
+import {ServerResponse} from "http";
 
 let payload = new APIResponsePayload();
 
@@ -26,29 +27,18 @@ let payload = new APIResponsePayload();
  * @param {e.Request} req
  * @param {e.Response} res
  */
-export const create = (req: Request, res: Response) => {
+export const create = (req: Request, res: any) => {
     const broker: BrokerModel = req.body;
     const response = new APIResponse(res);
 
     async.waterfall([
-        function generateSecret(done: Function) {
-            crypto.randomBytes(16, function (err: Error, buffer: any) {
-                broker.secret = buffer.toString("hex");
-                if (err) payload.addUnformattedData({error: err});
-                done(err, broker);
-            });
-        },
         function createBroker(brokerData: BrokerModel, done: Function) {
-            const broker = new Broker();
+            const broker = new Broker({
+                "broker.static_ip": brokerData.static_ip
+            });
 
-            if (brokerData.static_ip) {
-                broker.static_ip = brokerData.static_ip;
-                broker.secret = brokerData.secret;
-            } else {
-                payload.addUnformattedData({error: "Required parameter static_ip is missing"});
-            }
             try {
-                const result = broker.save(function (err, saved) {
+                broker.save(function (err, saved) {
                     if (err) {
                         payload.addUnformattedData({error: err});
                         done(err);
@@ -62,7 +52,7 @@ export const create = (req: Request, res: Response) => {
                 done(e);
             }
         }
-    ], (result) => {
+    ], (result: any) => {
         result = payload.getFormattedPayload();
 
         if (!result.errors[0]) response.sendSuccess(result);
@@ -80,7 +70,7 @@ export const create = (req: Request, res: Response) => {
  */
 export const read = (req: Request, res: Response) => {
     const brokerID: string = req.query.id;
-    const api = new APIController(res, Broker);
+    const api = new APIController(req, res, Broker);
 
     api.read(brokerID);
 };
@@ -93,7 +83,7 @@ export const read = (req: Request, res: Response) => {
  */
 export let update = (req: Request, res: Response) => {
     const parameters: BrokerModel = req.body;
-    const api = new APIController(res, Broker);
+    const api = new APIController(req, res, Broker);
 
     api.update(parameters);
 };
@@ -106,7 +96,7 @@ export let update = (req: Request, res: Response) => {
  */
 export let remove = (req: Request, res: Response) => {
     const brokerID: string = req.body;
-    const api = new APIController(res, Broker);
+    const api = new APIController(req, res, Broker);
 
     api.remove(brokerID);
 };

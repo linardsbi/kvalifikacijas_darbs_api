@@ -4,7 +4,7 @@ import {ParseRequest} from "./parseRequest";
 import {Payload} from "./APIResponsePayload";
 
 export class APIResponse {
-    private res: Response;
+    private res: any;
 
     constructor(res: Response) {
         this.res = res;

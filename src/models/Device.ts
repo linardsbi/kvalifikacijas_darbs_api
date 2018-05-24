@@ -3,8 +3,8 @@ import {DB} from "../util/helpers/queryHelper";
 import DeviceController from "./DeviceController";
 
 export type DeviceModel = mongoose.Document & {
-    name: String,
-    machine_name: String,
+    name: string,
+    machine_name: string,
     _controllerID: mongoose.Schema.Types.ObjectId,
     used_pins: PinModel,
     associated_controller?: any

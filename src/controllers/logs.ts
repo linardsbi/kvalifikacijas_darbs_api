@@ -5,7 +5,7 @@ import {default as PublishedData, PublishedDataModel} from "../models/PublishedD
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import {ErrorHandler} from "../util/helpers/errorHandling";
 import {APIResponse} from "../util/helpers/APIResponse";
-import {DB, parseQuery} from "../util/helpers/queryHelper";
+import {DB, parseQuery, formattedQueryType as dataQuery} from "../util/helpers/queryHelper";
 import {JwtToken} from "../util/helpers/jwtToken";
 import User from "../models/User";
 import Device from "../models/Device";
@@ -48,7 +48,7 @@ export function savePostData(data: PublishedDataModel) {
  * parameters: controllerID, payload
  *
  */
-export const postData = (req: Request, res: Response) => {
+export const postData = (req: Request, res: any) => {
     // TODO: create a nice flow of error handling ops, minimize async ops
     const data: PublishedDataModel = req.body;
     const response = new APIResponse(res);
@@ -98,11 +98,11 @@ export const getData = async (req: Request, res: any) => {
     // TODO: create a nice flow of error handling ops, minimize async ops
     const data: string = req.query.query;
     const response = new APIResponse(res);
-    const decoded = JwtToken.decodeToken(req.headers.authtoken);
+    const decoded = JwtToken.decodeToken(req.headers.authtoken.toString());
     const ids: any = [];
 
     try {
-        const result = await parseQuery(data);
+        const result = await parseQuery<dataQuery>(data);
         const user: any = User.findOne({email: decoded.username});
         user.populate("controllers._id");
 
@@ -115,9 +115,6 @@ export const getData = async (req: Request, res: any) => {
                 }
             }
         }
-
-        if (result.limit)
-            result.limit = parseInt(result.limit);
 
         if (result.select["device._id"]) {
             if (!ids.includes(result.select["device._id"]) && decoded.role !== "admin") {

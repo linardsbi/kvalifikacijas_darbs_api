@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 // controllers/<controller_machine_name>/<action>/<subject>
 
-const topicSchema = new mongoose.Schema({
+export const topicSchema = new mongoose.Schema({
     action: String,
     subject: String,
     pin: {

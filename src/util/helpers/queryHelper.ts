@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 
 export class DB {
 
-    static findById(model: Model<any>, id: mongoose.Schema.Types.ObjectId): Promise<MongooseDocument> {
+    static findById<T>(model: Model<any>, id: mongoose.Schema.Types.ObjectId): Promise<T> {
         return new Promise((resolve, reject) => {
             model.findById(id, function (err, found) {
                 if (err)
@@ -18,7 +18,7 @@ export class DB {
         });
     }
 
-    static findOne(model: Model<any>, query: object, fields?: string, limit?: number): Promise<MongooseDocument> {
+    static findOne<T>(model: Model<any>, query: object, fields?: string, limit?: number): Promise<T> {
         return new Promise((resolve, reject) => {
             const modelQuery = model.findOne(query);
 
@@ -39,7 +39,7 @@ export class DB {
         });
     }
 
-    static find(model: Model<any>, query: object, fields?: string, limit?: number): Promise<MongooseDocument[]> {
+    static find<T>(model: Model<any>, query: object, fields?: string, limit?: number): Promise<T[]> {
         return new Promise((resolve, reject) => {
             const modelQuery = model.find(query);
 
@@ -63,13 +63,13 @@ export class DB {
     }
 }
 
-type formattedQueryType = {
+export type formattedQueryType = {
     select: any,
     fields: string,
     limit: number
 };
 
-export async function parseQuery(query: string): Promise<any> {
+export async function parseQuery<T>(query: string): Promise<T> {
     const queryObject: any = parse.toObject(query);
     const formattedQuery: formattedQueryType = {
         select: {},
@@ -168,7 +168,7 @@ export async function parseQuery(query: string): Promise<any> {
             if (element.fields) {
                 formattedQuery.fields = element.fields;
             } else if (element.limit) {
-                formattedQuery.limit = element.limit;
+                formattedQuery.limit = parseInt(element.limit);
             }
 
             if (element[arrayIndex]) {

@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
+import mongoose, {MongooseDocument} from "mongoose";
 
-export interface BrokerInterface {
-    static_ip: String;
+export interface BrokerInterface extends Document {
+    static_ip: string;
     clients?: object;
 }
 

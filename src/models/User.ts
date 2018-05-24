@@ -8,11 +8,20 @@ export type UserModel = mongoose.Document & {
     passwordResetExpires: Date,
     apiKey: string,
     role: string,
-    controllers: [mongoose.Schema.Types.ObjectId],
+    controllers: [
+        {
+            _id: mongoose.Schema.Types.ObjectId,
+            machine_name: string
+        }
+        ],
 
     comparePassword: (candidatePassword: string, cb: (err: Error, isMatch: boolean) => {}) => void,
 };
 
+export type AuthToken = {
+    accessToken: string,
+    kind: string
+};
 
 const userSchema = new mongoose.Schema({
     email: {type: String, unique: true, max: 30},

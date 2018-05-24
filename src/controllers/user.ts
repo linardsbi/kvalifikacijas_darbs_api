@@ -145,7 +145,7 @@ export const postAdmin = async (req: Request, res: Response) => {
     }
 
     const uid = req.body.id;
-    const user: UserModel = await DB.findById(User, uid);
+    const user = await DB.findById<UserModel>(User, uid);
 
     if (req.body.action === "make")
         user.role = "admin";

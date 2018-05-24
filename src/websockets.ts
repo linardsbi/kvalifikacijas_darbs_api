@@ -26,10 +26,10 @@ let WSConnection: any;
 export function startWS() {
     const wss = new WebSocket.Server({port: parseInt(process.env.WS_PORT)});
 
-    wss.on("connection", function connection(ws: any) {
+    wss.on("connection", function connection(ws: any, req) {
         WSConnection = new WSClientInstance(ws);
-
-        // Once server started and client, connect to mqtt server
+        console.log(req.connection.remoteAddress);
+        // Once server started and client connected, connect to mqtt server
         // WSConnection._mqttClient = client;
     });
 }

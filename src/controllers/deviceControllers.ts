@@ -4,7 +4,7 @@ import async from "async";
 
 import {NextFunction, Request, Response} from "express";
 import {ControllerModel, default as Controller} from "../models/DeviceController";
-import {default as Topic, TopicModel} from "../models/Topic";
+import {default as Topic} from "../models/Topic";
 import {default as Device, DeviceModel} from "../models/Device";
 import {default as PublishedData, PublishedDataModel} from "../models/PublishedData";
 import {default as User, UserModel} from "../models/User";
@@ -82,15 +82,15 @@ export function createNewController(controllerData: ControllerModel): any {
  * @param {e.Request} req
  * @param {e.Response} res
  */
-export const create = (req: Request, res: Response) => {
+export const create = (req: Request, res: any) => {
     const controller: ControllerModel = req.body;
     const response = new APIResponse(res);
 
-    createNewController(controller).then(function (result) {
+    createNewController(controller).then(function (result: any) {
         response.sendSuccess(result);
         // Temporary solution
         payload = new APIResponsePayload();
-    }, (err) => {
+    }, (err: any) => {
         response.sendError(err);
         // Temporary solution
         payload = new APIResponsePayload();
@@ -100,7 +100,7 @@ export const create = (req: Request, res: Response) => {
 function getTopicsByControllerID(controllerID: string): any {
     return new Promise((resolve, reject) => {
         ParseRequest.getValuesFromJSONString(controllerID).then((controllerIDs: object) => {
-            Topic.find({_controllerID: {$in: controllerIDs}}, function (err, topic: TopicModel) {
+            Topic.find({_controllerID: {$in: controllerIDs}}, function (err, topic) {
                 if (err) {
                     payload.addUnformattedData({error: err});
                     reject(payload.getFormattedPayload());
@@ -119,7 +119,7 @@ function getTopicsByControllerID(controllerID: string): any {
  * parameters: controller id
  *
  */
-export const getControllerTopics = (req: Request, res: Response) => {
+export const getControllerTopics = (req: Request, res: any) => {
     const controllerID = req.query.id;
     const response = new APIResponse(res);
 
@@ -128,7 +128,7 @@ export const getControllerTopics = (req: Request, res: Response) => {
             response.sendSuccess(result);
             // Temporary solution
             payload = new APIResponsePayload();
-        }, (err) => {
+        }, (err: any) => {
             response.sendError(err);
             // Temporary solution
             payload = new APIResponsePayload();
@@ -158,7 +158,7 @@ function getControllerDevicesByID(controllerID: string) {
  * parameters: controller id
  *
  */
-export let getControllerDevices = (req: Request, res: Response) => {
+export let getControllerDevices = (req: Request, res: any) => {
     const controllerID = req.query.id;
     const response = new APIResponse(res);
 
@@ -219,7 +219,7 @@ function getControllerDataByID(controllerID: string, parameters: string) {
  *                      topicName: String,
  *             }
  */
-export let getControllerData = (req: Request, res: Response) => {
+export let getControllerData = (req: Request, res: any) => {
     const controllerID = req.query.id;
     const parameters = req.query.parameters;
     const response = new APIResponse(res);

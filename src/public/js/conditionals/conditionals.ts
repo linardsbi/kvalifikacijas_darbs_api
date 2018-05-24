@@ -35,8 +35,8 @@
 
             $(".add-another-field").on("click", function (e) {
                 e.preventDefault();
-
-                const toCopy: any = $(this).parent().siblings(".action-fields").find(".write-group, .email-group, .phone-group").first().prevObject;
+                const field: any = $(this).parent().siblings(".action-fields").find(".write-group, .email-group, .phone-group").first();
+                const toCopy: any = field.prevObject;
                 const clone = toCopy.clone(true, true);
 
                 toCopy.find(".add-another-field").parent().remove();

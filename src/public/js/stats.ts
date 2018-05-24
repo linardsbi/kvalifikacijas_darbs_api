@@ -50,20 +50,29 @@
     }
 
     function getPresenceData() {
-        let controllers: string[] = getControllers();
+        const data = {
+            apiToken: $("#apiToken").val(),
+            action: "subscribe",
+            topics: ["controller/+/presence"]
+        };
 
-        controllers = controllers.map((device) => {
-            return `controllers/${device}/presence`;
-        });
+        send(data);
+    }
 
-        if (controllers[0]) {
-            const data = {
-                apiToken: $("#apiToken").val(),
-                action: "subscribe",
-                topics: controllers
-            };
+    function send(message: object) {
+        socket.send(JSON.stringify(message));
+    }
 
-            send(data);
+    function updateDOM(data: BridgeData) {
+        if (data && data.item && data.item === "controller" && data.status) {
+            const item = $(".online-controllers");
+            const count = parseInt(item.text());
+
+            if (data.status === "connected") {
+                item.text(count + 1);
+            } else if (count > 0) {
+                item.text(count - 1);
+            }
         }
     }
 
@@ -71,7 +80,7 @@
         let result;
 
         try {
-            result = await sendAjaxRequest("/admin/statistics", {});
+            result = await sendAjaxRequest<any>("/admin/statistics", {});
         } catch (e) {
             const errorMessage = `An error occurred while fetching the device you clicked on.\n
                     the error: <pre>${e.message}</pre>`;
@@ -121,13 +130,13 @@
                     pie: {
                         allowPointSelect: false,
                         size: "90%",
-                        center:['25%', '40%'],
-                        cursor: 'pointer',
+                        center: ["25%", "40%"],
+                        cursor: "pointer",
                         dataLabels: {
                             enabled: true,
                             format: "<b>{point.name}</b>: {point.y}",
                             style: {
-                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || "black"
                             }
                         },
                         showInLegend: true
@@ -139,8 +148,8 @@
                 legend: {
                     enabled: true,
                     floating: true,
-                    align:'right',
-                    layout: 'vertical',
+                    align: "right",
+                    layout: "vertical",
                     x: -150,
                     y: -50,
                     labelFormatter : function() {
@@ -162,7 +171,7 @@
         });
     }
 
-    function sendAjaxRequest(url: string, data: object, method?: string) {
+    function sendAjaxRequest<T>(url: string, data: object, method?: string): Promise<T> {
         return new Promise((resolve, reject) => {
             $.ajax({
                 headers: {
@@ -185,6 +194,7 @@
 
     $(window).on("load", async function () {
         await initChart("total-stats-graph");
+        await connect();
 
         $(".make-admin").on("click", function () {
             const payload = {

@@ -1,17 +1,15 @@
 import mongoose from "mongoose";
 import { DeviceModel } from "../models/Device";
-import { TopicModel } from "../models/Topic";
 
 export type ControllerModel = mongoose.Document & {
     _client_id: mongoose.Schema.Types.ObjectId;
-    id?: mongoose.Schema.Types.ObjectId;
     name?: string;
     machine_name: string;
     devices?: [{
         _id: mongoose.Schema.Types.ObjectId,
         name: string
     }];
-    topics?: TopicModel[];
+    topics?: any[];
 };
 
 const deviceControllerSchema = new mongoose.Schema({

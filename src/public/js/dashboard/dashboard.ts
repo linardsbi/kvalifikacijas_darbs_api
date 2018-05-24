@@ -94,8 +94,6 @@
         }
 
         if (!$("#sensor-graph").find(".overlay").length) {
-
-
             // chart.addSeries({
             //     name: 'Rainfall',
             //     type: 'column',

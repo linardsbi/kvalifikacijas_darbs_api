@@ -2,7 +2,7 @@
 import nodemailer, { Transporter } from "nodemailer";
 
 export class Email {
-    private static transporter: Transporter;
+    private transporter: Transporter;
     private static toText: string;
     private static fromText: string;
     private static subjectText: string;

@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, {MongooseDocument} from "mongoose";
 
 /*
    form example -
@@ -21,7 +21,7 @@ import mongoose from "mongoose";
             2. <select action> <select subject>
             3. etc...
  */
-export interface ConditionalInterface {
+export interface ConditionalInterface extends MongooseDocument {
     name: string;
     listenSubject: {
         subjectControllerID: mongoose.Schema.Types.ObjectId,

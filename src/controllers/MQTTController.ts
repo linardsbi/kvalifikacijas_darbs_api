@@ -4,13 +4,13 @@ import async from "async";
 import {default as User, UserModel} from "../models/User";
 import {APIResponsePayload} from "../util/helpers/APIResponsePayload";
 import {createNewController} from "../controllers/deviceControllers";
-import {default as Device} from "../models/Device";
-import {default as Controller} from "../models/DeviceController";
+import {default as Device, DeviceModel} from "../models/Device";
+import {ControllerModel, default as Controller} from "../models/DeviceController";
 import {DB} from "../util/helpers/queryHelper";
 import {MqttTopicMatch as strmatch} from "../util/helpers/mqttTopicMatch";
 import {MongooseDocument} from "mongoose";
 import {savePostData} from "./logs";
-import Conditional from "../models/Conditional";
+import Conditional, {ConditionalInterface} from "../models/Conditional";
 import {Email} from "../util/helpers/sendEmail";
 // import { default as Controller, ControllerModel } from "../models/DeviceController";
 
@@ -64,8 +64,8 @@ export function handleClientPublish(packet: any, serverInstance: any) {
 
 async function handleDeviceWrite(packet: any) {
     const topic: string = packet.topic;
-    const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: topic.split("/")[1]}, "_id");
-    const device: any = await DB.findOne(Device, {
+    const controller = await DB.findOne<ControllerModel>(Controller, {machine_name: topic.split("/")[1]}, "_id");
+    const device = await DB.findOne<DeviceModel>(Device, {
         _controllerID: controller.id,
         "used_pins.pin_name": topic.split("/")[5]
     }, "used_pins");
@@ -90,12 +90,12 @@ export function handleClientSubscribe(topic: string, serverInstance: any) {
 async function handleIncomingData(packet: any) {
     const topic: string = packet.topic;
     console.log(topic);
-    const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: topic.split("/")[1]}, "_id");
-    const device: any = await DB.findOne(Device, {
+    const controller = await DB.findOne<ControllerModel>(Controller, {machine_name: topic.split("/")[1]}, "_id");
+    const device = await DB.findOne<DeviceModel>(Device, {
         _controllerID: controller.id,
         "used_pins.pin_name": topic.split("/")[4]
     }, "_id used_pins name");
-    const conditionals: MongooseDocument[] = await DB.find(Conditional, {
+    const conditionals = await DB.find<ConditionalInterface>(Conditional, {
         "listenSubject.subjectControllerID": controller.id,
         "listenSubject.pin_name": device.used_pins.pin_name
     });
@@ -125,7 +125,7 @@ async function handleIncomingData(packet: any) {
     }
 }
 
-async function handleConditionals(packet: any, conditionals: MongooseDocument[], info_type: string) {
+async function handleConditionals(packet: any, conditionals: ConditionalInterface[], info_type: string) {
     const payload = packet.payload.toString();
 
     for (const conditional of conditionals) {
@@ -188,7 +188,7 @@ function sendEmail(payload: string, email: string, pin_name: string) {
 
 async function publishWrite(machine_name: string, info_type: string, pin_name: string, payload: string) {
     const topic = `controllers/${machine_name}/write/device/${info_type}/${$(this).attr("id")}`;
-    // await publishToTopic(topic, payload);
+    await publishToTopic(topic, payload);
 }
 
 function publishToTopic(topic: string, body: string) {
@@ -206,10 +206,10 @@ function publishToTopic(topic: string, body: string) {
 async function handleNewDevice(topic: string, serverInstance: any) {
     const clientID = topic.split("/")[1];
 
-    const controller: MongooseDocument = await DB.findOne(Controller, {machine_name: clientID});
+    const controller = await DB.findOne<ControllerModel>(Controller, {machine_name: clientID});
 
     if (controller) {
-        const devices: any = await DB.find(Device, {_controllerID: controller.id});
+        const devices = await DB.find<DeviceModel>(Device, {_controllerID: controller.id});
         if (devices[0]) {
             for (const item of devices) {
                 const message = {
