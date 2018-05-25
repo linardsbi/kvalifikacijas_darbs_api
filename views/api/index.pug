@@ -1,13 +1,139 @@
 extends ../layout
 
 block content
-  h2 API Examples
+  h2 API Documentation
   hr
-
-  .row
-    .col-sm-4
-      a(href='/api/facebook', style='color: #fff')
-        .panel.panel-default(style='background-color: #3b5998')
+  .container-fluid
+    .panel-group#accordion
+      .panel.panel-default
+        .panel-heading
+          h4.panel-title
+            a(data-toggle="collapse" data-parent="#accordion" href=`#collapse1`) Controllers
+        .panel-collapse.collapse.in(id=`collapse1`)
           .panel-body
-            img(src='http://i.imgur.com/jiztYCH.png', height=40, alt='Facebook')
-            |  Facebook
+            .row
+              .col-md-6
+                .route-name
+                    span.route Route:
+                    | /controllers/create
+                    .purpose To create a new controller
+                .route-example
+                  | placeholder
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /controllers/get
+                  .purpose To get a controller
+                .route-example
+                  | placeholder
+            .row
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /controllers/edit
+                  .purpose To edit a controller
+                .route-example
+                  | placeholder
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /controllers/delete
+                  .purpose To delete a controller
+                .route-example
+                  | placeholder
+
+      .panel.panel-default
+        .panel-heading
+          h4.panel-title
+            a(data-toggle="collapse" data-parent="#accordion" href=`#collapse2`) Devices
+        .panel-collapse.collapse.in(id=`collapse2`)
+          .panel-body
+            .row
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /devices/create
+                  .purpose To create a new device
+                .route-example
+                  | placeholder
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /devices/get
+                  .purpose To get a device
+                .route-example
+                  | placeholder
+            .row
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /devices/edit
+                  .purpose To edit a device
+                .route-example
+                  | placeholder
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /devices/delete
+                  .purpose To delete a device
+                .route-example
+                  | placeholder
+
+      .panel.panel-default
+        .panel-heading
+          h4.panel-title
+            a(data-toggle="collapse" data-parent="#accordion" href=`#collapse3`) Conditionals
+        .panel-collapse.collapse.in(id=`collapse3`)
+          .panel-body
+            .row
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /conditionals/create
+                  .purpose To create a new conditional
+                .route-example
+                  | placeholder
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /conditionals/get
+                  .purpose To get a conditional
+                .route-example
+                  | placeholder
+            .row
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /conditionals/edit
+                  .purpose To edit a conditional
+                .route-example
+                  | placeholder
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /conditionals/delete
+                  .purpose To delete a conditional
+                .route-example
+                  | placeholder
+
+      .panel.panel-default
+        .panel-heading
+          h4.panel-title
+            a(data-toggle="collapse" data-parent="#accordion" href=`#collapse4`) Devices
+        .panel-collapse.collapse.in(id=`collapse4`)
+          .panel-body
+            .row
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /data/post
+                  .purpose To send and save incoming data from a device
+                .route-example
+                  | placeholder
+              .col-md-6
+                .route-name
+                  span.route Route:
+                  | /data/get
+                  .purpose To get the data of certain devices
+                .route-example
+                  | placeholder

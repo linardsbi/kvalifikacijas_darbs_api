@@ -243,7 +243,7 @@
 .glyphicon-paste                  { &:before { content: "\e206"; } }
 // The following 2 Glyphicons are omitted for the time being because
 // they currently use Unicode codepoints that are outside the
-// Basic Multilingual Plane (BMP). Older buggy versions of WebKit can't handle
+// Basic Multilingual Plane (BMP). Older buggy versions of WebKit can't error
 // non-BMP codepoints in CSS string escapes, and thus can't display these two icons.
 // Notably, the bug affects some older versions of the Android Browser.
 // More info: https://github.com/twbs/bootstrap/issues/10106

@@ -64,11 +64,12 @@ mixin newPanel
                         .form-group
                             .row
                                 .col-sm-3.control-label
-                                    label(for="apply-calc") Apply pin specific calculation to value?
-                                .col-sm-9
-                                    input.apply-calc.form-control(type="checkbox")
-                    .actions
-                        .condition-action
+                                    label Apply pin specific calculation to value?
+                                .col-sm-9.text-left.slide-toggle
+                                    input#apply-calc.apply-calc.form-control(type="checkbox")
+                                    label(for="apply-calc")
+                    .actions.row
+                        .condition-action.col-md-6
                             .form-group
                                 label(for="action-select") Action
                                 select.action-select
@@ -76,25 +77,26 @@ mixin newPanel
                                     option(value="textMessage") Send text message
                                     option(value="write") Write to pin
                             .action-fields
-                                .form-group.write-group
-                                    .form-group
-                                        label(for="device-select") Device
-                                        +devicesSelect.write-devices
-                                    .form-group
-                                        label(for="write-value") Write value
-                                        input.write-value.form-control(type="text", placeholder="ex. 40 or HIGH")
-                                .form-group.email-group
-                                    label(for="email-field") Email
-                                    input.email.form-control(type="email", placeholder="Enter an email address")
-                                .form-group.phone-group
-                                    label(for="phone-field") Phone number
-                                    input.phone.form-control(type="tel", placeholder="Enter a phone number to send text to")
+                                .wrapper
+                                    .form-group.write-group
+                                        .form-group
+                                            label(for="device-select") Device
+                                            +devicesSelect.write-devices
+                                        .form-group
+                                            label(for="write-value") Write value
+                                            input.write-value.form-control(type="text", placeholder="ex. 40 or HIGH")
+                                    .form-group.email-group
+                                        label(for="email-field") Email
+                                        input.email.form-control(type="email", placeholder="Enter an email address")
+                                    .form-group.phone-group
+                                        label(for="phone-field") Phone number
+                                        input.phone.form-control(type="tel", placeholder="Enter a phone number to send text to")
                             .form-group
-                                button.add-another-field.btn.btn-default
+                                button.add-another-field.btn.btn-default.btn-block
                                     i.fa.fa-plus
                                     | Add another field
                     .condition-action
-                        button.btn.add-another-action.btn-primary
+                        button.btn.add-another-action.btn-primary.btn-block
                             i.fa.fa-plus
                             | Add another action
             .panel-footer

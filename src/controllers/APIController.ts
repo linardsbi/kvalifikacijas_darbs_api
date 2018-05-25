@@ -5,12 +5,14 @@ import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import {APIResponse} from "../util/helpers/APIResponse";
 import {ParseRequest} from "../util/helpers/parseRequest";
 import jwt from "jsonwebtoken";
-import {DB} from "../util/helpers/queryHelper";
+import {DB, ObjectID, objectID} from "../util/helpers/queryHelper";
 import {JwtToken as token} from "../util/helpers/jwtToken";
-import {default as Controller} from "../models/DeviceController";
-import {default as Device } from "../models/Device";
-import User from "../models/User";
-import Conditional from "../models/Conditional";
+import {ControllerModel, default as Controller, default as DeviceController} from "../models/DeviceController";
+import {default as Device, DeviceModel} from "../models/Device";
+import User, {APIToken} from "../models/User";
+import Conditional, {ConditionalInterface} from "../models/Conditional";
+import {EventHandler} from "../util/helpers/eventHandling";
+import {eventSubject} from "../models/EventLog";
 
 export class APIController {
     payload = new APIResponsePayload();
@@ -36,7 +38,7 @@ export class APIController {
         }
     }
 
-    remove(itemID: string) {
+    remove(itemID: ObjectID) {
         if (itemID && isAllowed(itemID)) {
             this.deleteResource(itemID).then((result: Payload) => {
                 this.apiResponse.sendSuccess(result);
@@ -46,7 +48,7 @@ export class APIController {
         }
     }
 
-    read(itemID: string) {
+    read(itemID: ObjectID) {
         if (itemID) {
             this.getResourceData(itemID).then((result: Payload) => {
                 this.apiResponse.sendSuccess(result);
@@ -57,10 +59,12 @@ export class APIController {
     }
 
     sendError(error: any) {
+        EventHandler.error(`API error: ${error}`);
+
         this.apiResponse.sendError(error);
     }
 
-    private getResourceData(itemID: string) {
+    private getResourceData(itemID: any) {
         return new Promise((resolve, reject) => {
             const payload = this.payload;
 
@@ -79,7 +83,7 @@ export class APIController {
         });
     }
 
-    private deleteResource(itemID: string) {
+    private deleteResource(itemID: ObjectID) {
         return new Promise((resolve, reject) => {
             this.resource.findByIdAndRemove(itemID, async (err: any) => {
                 if (err) {
@@ -138,12 +142,20 @@ export let isAuthenticated = async (req: Request, res: Response, next: NextFunct
     if (isValid) {
         return next();
     } else {
-        res.status(403).send({error: "invalid auth token"});
+        const decodedToken: APIToken = token.decodeToken(req.headers.authtoken.toString());
+        const subject: eventSubject = {
+            _id: decodedToken._id || undefined,
+            model: "User"
+        };
+
+        EventHandler.error(`invalid auth token ${req.headers.authtoken.toString()}`, subject);
+        res.status(403).send({error: "Invalid auth token"});
     }
 };
 
 const isAllowed = async (itemID: any) => {
-    let allowed = false;
+    let allowed: boolean = false;
+    let uid: objectID | null;
 
     if (this.req.headers.authtoken) {
         const decoded = await token.decodeToken(this.req.headers.authtoken);
@@ -152,6 +164,8 @@ const isAllowed = async (itemID: any) => {
         } else if (decoded && decoded._id) {
             allowed = await findClientResource(decoded._id, itemID);
         }
+
+        uid = decoded._id;
     } else if (this.req.user) {
         if (this.req.user.role === "admin")
             allowed = true;
@@ -160,25 +174,35 @@ const isAllowed = async (itemID: any) => {
         }
     }
 
+    if (!allowed) {
+        const subject = {
+            _id: uid || this.req.user._id,
+            model: "User"
+        };
+
+        EventHandler.error("Unauthorised access attempt", subject);
+    }
+
     return allowed;
 };
 
-async function findClientResource(uid: string, itemID: any) {
-    let result: any;
-    if (this.resource instanceof Controller) {
-        result = await DB.findOne(this.resource, {_client_id: uid}, "_id");
+async function findClientResource(uid: ObjectID, itemID: any): Promise<boolean> {
+    let result;
 
-        return result[0]._id === itemID;
+    if (this.resource instanceof DeviceController) {
+        result = await DB.findOne<ControllerModel>(this.resource, {_client_id: uid}, "_id");
+
+        return result._id === itemID;
     } else if (this.resource instanceof Device) {
-        const controller: any = await DB.findOne(Controller, {"devices._id": itemID._id}, "_client_id");
+        const controller = await DB.findOne<ControllerModel>(Controller, {"devices._id": itemID._id}, "_client_id");
 
-        return controller[0]._client_id === uid;
+        return controller._client_id === uid;
     } else if (this.resource instanceof Conditional) {
-        const conditional: any = await DB.findById(Conditional, itemID._id);
+        const conditional: any = await DB.findById<ConditionalInterface>(Conditional, itemID._id);
 
-        if (conditional[0]) {
-            result = await DB.findById(Controller, conditional[0]._id);
-            return result[0]._client_id === uid;
+        if (conditional) {
+            result = await DB.findById<ControllerModel>(Controller, conditional[0]._id);
+            return result._client_id === uid;
         }
     }
 

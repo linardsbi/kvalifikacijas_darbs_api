@@ -23,6 +23,11 @@ export type AuthToken = {
     kind: string
 };
 
+export type APIToken = {
+    _id: mongoose.Schema.Types.ObjectId,
+    role: string
+};
+
 const userSchema = new mongoose.Schema({
     email: {type: String, unique: true, max: 30},
     password: String,

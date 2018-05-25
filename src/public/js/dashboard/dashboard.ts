@@ -49,7 +49,7 @@
     }
 
     function updateDOM(data: BridgeData) {
-        // TODO: make more robust to handle other actions
+        // TODO: make more robust to error other actions
         if (data && data.item) {
             switch (data.item) {
                 case "controller":

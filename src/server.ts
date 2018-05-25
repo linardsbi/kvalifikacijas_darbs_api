@@ -4,6 +4,7 @@ import app from "./app";
 import {handleClientPublish, handleClientSubscribe} from "./controllers/MQTTController";
 import {startWS} from "./websockets";
 import mosca from "mosca";
+import {EventHandler} from "./util/helpers/eventHandling";
 
 let moscaServer: any;
 
@@ -59,8 +60,6 @@ export function start(): void {
         if (client) {
             handleClientPublish(packet, moscaServer);
         }
-
-        // console.log("Published", packet);
     });
 
     moscaServer.on("subscribed", (topic: any, client: any) => {
@@ -74,7 +73,10 @@ export function start(): void {
 
     // fired when the mqtt server is ready
     function setup() {
-        console.log("Mosca server is up and running");
+        const message = `Mosca server is up and running on port ${process.env.MQTT_PORT}`;
+
+        console.log(message);
+        EventHandler.log("Info", message);
 
         startWS();
     }
@@ -99,7 +101,6 @@ export function start(): void {
     };
 
     moscaServer.authorizeSubscribe = function (client, topic, callback) {
-        // console.log(topic, client.id);
         callback(undefined, true);
     };
 }
@@ -108,12 +109,10 @@ export function start(): void {
  * Start Express server.
  */
 const server = app.listen(app.get("port"), () => {
-    console.log(
-        "  App is running at http://localhost:%d in %s mode",
-        app.get("port"),
-        app.get("env")
-    );
-    console.log("  Press CTRL-C to stop\n");
+    const message: string = `App is running at http://localhost:${app.get("port")} in ${app.get("env")} mode`;
+    console.log(message);
+
+    EventHandler.log("Info", message);
 });
 
 export default server;

@@ -10,7 +10,7 @@ import {default as PublishedData, PublishedDataModel} from "../models/PublishedD
 import {default as User, UserModel} from "../models/User";
 import { APIController } from "./APIController";
 import { ParseRequest } from "../util/helpers/parseRequest";
-import { ErrorHandler } from "../util/helpers/errorHandling";
+import { EventHandler } from "../util/helpers/eventHandling";
 import { APIResponsePayload, Payload } from "../util/helpers/APIResponsePayload";
 import { APIResponse } from "../util/helpers/APIResponse";
 
@@ -29,7 +29,7 @@ export function createNewController(controllerData: ControllerModel): any {
                 try {
                     controller.save((err, controller: ControllerModel) => {
                         if (err) {
-                            ErrorHandler.handle(err);
+                            ErrorHandler.error(err);
                             payload.addUnformattedData({error: err});
                         }
                         payload.addUnformattedData({controller: controller});
@@ -68,7 +68,7 @@ export function createNewController(controllerData: ControllerModel): any {
             }
         ], (err) => {
             if (err) {
-                ErrorHandler.handle(err);
+                ErrorHandler.error(err);
                 reject(payload.getFormattedPayload());
             } else
                 resolve(payload.getFormattedPayload());
@@ -201,7 +201,7 @@ function getControllerDataByID(controllerID: string, parameters: string) {
             }
         ], (err) => {
             if (err) {
-                ErrorHandler.handle(err);
+                ErrorHandler.error(err);
                 reject(payload.getFormattedPayload());
             } else
                 resolve(payload.getFormattedPayload());

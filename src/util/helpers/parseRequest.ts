@@ -1,6 +1,6 @@
 "use strict";
 
-import { ErrorHandler } from "./errorHandling";
+import { EventHandler } from "./eventHandling";
 import {type} from "os";
 
 interface ErrorObject {
@@ -8,11 +8,6 @@ interface ErrorObject {
 }
 
 export class ParseRequest {
-    /**
-     * Convert JSON string to object
-     * @param {string} requestBody
-     * @returns {object}
-     */
     static toObject(requestBody: string): object {
         try {
             return JSON.parse(requestBody);
@@ -21,11 +16,6 @@ export class ParseRequest {
         }
     }
 
-    /**
-     * Convert JSON object to string
-     * @param {object} requestBody
-     * @returns {string}
-     */
     static toString(requestBody: object): string {
         try {
             return JSON.stringify(requestBody);
@@ -34,11 +24,6 @@ export class ParseRequest {
         }
     }
 
-    /**
-     * Check if string can be converted to JSON
-     * @param {string} string
-     * @returns {boolean}
-     */
     static isJSON(string: string): boolean {
         try {
             return !!(JSON.parse(string));

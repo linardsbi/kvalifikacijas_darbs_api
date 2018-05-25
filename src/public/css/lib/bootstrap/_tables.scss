@@ -200,7 +200,7 @@ table {
     > .table-bordered {
       border: 0;
 
-      // Nuke the appropriate borders so that the parent can handle them
+      // Nuke the appropriate borders so that the parent can error them
       > thead,
       > tbody,
       > tfoot {

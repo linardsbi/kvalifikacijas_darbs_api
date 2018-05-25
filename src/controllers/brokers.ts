@@ -7,7 +7,7 @@ import {BrokerInterface as BrokerModel, default as Broker} from "../models/Broke
 import {APIResponse} from "../util/helpers/APIResponse";
 import {ParseRequest} from "../util/helpers/parseRequest";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
-import {ErrorHandler} from "../util/helpers/errorHandling";
+import {ErrorHandler} from "eventHandling.ts";
 import {default as PublishedData, PublishedDataModel} from "../models/PublishedData";
 import crypto from "crypto";
 import {ControllerModel, default as Controller} from "../models/DeviceController";

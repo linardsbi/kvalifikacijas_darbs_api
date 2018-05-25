@@ -23,12 +23,12 @@ const payloadSchema = new mongoose.Schema({
 
 const publishedDataSchema = new mongoose.Schema({
     device: {
-        _id: mongoose.Schema.Types.ObjectId,
+        _id: {type: mongoose.Schema.Types.ObjectId, ref: "Device"},
         name: String,
         pin_name: String
     },
     payload: payloadSchema,
-}, {timestamps: true});
+}, {timestamps: true, versionKey: false});
 
 publishedDataSchema.virtual("formatted_value").get(function () {
     // TODO: create data type formatting
@@ -42,6 +42,5 @@ publishedDataSchema.set("toJSON", {
     virtuals: true
 });
 
-// export const User: UserType = mongoose.model<UserType>("User", userSchema);
 const PublishedData = mongoose.model("PublishedData", publishedDataSchema);
 export default PublishedData;

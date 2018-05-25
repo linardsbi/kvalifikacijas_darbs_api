@@ -8,7 +8,7 @@ import {ControllerModel, default as Controller} from "../models/DeviceController
 import {default as Client} from "../models/User";
 import {APIResponse} from "../util/helpers/APIResponse";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
-import {ErrorHandler} from "../util/helpers/errorHandling";
+import { EventHandler } from "../util/helpers/eventHandling";
 import {ParseRequest} from "../util/helpers/parseRequest";
 import {APIController} from "./APIController";
 import {DB} from "../util/helpers/queryHelper";
@@ -43,7 +43,7 @@ function createNewTopic(topicData: any): any {
 
                     topic.save(function (err, topic: any) {
                         if (err) {
-                            ErrorHandler.handle(err);
+                            EventHandler.error(err.toString(), {model: "Topic"});
                             payload.addUnformattedData({error: err});
                         }
                         payload.addUnformattedData({topic: topic});
@@ -78,7 +78,7 @@ function createNewTopic(topicData: any): any {
             }
         ], (err) => {
             if (err) {
-                // ErrorHandler.handle(err);
+                // EventHandler.error(err);
                 reject(payload.getFormattedPayload());
             } else
                 resolve(payload.getFormattedPayload());
