@@ -21,7 +21,7 @@ block content
                     .admins.col-lg-6
                         each admin in admins
                             .name #{admin.email}
-                            if (admin._id !== user._id)
+                            if (admin._id !== user.id)
                                 button.revoke-admin.btn.btn-danger(data-uid= admin._id) Revoke admin
                     .users.col-lg-6
                         each user in users

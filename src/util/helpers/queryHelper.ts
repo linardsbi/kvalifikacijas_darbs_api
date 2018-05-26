@@ -3,8 +3,11 @@ import { Model, MongooseDocument } from "mongoose";
 import { ParseRequest as parse } from "./parseRequest";
 import mongoose from "mongoose";
 
-export class DB {
+export interface ObjectID extends mongoose.Schema.Types.ObjectId {
+    _id: mongoose.Schema.Types.ObjectId;
+}
 
+export class DB {
     static findById<T>(model: Model<any>, id: mongoose.Schema.Types.ObjectId): Promise<T> {
         return new Promise((resolve, reject) => {
             model.findById(id, function (err, found) {
@@ -69,7 +72,7 @@ export type formattedQueryType = {
     limit: number
 };
 
-export async function parseQuery<T>(query: string): Promise<T> {
+export async function parseQuery(query: string): Promise<formattedQueryType> {
     const queryObject: any = parse.toObject(query);
     const formattedQuery: formattedQueryType = {
         select: {},

@@ -3,7 +3,7 @@
 import {Request, Response} from "express";
 import {default as PublishedData, PublishedDataModel} from "../models/PublishedData";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
-import {ErrorHandler} from "../util/helpers/errorHandling";
+import { ErrorHandler } from "../util/helpers/eventHandling";
 import {APIResponse} from "../util/helpers/APIResponse";
 import {DB, parseQuery, formattedQueryType as dataQuery} from "../util/helpers/queryHelper";
 import {JwtToken} from "../util/helpers/jwtToken";
@@ -25,7 +25,7 @@ export function savePostData(data: PublishedDataModel) {
         try {
             publishedData.save((err) => {
                 if (err) {
-                    ErrorHandler.handle(err);
+                    ErrorHandler.error(err);
                     payload.addUnformattedData({error: err});
                     reject(payload.getFormattedPayload());
                 } else {
@@ -102,7 +102,7 @@ export const getData = async (req: Request, res: any) => {
     const ids: any = [];
 
     try {
-        const result = await parseQuery<dataQuery>(data);
+        const result = await parseQuery(data);
         const user: any = User.findOne({email: decoded.username});
         user.populate("controllers._id");
 

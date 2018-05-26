@@ -2,6 +2,7 @@
 import mqtt from "mqtt";
 import WebSocket from "ws";
 import {WSClientInstance} from "./controllers/BridgeController";
+import {EventHandler} from "./util/helpers/eventHandling";
 
 
 /**
@@ -25,6 +26,10 @@ let WSConnection: any;
  */
 export function startWS() {
     const wss = new WebSocket.Server({port: parseInt(process.env.WS_PORT)});
+
+    wss.on("listening", () => {
+        EventHandler.log("Info", `WebSocket server started on port ${process.env.WS_PORT}`);
+    });
 
     wss.on("connection", function connection(ws: any, req) {
         WSConnection = new WSClientInstance(ws);

@@ -7,7 +7,7 @@ import {default as Device, DeviceModel } from "../models/Device";
 import { APIResponse } from "../util/helpers/APIResponse";
 import { ControllerModel, default as Controller } from "../models/DeviceController";
 import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
-import { ErrorHandler } from "../util/helpers/errorHandling";
+import { EventHandler } from "../util/helpers/eventHandling";
 import { APIController } from "./APIController";
 import app from "../app";
 import {DB} from "../util/helpers/queryHelper";
@@ -74,7 +74,7 @@ function createNewDevice(deviceData: DeviceModel): any {
             }
         ], (err) => {
             if (err) {
-                ErrorHandler.handle(err);
+                ErrorHandler.error(err);
                 reject(payload.getFormattedPayload());
             } else
                 resolve(payload.getFormattedPayload());

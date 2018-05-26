@@ -15,6 +15,9 @@ import {JwtToken as jwt} from "../util/helpers/jwtToken";
 import {DB} from "../util/helpers/queryHelper";
 import { Email } from "../util/helpers/sendEmail";
 import PublishedData from "../models/PublishedData";
+import Event from "../models/EventLog";
+import {MongooseDocument} from "mongoose";
+import {EventHandler} from "../util/helpers/eventHandling";
 
 /**
  * GET /login
@@ -99,6 +102,11 @@ function getAllStats() {
                 const data = await PublishedData.findOne({});
                 const stats = await data.collection.stats();
                 cb(undefined, {size: formatSize(stats.size), count: stats.count, avgObjSize: formatSize(stats.avgObjSize)});
+            },
+            events: async (cb) => {
+                const data = await Event.findOne({});
+                const stats = await data.collection.stats();
+                cb(undefined, {size: formatSize(stats.size), count: stats.count, avgObjSize: formatSize(stats.avgObjSize)});
             }
         }, function (err, result) {
             resolve(result);
@@ -152,9 +160,16 @@ export const postAdmin = async (req: Request, res: Response) => {
     else if (req.body.action === "revoke")
         user.role = "user";
 
-    user.save(function (err) {
+    user.save(function (err, user: UserModel) {
         if (err)
             return res.send(err);
+        const subject = {
+            _id: user._id,
+            model: "User"
+        };
+
+        EventHandler.log("Info", `Got their role changed to "${req.body.action}"`, subject);
+
         return res.send({status: "success"});
     });
 
@@ -172,7 +187,6 @@ export let getDashboard = (req: Request, res: Response) => {
             req.flash("errors", err);
             return res.redirect("/");
         }
-
 
         res.render("account/dashboard", {
             title: "Dashboard",
@@ -209,6 +223,13 @@ export let postLogin = (req: Request, res: Response, next: NextFunction) => {
             if (err) {
                 return next(err);
             }
+            const subject = {
+                _id: user._id,
+                model: "User"
+            };
+
+            EventHandler.log("Info", "Logged in", subject);
+
             req.flash("success", {msg: "Success! You are logged in."});
             res.redirect(req.session.returnTo || "/");
         });
@@ -267,10 +288,18 @@ export let postSignup = (req: Request, res: Response, next: NextFunction) => {
             req.flash("errors", {msg: "Account with that email address already exists."});
             return res.redirect("/signup");
         }
-        user.save((err) => {
+        user.save((err, user: UserModel) => {
             if (err) {
                 return next(err);
             }
+
+            const subject = {
+                _id: user._id,
+                model: "User"
+            };
+
+            EventHandler.log("Info", "Created an account", subject);
+
             req.logIn(user, (err) => {
                 if (err) {
                     return next(err);
@@ -310,6 +339,8 @@ export let postUpdateProfile = (req: Request, res: Response, next: NextFunction)
         if (err) {
             return next(err);
         }
+        const oldEmail = user.email;
+
         user.email = req.body.email || "";
         user.save((err: WriteError) => {
             if (err) {
@@ -319,6 +350,13 @@ export let postUpdateProfile = (req: Request, res: Response, next: NextFunction)
                 }
                 return next(err);
             }
+            const subject = {
+                _id: user._id,
+                model: "User"
+            };
+
+            EventHandler.log("Info", `Changed their email from ${oldEmail} to ${user.email}`, subject);
+
             req.flash("success", {msg: "Profile information has been updated."});
             res.redirect("/account");
         });
@@ -349,6 +387,13 @@ export let postUpdatePassword = (req: Request, res: Response, next: NextFunction
             if (err) {
                 return next(err);
             }
+            const subject = {
+                _id: user._id,
+                model: "User"
+            };
+
+            EventHandler.log("Info", "Changed their password", subject);
+
             req.flash("success", {msg: "Password has been changed."});
             res.redirect("/account");
         });

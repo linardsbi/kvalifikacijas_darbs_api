@@ -35,8 +35,8 @@
 
             $(".add-another-field").on("click", function (e) {
                 e.preventDefault();
-                const field: any = $(this).parent().siblings(".action-fields").find(".write-group, .email-group, .phone-group").first();
-                const toCopy: any = field.prevObject;
+                const field: any = $(this).parent().siblings(".action-fields").find(".wrapper")[0];
+                const toCopy: any = $(field);
                 const clone = toCopy.clone(true, true);
 
                 toCopy.find(".add-another-field").parent().remove();
@@ -48,7 +48,8 @@
                 e.preventDefault();
                 const toCopy = $(this).parent().siblings(".actions").find(".condition-action").first();
                 const clone = toCopy.clone(true, true);
-
+                console.log(clone, clone.find(".wrapper:not(:first-child)"));
+                clone.find(".wrapper:not(:first-child)").remove();
                 clone.find("input").val("");
                 clone.appendTo(toCopy.parent());
             });
@@ -89,7 +90,6 @@
         }
 
         private static formatFormData(data: any) {
-            // TODO loads of formatting
             const formatted: ConditionalInterface = {
                 name: "",
                 listenSubject: {
@@ -133,10 +133,10 @@
                     formatted.triggerOn.applyCalculation = ($(this).is(":checked"));
             });
             actions.each(function (index: number, element: any) {
-                const selectAction = $(element).children(".form-group").find("select");
+                const selectAction = $(element).children(".form-group").find(".nice-select .selected");
                 let actionFields;
                 let deviceSelect: any;
-                const selectActionValue = selectAction.val().toString();
+                const selectActionValue = selectAction.data("value");
                 const runObject: runObject = {
                     action: "",
                     value: "",
@@ -152,7 +152,7 @@
                         actionFields = $(element).find(".action-fields input.phone");
                     } else if (selectActionValue === "write") {
                         actionFields = $(element).find(".action-fields input.write-value");
-                        deviceSelect = $(element).find(".action-fields select");
+                        deviceSelect = $(element).find(".action-fields .nice-select .selected");
                     }
                     console.log(actions, actionFields);
                     console.log(selectActionValue, deviceSelect);
@@ -161,7 +161,7 @@
                         if ($(this).val().toString() !== "") {
                             if (deviceSelect && deviceSelect[index]) {
                                 runObject.value = $(this).val().toString();
-                                runObject.subjects.push($(deviceSelect[index]).val().toString());
+                                runObject.subjects.push($(deviceSelect[index]).data("value"));
                             } else
                                 runObject.subjects.push($(this).val().toString());
                         } else {
@@ -198,14 +198,14 @@
                 alert.show();
             } else {
 
-                // this.sendFormData(JSON.stringify(formatted)).then((result) => {
-                //     location.reload();
-                // })
-                //     .catch((err) => {
-                //         const errorMessage = `An error occurred while saving the conditional.\n
-                //         the error: <pre>${err.responseJSON || err.statusText}</pre>`;
-                //         ModalDialog.alert("An error occurred", errorMessage, true);
-                //     });
+                this.sendFormData(JSON.stringify(formatted)).then((result) => {
+                    location.reload();
+                })
+                    .catch((err) => {
+                        const errorMessage = `An error occurred while saving the conditional.\n
+                        the error: <pre>${err.responseJSON || err.statusText}</pre>`;
+                        ModalDialog.alert("An error occurred", errorMessage, true);
+                    });
             }
         }
     }
