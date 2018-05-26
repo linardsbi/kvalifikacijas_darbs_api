@@ -212,7 +212,8 @@
                 action: "publish",
                 payload: "",
                 options: {
-                    retain: true
+                    retain: true,
+                    qos: 1
                 }
             };
 

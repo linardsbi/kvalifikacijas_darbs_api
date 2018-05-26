@@ -48,14 +48,14 @@ if (process.env.BUILT_IN_BROKER === "YES") {
 
 export function start(): void {
 
-    moscaServer.on("clientConnected", function (client) {
+    moscaServer.on("clientConnected", function (client: any) {
         console.log("client connected", client.id);
     });
-    moscaServer.on("clientDisconnected", function (client) {
+    moscaServer.on("clientDisconnected", function (client: any) {
         console.log("client disconnected", client.id);
     });
     // fired when a message is received
-    moscaServer.on("published", function (packet, client) {
+    moscaServer.on("published", function (packet: any, client: any) {
         if (client) {
             handleClientPublish(packet, moscaServer);
         }
@@ -79,7 +79,7 @@ export function start(): void {
         startWS();
     }
 
-    moscaServer.authenticate = (client, username, password, callback: Function) => {
+    moscaServer.authenticate = (client: any, username: string, password: string, callback: Function) => {
         // if (username && password) {
         //     client.username = username;
         //     MQTTAuthenticate(client.id, username, password.toString()).then((result) => {
@@ -93,12 +93,12 @@ export function start(): void {
         callback(undefined, true);
     };
 
-    moscaServer.authorizePublish = function (client, topic, payload, callback) {
+    moscaServer.authorizePublish = function (client: any, topic: string, payload: any, callback: Function) {
 
         callback(undefined, true);
     };
 
-    moscaServer.authorizeSubscribe = function (client, topic, callback) {
+    moscaServer.authorizeSubscribe = function (client: any, topic: string, callback: Function) {
         // console.log(topic, client.id);
         callback(undefined, true);
     };

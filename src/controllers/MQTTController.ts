@@ -69,7 +69,7 @@ async function handleDeviceWrite(packet: any) {
         _controllerID: controller.id,
         "used_pins.pin_name": topic.split("/")[5]
     }, "used_pins");
-
+    console.log("write", packet.topic, packet.payload.toString());
     if (device) {
         device.used_pins.lastWrite = packet.payload.toString();
 

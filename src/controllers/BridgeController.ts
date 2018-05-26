@@ -41,12 +41,16 @@ export class WSClientInstance extends BridgeInstance {
             error: "",
             data: {}
         };
-
-        this.listen();
+        try {
+            this.listen();
+        } catch (e) {
+            console.log("listen error", e.message);
+        }
     }
 
-    listen() {
+    async listen() {
         const that = this;
+        this._mqttClient = await setupMqttClient();
 
         this.instance.on("message", function incoming(message: any) {
             that.handleMessage(message);
@@ -54,11 +58,18 @@ export class WSClientInstance extends BridgeInstance {
 
         this.instance.on("close", (code: number, reason: string) => {
             console.log(`connection closed with code ${code} - ${reason}`);
+            this._mqttClient.end();
         });
 
         this.instance.on("error", function incoming(err: any) {
             that.response.error = err.toString();
             console.error("error occurred:", err.toString());
+            that.returnResponse();
+        });
+
+        this._mqttClient.on("message", async (topic: string, message: Buffer) => {
+            that.response = await this.formatMqttMessage(topic, message);
+
             that.returnResponse();
         });
     }
@@ -68,13 +79,8 @@ export class WSClientInstance extends BridgeInstance {
 
         this.validateAPIToken(message.apiToken).then(async () => {
             const that = this;
-            this._mqttClient = await setupMqttClient();
 
             if (!(this._mqttClient instanceof Error)) {
-                this._mqttClient.on("message", async (topic: string, message: Buffer) => {
-                    that.response = await this.formatMqttMessage(topic, message);
-                    that.returnResponse();
-                });
 
                 switch (message.action) {
                     case "subscribe":
@@ -173,6 +179,7 @@ export class WSClientInstance extends BridgeInstance {
 }
 function setupMqttClient() {
     return new Promise((resolve, reject) => {
+        console.log("setup");
         const client = mqtt.connect(`mqtt://localhost:${parseInt(process.env.MQTT_PORT)}`);
         client.on("connect", () => {
             resolve(client);
