@@ -11,12 +11,13 @@
         | API Dashboard
     .collapse.navbar-collapse
       ul.nav.navbar-nav
-        li(class=(title == 'Home') ? 'active' : undefined)
-          a(href='/') Home
-        li(class=(title == 'Dashboard') ? 'active' : undefined)
-          a(href='/dashboard') Dashboard
-        li(class=(title == 'Conditionals') ? 'active' : undefined)
-          a(href='/conditionals') Conditionals
+        if user
+          li(class=(title == 'Home') ? 'active' : undefined)
+            a(href='/') Home
+          li(class=(title == 'Dashboard') ? 'active' : undefined)
+            a(href='/dashboard') Dashboard
+          li(class=(title == 'Conditionals') ? 'active' : undefined)
+            a(href='/conditionals') Conditionals
       ul.nav.navbar-nav.navbar-right
         if !user
           li(class=(title == 'Login') ? 'active' : undefined)

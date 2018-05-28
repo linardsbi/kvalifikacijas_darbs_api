@@ -69,28 +69,46 @@ mixin newPanel
                                     input#apply-calc.apply-calc.form-control(type="checkbox")
                                     label(for="apply-calc")
                     .actions.row
-                        .condition-action.col-md-6
-                            .form-group
-                                label(for="action-select") Action
-                                select.action-select
-                                    option(value="email") Email
-                                    option(value="textMessage") Send text message
-                                    option(value="write") Write to pin
+                        .condition-action.col-sm-6
+                            .delete-action
+                                i.fa.fa-trash
+                            .form-group.row
+                                .col-sm-3.col-sm-offset-1.control-label
+                                    label(for="action-select") Action
+                                .col-sm-8
+                                    select.action-select
+                                        option(value="email") Email
+                                        option(value="textMessage") Send text message
+                                        option(value="write") Write to pin
                             .action-fields
                                 .wrapper
                                     .form-group.write-group
-                                        .form-group
-                                            label(for="device-select") Device
-                                            +devicesSelect.write-devices
-                                        .form-group
-                                            label(for="write-value") Write value
-                                            input.write-value.form-control(type="text", placeholder="ex. 40 or HIGH")
-                                    .form-group.email-group
-                                        label(for="email-field") Email
-                                        input.email.form-control(type="email", placeholder="Enter an email address")
-                                    .form-group.phone-group
-                                        label(for="phone-field") Phone number
-                                        input.phone.form-control(type="tel", placeholder="Enter a phone number to send text to")
+                                        .form-group.row
+                                            .col-sm-1
+                                                i.delete-icon &times;
+                                            .col-sm-3.control-label
+                                                label(for="device-select") Device
+                                            .col-sm-8
+                                                +devicesSelect.write-devices
+                                        .form-group.row
+                                            .col-sm-3.col-sm-offset-1.control-label
+                                                label(for="write-value") Write value
+                                            .col-sm-8
+                                                input.write-value.form-control(type="text", placeholder="ex. 40 or HIGH")
+                                    .form-group.email-group.row
+                                        .col-sm-1
+                                            i.delete-icon &times;
+                                        .col-sm-3.control-label
+                                            label(for="email-field") Email
+                                        .col-sm-8
+                                            input.email.form-control(type="email", placeholder="Enter an email address")
+                                    .form-group.phone-group.row
+                                        .col-sm-1
+                                            i.delete-icon &times;
+                                        .col-sm-3.control-label
+                                            label(for="phone-field") Phone number
+                                        .col-sm-8
+                                            input.phone.form-control(type="tel", placeholder="Enter a phone number to send text to")
                             .form-group
                                 button.add-another-field.btn.btn-default.btn-block
                                     i.fa.fa-plus

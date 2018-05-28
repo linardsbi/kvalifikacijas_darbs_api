@@ -34,7 +34,7 @@
                     resolve(response);
                 },
                 error: (response: any) => {
-                    const errorMessage = `An error occurred while fetching the device you clicked on.\n
+                    const errorMessage = `An error occurred while fetching the devices for the graph. <br />
                     the error: <pre>${response.responseJSON.error}</pre>`;
 
                     ModalDialog.alert("An error occurred", errorMessage, true);
@@ -141,22 +141,12 @@
         });
     }
 
-    function graphs() {
-        $(".graph-button").on("click", async function () {
-            const graph = $(this).parent().siblings(".graph");
-            if (!graph.hasClass("loading") && !graph.hasClass("opened")) {
-                graph.addClass("loading");
-                $(this).attr("disabled", "");
+    async function graphs() {
+        const graph = $("#sensor-graph");
 
-                await initChart();
+        await initChart();
 
-                $(this).text("Refresh");
-                $(this).removeAttr("disabled");
-                graph.removeClass("loading").addClass("opened");
-            } else if (graph.hasClass("opened")) {
-                graph.removeClass("opened");
-            }
-        });
+        graph.removeClass("loading").addClass("opened");
     }
 
     $(window).on("load", function () {

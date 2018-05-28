@@ -1,6 +1,5 @@
 import async from "async";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 import passport from "passport";
 import {default as User, UserModel, AuthToken} from "../models/User";
 import {Request, Response, NextFunction} from "express";
@@ -298,7 +297,7 @@ export let postSignup = (req: Request, res: Response, next: NextFunction) => {
                 model: "User"
             };
 
-            EventHandler.log("Info", "Created an account", subject);
+            EventHandler.log("Info", "Created their account", subject);
 
             req.logIn(user, (err) => {
                 if (err) {
@@ -314,9 +313,11 @@ export let postSignup = (req: Request, res: Response, next: NextFunction) => {
  * GET /account
  * Profile page.
  */
-export let getAccount = (req: Request, res: Response) => {
+export let getAccount = async (req: Request, res: Response) => {
+    const events = await DB.find(Event, {"event_subject._id": req.user._id}, undefined, undefined, [["createdAt", "descending"]]);
     res.render("account/profile", {
-        title: "Account Management"
+        title: "Account Management",
+        events: events
     });
 };
 
@@ -485,7 +486,8 @@ export let postReset = (req: Request, res: Response, next: NextFunction) => {
                 });
         },
         function sendResetPasswordEmail(user: UserModel, done: Function) {
-            Email
+            const email: any = new Email();
+            email
                 .from("admin@site.com")
                 .to(user.email)
                 .subject("Reset your password")
@@ -498,6 +500,13 @@ export let postReset = (req: Request, res: Response, next: NextFunction) => {
 
                     done(err);
                 });
+
+            const subject = {
+                _id: user._id,
+                model: "User"
+            };
+
+            EventHandler.log("Info", `Changed their password"`, subject);
         }
     ], (err) => {
         if (err) {
@@ -564,7 +573,8 @@ export let postForgot = (req: Request, res: Response, next: NextFunction) => {
           http://${req.headers.host}/reset/${token}\n\n
           If you did not request this, please ignore this email and your password will remain unchanged.\n`;
 
-        Email
+            const email: any = new Email();
+            email
             .from("admin@site.com")
             .to(user.email)
             .subject("Reset your password")

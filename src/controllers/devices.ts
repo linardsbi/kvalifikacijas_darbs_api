@@ -74,7 +74,7 @@ function createNewDevice(deviceData: DeviceModel): any {
             }
         ], (err) => {
             if (err) {
-                ErrorHandler.error(err);
+                EventHandler.error(err);
                 reject(payload.getFormattedPayload());
             } else
                 resolve(payload.getFormattedPayload());
@@ -140,8 +140,8 @@ export let update = (req: Request, res: Response) => {
  *
  */
 export let remove = (req: Request, res: Response) => {
-    const deviceID: string = req.body._id;
+    const deviceID: string = req.body;
     const api = new APIController(req, res, Device);
-
+    console.log(deviceID);
     api.remove(deviceID);
 };

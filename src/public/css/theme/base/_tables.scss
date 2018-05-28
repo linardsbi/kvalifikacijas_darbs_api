@@ -32,3 +32,35 @@ td {
 article {
 
 }
+
+.bs-table {
+  .col-md-4 {
+
+  }
+  .table-head-row {
+    border-bottom: 2px solid #32cd80;
+    padding-bottom: 15px;
+    & > div {
+      font-size: 17px;
+      font-family: $heading-font-family;
+    }
+  }
+  .table-body-row {
+    @include display-flex();
+    padding: 10px 0;
+    &:nth-child(even) {
+      background: #f6f6f6;
+    }
+    & > div {
+      margin: auto 0;
+    }
+    .info-event {
+      font-weight: bold;
+      color: #00a5ff;
+    }
+  }
+  .row {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}

@@ -5,13 +5,14 @@ import {default as User, UserModel} from "../models/User";
 import {APIResponsePayload} from "../util/helpers/APIResponsePayload";
 import {createNewController} from "../controllers/deviceControllers";
 import {default as Device, DeviceModel} from "../models/Device";
-import {ControllerModel, default as Controller} from "../models/DeviceController";
-import {DB} from "../util/helpers/queryHelper";
+import {ControllerModel, default as Controller, default as DeviceController} from "../models/DeviceController";
+import {DB, ObjectID} from "../util/helpers/queryHelper";
 import {MqttTopicMatch as strmatch} from "../util/helpers/mqttTopicMatch";
 import {MongooseDocument} from "mongoose";
 import {savePostData} from "./logs";
 import Conditional, {ConditionalInterface} from "../models/Conditional";
 import {Email} from "../util/helpers/sendEmail";
+import {EventHandler} from "../util/helpers/eventHandling";
 // import { default as Controller, ControllerModel } from "../models/DeviceController";
 
 const payload = new APIResponsePayload();
@@ -134,8 +135,8 @@ async function handleConditionals(packet: any, conditionals: ConditionalInterfac
 
         if (condition === "lt" && payload < conditional.triggerOn.value[0]) send = true;
         if (condition === "gt" && payload > conditional.triggerOn.value[0]) send = true;
-        if (condition === "equals" && payload === conditional.triggerOn.value[0]) send = true;
-        if (condition === "equals" && payload > conditional.triggerOn.value[0] && payload > conditional.triggerOn.value[1]) send = true;
+        if (condition === "equals" && payload == conditional.triggerOn.value[0]) send = true;
+        if (condition === "between" && payload > conditional.triggerOn.value[0] && payload > conditional.triggerOn.value[1]) send = true;
 
         if (send) {
             runConditionals(conditional, payload, info_type).catch((err) => {
@@ -164,8 +165,9 @@ async function runConditionals(conditional: any, payload: string, info_type: str
                 console.log("send text with", payload, "to", runObject.subjects);
                 break;
             case "write":
-                console.log("write", runObject.value, "to pins", runObject.subjects);
-                publishWrite(conditional.listenSubject.subjectControllerID, info_type, conditional.listenSubject.pin_name, runObject.value)
+                const associatedController = await DB.findById<ControllerModel>(DeviceController, conditional.listenSubject.subjectControllerID, "machine_name");
+
+                publishWrite(associatedController.machine_name, info_type, runObject.subjects[0], runObject.value)
                     .catch((err) => {
                         console.log("error while publishing data: ", err);
                     });
@@ -175,7 +177,8 @@ async function runConditionals(conditional: any, payload: string, info_type: str
 }
 
 function sendEmail(payload: string, email: string, pin_name: string) {
-    Email
+    const transporter: any = new Email();
+    transporter
         .from("admin@site.com")
         .to(email)
         .subject("Home automation event")
@@ -186,13 +189,25 @@ function sendEmail(payload: string, email: string, pin_name: string) {
         });
 }
 
-async function publishWrite(machine_name: string, info_type: string, pin_name: string, payload: string) {
-    const topic = `controllers/${machine_name}/write/device/${info_type}/${$(this).attr("id")}`;
-    await publishToTopic(topic, payload);
+async function publishWrite(machine_name: string, info_type: string, subject: string, payload: string): Promise<void> {
+    const pin_name: string = subject.split("@")[0];
+    const controllerId: string = subject.split("@")[1];
+    const topic = `controllers/${machine_name}/write/device/${info_type}/${pin_name}`;
+    const device = await DB.findOne<DeviceModel>(Device, {_controllerID: controllerId, "used_pins.pin_name": pin_name}, "used_pins");
+
+    if (device.used_pins.lastWrite.toLowerCase() !== payload.toLowerCase()) {
+        try {
+            await publishToTopic(topic, payload);
+            updateLastWrite(device, payload);
+        } catch (e) {
+            EventHandler.error(e.message);
+        }
+    }
 }
 
-function publishToTopic(topic: string, body: string) {
+function publishToTopic(topic: string, body: string): Promise<void> {
     return new Promise((resolve) => {
+        console.log(topic, body);
         mqttInstance.publish({
             topic: topic,
             payload: new Buffer(body),
@@ -200,6 +215,14 @@ function publishToTopic(topic: string, body: string) {
         }, undefined, function done() {
             resolve();
         });
+    });
+}
+
+function updateLastWrite(device: DeviceModel, payload: string): void {
+    device.used_pins.lastWrite = payload.toUpperCase();
+    device.save((err) => {
+        console.log("lastwrite");
+        if (err) throw new Error(err);
     });
 }
 

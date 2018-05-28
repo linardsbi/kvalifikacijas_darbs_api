@@ -2,32 +2,36 @@ extends ../layout
 
 block content
     .page-header
-        h3 Statistics
+        h2 Statistics
     .page-body
         input(type='hidden', name='_csrf', value=_csrf id="_csrf")
         input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
         .row
-            #total-stats-graph
+            #total-stats-graph.loading
+                .overlay
+                    .loading-bar
+                    span Loading...
         .controller-stats.row
             .col-md-12.currently-online
                 label Microcontrollers currently connected to the app:
                 span.online-controllers 0
-    .page-header
-        h3 Users
-    .container-fluid
-        .row
-            .user-stats.col-lg-12
-                .row
-                    .admins.col-lg-6
-                        each admin in admins
-                            .name #{admin.email}
-                            if (admin._id !== user.id)
-                                button.revoke-admin.btn.btn-danger(data-uid= admin._id) Revoke admin
-                    .users.col-lg-6
-                        each user in users
-                            .name #{user.email}
-                            button.make-admin.btn.btn-success(data-uid= user._id) Make admin
-                            button.delete-user.btn.btn-danger(data-uid= user._id) Delete user
+    .row
+        .col-md-6
+            .page-header
+                h2 Users
+            .users.col-lg-6.col-md-6
+                each user in users
+                    .name #{user.email}
+                    button.make-admin.btn.btn-success(data-uid= user._id) Make admin
+                    button.delete-user.btn.btn-danger(data-uid= user._id) Delete user
+        .col-md-6
+            .page-header
+                h2 Admins
+            .admins.col-lg-6.col-md-6
+                each admin in admins
+                    .name #{admin.email}
+                    if (admin._id != user.id)
+                        button.revoke-admin.btn.btn-danger(data-uid= admin._id) Revoke admin
 
     script(src="https://code.highcharts.com/highcharts.src.js")
     script(src="https://code.highcharts.com/stock/modules/exporting.js")

@@ -351,5 +351,24 @@
 
   label:active:after {
     width: 32px;
+    border-radius: 40px;
   }
+}
+
+@mixin cross-icon() {
+  @include transition(150ms ease-in);
+  opacity: 0;
+  background: #ada9a9;
+  border-radius: 100%;
+  width: 20px;
+  height: 20px;
+  color: white;
+  display: block;
+  font-size: 18px;
+  font-style: normal;
+  line-height: 20px;
+  position: relative;
+  text-indent: 1px;
+  font-weight: bold;
+  cursor: pointer;
 }

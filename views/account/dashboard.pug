@@ -2,52 +2,82 @@ extends ../layout
 
 block content
   .page-header
-    h3 Dashboard
+    h2 Dashboard
   .page-body
     input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
     .row
       .device-overview.col-lg-12
-        .buttons
-          button.btn.btn-default.graph-button Graph view
-          button.btn.btn-default.device-edit Properties
-        #sensor-graph
+        #sensor-graph.loading
           .overlay
             .loading-bar
             span Loading...
   .page-header
-    h3 Controllers
+    h2 Controllers
   .row
     .controller-page.col-lg-12
-      each controller in controllers
-        .controller(id= controller.machine_name)
-          .info
-            .status.disconnected
-            .controller-name= controller.name
-            .edit-controller
-              i.fa.fa-pencil
-            button.hidden.btn.btn-primary.save-controller Save
-            .delete-controller
-              i.fa.fa-trash
-          .wrapper
-            .controller-machine-name= controller.machine_name
-            .controller-devices.row
-              button.btn.btn-block.btn-primary.device-new
-                i.fa.fa-plus
-                | Add device
-              each device in controller.devices
-                if (device._id)
-                  .device.col-lg-2.col-md-3.col-sm-6
-                    .device-id.hidden= device._id._id
-                    .delete-device
-                      i.fa.fa-trash
-                    .device-name= `${device.name} (${device._id.used_pins.pin_name})`
-                    if (device._id.used_pins && device._id.used_pins.pin_mode.toLowerCase() === "output" && device._id.used_pins.information_type.toLowerCase() === "digital")
-                      .device-toggle-wrapper
-                        if (device._id.used_pins.lastWrite && device._id.used_pins.lastWrite.toLowerCase() === "high")
-                          input.device-toggle(type="checkbox" autocomplete="off" id= device._id.used_pins.pin_name checked="")
-                        else
-                          input.device-toggle(type="checkbox" autocomplete="off" id= device._id.used_pins.pin_name)
-                        label(for= device._id.used_pins.pin_name)
+      if controllers
+        each controller in controllers
+          .controller(id= controller.machine_name)
+            .info
+              .status.disconnected
+              .controller-name= controller.name
+              i.fa.fa-check.save-controller
+              .actions
+                .controller-id.hidden= controller._id
+                .edit-controller
+                  i.fa.fa-pencil
+                .delete-controller
+                  i.fa.fa-trash
+            .wrapper
+              .controller-machine-name= controller.machine_name
+              .controller-devices.row
+                button.btn.btn-block.btn-primary.device-new
+                  i.fa.fa-plus
+                  | Add device
+                .all-devices.row
+                  .writable-devices.col-md-6
+                    .bs-table
+                      .bs-table-head
+                        .row.table-head-row
+                          .col-md-12.table-head
+                            .arrow
+                            | Writable devices
+                      .bs-table-body
+                        each device in controller.devices
+                          if (device._id && device._id.used_pins.pin_mode.toLowerCase() === "output")
+                            .device.row
+                              .device-id.hidden= device._id._id
+                              .delete-device.col-md-1
+                                i &times;
+                              .pin-name.col-md-1= device._id.used_pins.pin_name
+                              .device-name.col-md-6.text-left= device.name
+                              if (device._id.used_pins && device._id.used_pins.pin_mode.toLowerCase() === "output" && device._id.used_pins.information_type.toLowerCase() === "digital")
+                                .device-toggle-wrapper.text-left.col-md-4
+                                  if (device._id.used_pins.lastWrite && device._id.used_pins.lastWrite.toLowerCase() === "high")
+                                    input.device-toggle(type="checkbox" autocomplete="off" id= device._id.used_pins.pin_name checked="")
+                                  else
+                                    input.device-toggle(type="checkbox" autocomplete="off" id= device._id.used_pins.pin_name)
+                                  label(for= device._id.used_pins.pin_name)
+                  .readable-devices.col-md-6
+                    .bs-table
+                      .bs-table-head
+                        .row.table-head-row
+                          .col-md-12.table-head
+                            span.arrow
+                            | Readable devices
+                      .bs-table-body
+                        each device in controller.devices
+                          if (device._id && device._id.used_pins.pin_mode.toLowerCase() === "input")
+                            .device.row
+                              .device-id.hidden= device._id._id
+                              .delete-device.col-md-1
+                                i &times;
+                              .pin-name.col-md-1= device._id.used_pins.pin_name
+                              .device-name.col-md-6.text-left= device.name
+                              .device-last-read.col-md-4
+      else
+        .no-controllers-msg
+          h3 No controllers connected yet..
 
   include ../partials/modals/device/new
   include ../partials/modals/device/edit

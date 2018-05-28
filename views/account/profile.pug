@@ -21,12 +21,31 @@ block content
     .form-group
       label.col-sm-3.control-label(for='apiKey') API Key
       .col-sm-7
-        textarea.form-control(name='apiKey', id='apiKey') #{user.apiKey}
+        textarea.form-control(readonly name='apiKey', id='apiKey') #{user.apiKey}
     .form-group
       .col-sm-offset-3.col-sm-4
         button.btn.btn.btn-primary(type='submit')
           i.fa.fa-pencil
           | Generate new key
+
+  .page-header
+    h3 Event history
+
+  .form-group.bs-table
+    .bs-table-head
+      .row.table-head-row
+        .col-md-4.table-head#event-type
+          | Event type
+        .col-md-4.table-head#event-info
+          | Event information
+        .col-md-4.table-head#event-timestamp
+          | Timestamp
+    .bs-table-body
+    for event in events
+      .row.table-body-row
+        .col-md-4.table-body(class= `${event.event.toString().toLowerCase()}-event`)= event.event
+        .col-md-4.table-body= event.event_body
+        .col-md-4.table-body= event.createdAt
 
   .page-header
     h3 Change Password

@@ -8,9 +8,9 @@ export interface ObjectID extends mongoose.Schema.Types.ObjectId {
 }
 
 export class DB {
-    static findById<T>(model: Model<any>, id: mongoose.Schema.Types.ObjectId): Promise<T> {
+    static findById<T>(model: Model<any>, id: mongoose.Schema.Types.ObjectId, fields?: string): Promise<T> {
         return new Promise((resolve, reject) => {
-            model.findById(id, function (err, found) {
+            model.findById(id, fields, function (err, found) {
                 if (err)
                     reject(err);
                 else if (!found)
@@ -42,7 +42,7 @@ export class DB {
         });
     }
 
-    static find<T>(model: Model<any>, query: object, fields?: string, limit?: number): Promise<T[]> {
+    static find<T>(model: Model<any>, query: object, fields?: string, limit?: number, sort?: any): Promise<T[]> {
         return new Promise((resolve, reject) => {
             const modelQuery = model.find(query);
 
@@ -52,7 +52,7 @@ export class DB {
             if (limit)
                 modelQuery.limit(limit);
 
-            modelQuery.sort([["createdAt", "ascending"]]);
+            modelQuery.sort((sort) ? sort : [["createdAt", "ascending"]]);
 
             modelQuery.exec( (err, found) => {
                 if (err)

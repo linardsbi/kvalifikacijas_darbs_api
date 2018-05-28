@@ -114,10 +114,17 @@
         return new Promise((resolve) => {
             socket = new WebSocket(`ws://${window.location.hostname}:8080`);
 
-            // Connection opened
             socket.addEventListener("open", function () {
                 getPresenceData();
                 resolve();
+            });
+
+            socket.addEventListener("close", async function () {
+                setTimeout(async () => {
+                    $("footer").addClass("active");
+                    await connect();
+                    $("footer").removeClass("active");
+                }, 500);
             });
 
             // Listen for messages
@@ -148,6 +155,14 @@
         // $(".device-overview .close").on("click", function () {
         //     $(".device-overview").css({"width": "0"});
         // });
+        $(".bs-table-head").on("click", function() {
+            const parent = $(this).parent();
+            if (parent.hasClass("active")) {
+                parent.removeClass("active");
+            } else {
+                parent.addClass("active");
+            }
+        });
         $(".device-new").on("click", function () {
             const modal: any = $("#new-device-modal");
             const controller = $(this).parent().parent().parent();
@@ -176,29 +191,59 @@
     }
 
     function addUDListeners() {
-        const input = $("<input class='controller-name-input' type='text'>");
+        const input = $("<input autofocus class='controller-name-input form-control' type='text'>");
         let temp: any;
         $(".delete-controller").on("click", function () {
-            const id = $(this).parent().next().find(".controller-machine-name").text();
+            const id = $(this).siblings(".controller-id").text();
 
+            ModalDialog.confirm("Delete device", "<b>This action is irreversible! Are you sure?</b>", true, function () {
+                sendAjaxRequest("/controllers/delete", {_id: id}, "DELETE")
+                    .then(result => {
+                        console.log("result", result);
+                        $(this).parent().parent().parent().remove();
+                    })
+                    .catch(error => {
+                        const errorMessage = `An error occurred while deleting the controller.\n
+                    the error: <pre>${error}</pre>`;
+
+                        ModalDialog.alert("An error occurred", errorMessage, true);
+                    });
+            });
         });
         $(".edit-controller").on("click", function () {
-            const name = $(this).siblings(".controller-name");
+            const item = $(this).parent().siblings(".controller-name");
+            const checkMark = $(this).parent().siblings(".save-controller");
+
             $(this).hide();
-            $(this).next().show();
+            item.show();
+            checkMark.show();
+            input.val(item.text());
+            temp = item.text();
 
-            input.val(name.text());
-            temp = name;
-
-            name.replaceWith(input);
+            item.text("");
+            item.append(input);
+            input.focus();
         });
         $(".save-controller").on("click", function () {
-            const name = $(this).siblings(".controller-name-input");
-            $(this).hide();
-            $(this).prev().show();
-            temp.text(name.val());
+            const name = $(this).siblings(".actions").find(".edit-controller");
+            const input = $(this).siblings(".controller-name").find("input");
+            const controllerId = $(this).siblings(".actions").find(".controller-id").text();
 
-            name.replaceWith(temp);
+            $(this).hide();
+            $(this).siblings(".controller-name").text(input.val().toString());
+            name.show();
+
+            temp = input.val();
+
+            input.remove();
+
+            sendAjaxRequest("/controllers/edit", {_id: controllerId, name: temp}, "PATCH")
+                .then((result) => {
+                    console.log(result);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
         });
     }
 

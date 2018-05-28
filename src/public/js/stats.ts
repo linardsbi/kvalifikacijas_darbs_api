@@ -80,7 +80,7 @@
         let result;
 
         try {
-            result = await sendAjaxRequest<any>("/admin/statistics", {});
+            result = await sendAjaxRequest("/admin/statistics", {});
         } catch (e) {
             const errorMessage = `An error occurred while fetching the device you clicked on.\n
                     the error: <pre>${e.message}</pre>`;
@@ -171,7 +171,7 @@
         });
     }
 
-    function sendAjaxRequest<T>(url: string, data: object, method?: string): Promise<T> {
+    function sendAjaxRequest(url: string, data: object, method?: string): Promise<any> {
         return new Promise((resolve, reject) => {
             $.ajax({
                 headers: {
@@ -194,6 +194,7 @@
 
     $(window).on("load", async function () {
         await initChart("total-stats-graph");
+        $(".loading").removeClass("loading");
         await connect();
 
         $(".make-admin").on("click", function () {

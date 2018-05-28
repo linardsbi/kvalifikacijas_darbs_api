@@ -97,6 +97,7 @@ export class APIController {
                     result.save();
                 } else if (this.resource instanceof Controller) {
                     const result: any = await DB.findOne(User, {"controllers._id": itemID});
+                    console.log(result);
                     result.devices.remove();
                     result.save();
                 }

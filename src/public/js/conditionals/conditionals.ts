@@ -154,8 +154,6 @@
                         actionFields = $(element).find(".action-fields input.write-value");
                         deviceSelect = $(element).find(".action-fields .nice-select .selected");
                     }
-                    console.log(actions, actionFields);
-                    console.log(selectActionValue, deviceSelect);
 
                     actionFields.each(function (index: number) {
                         if ($(this).val().toString() !== "") {
@@ -167,7 +165,6 @@
                         } else {
                             errors.push({error: "Action fields are required"});
                         }
-                        console.log(runObject.value);
                     });
                     formatted.run.push(runObject);
                 }
@@ -252,8 +249,18 @@
         });
     }
 
+    function formRemoveIcons() {
+        $(".delete-icon").on("click", function () {
+            $(this).parent().parent().parent().parent().remove();
+        });
+        $(".delete-action").on("click", function () {
+            $(this).parent().remove();
+        });
+    }
+
     $(window).on("load", function () {
         hideFields();
+        formRemoveIcons();
         Conditional.listen();
     });
 })(jQuery);

@@ -126,13 +126,32 @@ function removeScriptTags(string: string): string {
     return string.replace("/<(\\/|)script.*?(>|)/gi", "");
 }
 
-function sendAjaxRequest() {
-
+function sendAjaxRequest(url: string, data: object, method?: string) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            headers: {
+                authtoken: $("#apiToken").val().toString()
+            },
+            dataType: "json",
+            method: method,
+            url: url,
+            data: data,
+            success: (response) => {
+                resolve(response);
+            },
+            error: (response: any) => {
+                reject(response);
+            }
+        });
+    });
 }
 
 (($) => {
     $(window).on("load", function () {
         $("select").niceSelect();
+    });
+    $(window).on("error", function () {
+        console.log("error");
     });
 
 })(jQuery);

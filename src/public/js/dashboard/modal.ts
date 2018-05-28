@@ -73,7 +73,7 @@
                 })
                     .catch((err: any) => {
                         console.log(err);
-                        const errorMessage = `An error occurred while fetching the device you clicked on.\n
+                        const errorMessage = `An error occurred while creating new device. <br />
                         the error: <pre>${err.responseJSON.error.message}</pre>`;
 
                         ModalDialog.alert("An error occurred", errorMessage, true);
@@ -183,18 +183,22 @@
             });
     }
 
-    function deleteDevice(deviceID: string) {
-        ModalDialog.confirm("Delete device", "<b>This action is irreversible! Are you sure?</b>", true, function () {
-            sendAjaxRequest("/devices/delete", {_id: deviceID}, "DELETE")
-                .then(result => {
-                    console.log("result", result);
-                })
-                .catch(error => {
-                    const errorMessage = `An error occurred while deleting the device.\n
+    async function deleteDevice(deviceID: string) {
+        return new Promise(resolve => {
+            ModalDialog.confirm("Delete device", "<b>This action is irreversible! Are you sure?</b>", true, function () {
+                console.log(deviceID);
+                sendAjaxRequest("/devices/delete", {_id: deviceID}, "DELETE")
+                    .then(result => {
+                        console.log("result", result);
+                        resolve(true);
+                    })
+                    .catch(error => {
+                        const errorMessage = `An error occurred while deleting the device.\n
                     the error: <pre>${error}</pre>`;
 
-                    ModalDialog.alert("An error occurred", errorMessage, true);
-                });
+                        ModalDialog.alert("An error occurred", errorMessage, true);
+                    });
+            });
         });
     }
 
@@ -208,9 +212,12 @@
             editDevice(deviceId);
         });
 
-        $(".controller-page").on("click", ".delete-device", function () {
-            const deviceId: string = $(this).find(".device-id").text();
-            deleteDevice(deviceId);
+        $(".controller-page").on("click", ".delete-device", async function () {
+            const deviceId: string = $(this).siblings(".device-id").text();
+            const result = await deleteDevice(deviceId);
+            if (result) {
+                $(this).parent().remove();
+            }
         });
     });
 })(jQuery);

@@ -47,9 +47,6 @@ export const create = async (req: Request, res: any) => {
     try {
         const result = await createNewConditional(conditional);
 
-        payload.addUnformattedData({result: result});
-        response.sendError(payload.getFormattedPayload());
-
         response.sendSuccess(result);
         payload = new APIResponsePayload();
     } catch (e) {

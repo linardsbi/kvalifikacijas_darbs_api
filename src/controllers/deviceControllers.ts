@@ -259,7 +259,7 @@ export const read = (req: Request, res: Response) => {
 export let update = async (req: Request, res: Response) => {
     const parameters: ControllerModel = req.body;
     const api = new APIController(req, res, Controller);
-
+    console.log(parameters);
     api.update(parameters);
 };
 
