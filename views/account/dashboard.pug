@@ -7,6 +7,8 @@ block content
     input(type="hidden", name="apiToken" id="apiToken" value=user.apiKey)
     .row
       .device-overview.col-lg-12
+        .no-data
+          h2 No data to show
         #sensor-graph.loading
           .overlay
             .loading-bar
@@ -15,7 +17,7 @@ block content
     h2 Controllers
   .row
     .controller-page.col-lg-12
-      if controllers
+      if controllers[0]
         each controller in controllers
           .controller(id= controller.machine_name)
             .info

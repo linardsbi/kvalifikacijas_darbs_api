@@ -14,6 +14,7 @@ import bluebird from "bluebird";
 import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
 // Controllers (& route handlers)
 import * as homeController from "./controllers/home";
+import * as api from "./controllers/api";
 import * as userController from "./controllers/user";
 import * as brokerController from "./controllers/brokers";
 import * as conditionalController from "./controllers/ConditionalController";
@@ -112,6 +113,8 @@ app.post("/account/delete", passportConfig.isAuthenticated, userController.postD
 app.get("/dashboard", passportConfig.isAuthenticated, userController.getDashboard);
 app.get("/conditionals", passportConfig.isAuthenticated, conditionalController.getConditionalView);
 app.get("/stats", passportConfig.isAuthenticated, userController.getSiteStats);
+app.get("/api", passportConfig.isAuthenticated, api.getApi);
+app.post("/admin", passportConfig.isAuthenticated, userController.postAdmin);
 
 /**
  * API routes

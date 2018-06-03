@@ -110,18 +110,19 @@
             // TODO: error message
             console.log(formattedData.error);
         } else {
-            const device = $(`<div class='device col-lg-2 col-md-3 col-sm-6'><i class="fa fa-trash"></i><div class="device-name"></div></div>`);
-            const currentController = $(document.getElementById(formattedData._controllerID));
-            const newDeviceModal: any = $("#new-device-modal");
-
-            for (const item of response) {
-                if (item && item.device) {
-                    device.find(".device-name").html(item.device.name);
-                    device.find(".device-id").html(item.device._id);
-                    device.appendTo(currentController.find(".controller-devices"));
-                }
-            }
-            newDeviceModal.modal("hide");
+            // const device = $(`<div class='device col-lg-2 col-md-3 col-sm-6'><i class="fa fa-trash"></i><div class="device-name"></div></div>`);
+            // const currentController = $(document.getElementById(formattedData._controllerID));
+            // const newDeviceModal: any = $("#new-device-modal");
+            //
+            // for (const item of response) {
+            //     if (item && item.device) {
+            //         device.find(".device-name").html(item.device.name);
+            //         device.find(".device-id").html(item.device._id);
+            //         device.appendTo(currentController.find(".controller-devices"));
+            //     }
+            // }
+            // newDeviceModal.modal("hide");
+            location.reload();
         }
     }
 

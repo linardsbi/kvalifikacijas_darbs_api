@@ -74,6 +74,9 @@
 
     function handleIncomingDeviceData(data: any) {
         const dataContainer = $(".device-overview .data");
+        const noDataOverlay: any = $("div.no-data");
+
+        noDataOverlay.hide();
 
         const chart = $("#sensor-graph").highcharts();
         if (chart) {
@@ -81,15 +84,17 @@
             if (existingSeries) {
                 existingSeries.addPoint([(new Date()).getTime(), parseInt(data.data.payload)]);
             } else {
-                chart.addSeries({
-                    name: `${data.data.device.name} (${data.data.device.pin_name})`,
-                    type: "line",
-                    yAxis: "1",
-                    id: data.id,
-                    data: [
-                        [(new Date()).getTime(), parseInt(data.data.payload)]
-                    ]
-                });
+                if (data.data.device) {
+                    chart.addSeries({
+                        name: `${data.data.device.name} (${data.data.device.pin_name})`,
+                        type: "line",
+                        yAxis: "1",
+                        id: data.id,
+                        data: [
+                            [(new Date()).getTime(), parseInt(data.data.payload)]
+                        ]
+                    });
+                }
             }
         }
 

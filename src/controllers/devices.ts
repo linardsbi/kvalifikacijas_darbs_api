@@ -10,13 +10,11 @@ import {APIResponsePayload, Payload} from "../util/helpers/APIResponsePayload";
 import { EventHandler } from "../util/helpers/eventHandling";
 import { APIController } from "./APIController";
 import app from "../app";
-import {DB} from "../util/helpers/queryHelper";
+import {DB, ObjectID} from "../util/helpers/queryHelper";
 
 let payload = new APIResponsePayload();
 
 function createNewDevice(deviceData: DeviceModel): any {
-    // TODO: device duplicate on controller validation
-    // TODO: on device creation, send new device data to clients
     return new Promise((resolve, reject) => {
         let device: any;
 
@@ -27,7 +25,6 @@ function createNewDevice(deviceData: DeviceModel): any {
         async.waterfall([
             function getControllerInfo(done: Function) {
                 Controller.find({machine_name: deviceData._controllerID}, "_id", (err, found) => {
-                    console.log(found);
                     if (err || !found)
                         done("error occurred while fetching data");
                     else {
@@ -43,10 +40,9 @@ function createNewDevice(deviceData: DeviceModel): any {
             },
 
             function saveDevice(done: Function) {
-                console.log(device._controllerID);
                 device.save(function (err: any, device: DeviceModel) {
                     if (err) {
-                        payload.addUnformattedData({error: err});
+                        payload.addUnformattedData({error: err.message});
                     }
                     payload.addUnformattedData({device: device});
                     done(err, device);
@@ -68,7 +64,7 @@ function createNewDevice(deviceData: DeviceModel): any {
                         });
                     }
                 } catch (e) {
-                    payload.addUnformattedData({error: e});
+                    payload.addUnformattedData({error: e.message});
                     done(e);
                 }
             }
@@ -114,7 +110,7 @@ export const create = (req: Request, res: any) => {
  *
  */
 export const read = (req: Request, res: Response) => {
-    const deviceID: string = req.query._id;
+    const deviceID: ObjectID = req.query._id || req.query.id;
     const api = new APIController(req, res, Device);
 
     api.read(deviceID);
@@ -140,8 +136,8 @@ export let update = (req: Request, res: Response) => {
  *
  */
 export let remove = (req: Request, res: Response) => {
-    const deviceID: string = req.body;
+    const deviceID: ObjectID = req.body._id || req.query.id;
     const api = new APIController(req, res, Device);
-    console.log(deviceID);
+
     api.remove(deviceID);
 };

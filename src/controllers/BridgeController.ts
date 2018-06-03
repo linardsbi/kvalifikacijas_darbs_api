@@ -7,7 +7,6 @@ import {DB} from "../util/helpers/queryHelper";
 import Device from "../models/Device";
 import DeviceController from "../models/DeviceController";
 /**
- * TODO: create more efficient topics so the bridge client doesn't have to sub to many topics
  * (ideal condition: only one topic to sub to needed for the client to know about the present controllers)
  */
 
@@ -103,12 +102,10 @@ export class WSClientInstance extends BridgeInstance {
     }
 
     private handleSubscribe(topics: object) {
-        // TODO: handling logic
         this._mqttClient.subscribe(topics);
     }
 
     private handlePublish(topic: object, message: object, options?: object) {
-        // TODO: handling logic
         this._mqttClient.publish(topic, message, options);
     }
 
@@ -130,7 +127,6 @@ export class WSClientInstance extends BridgeInstance {
     }
 
     private async formatMqttMessage(topic: string, message: any): Promise<BridgeResponse>  {
-        // TODO: any needed formatting
         const formatted: BridgeResponse = this.response;
         const msgString = message.toString();
 

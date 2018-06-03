@@ -30,9 +30,18 @@ async function handleFirstConnection(packet: any) {
 
     addController(clientID, username).then((result) => {
         console.log("result", result);
+        publishNewController(result);
     }, (err) => {
         console.log("error", err);
     });
+}
+
+function publishNewController(message) {
+    const topic = `controllers/${message}/new`;
+    // mqttInstance.publish({
+    //     topic: topic,
+    //     payload: new Buffer(body),
+    // }, undefined);
 }
 
 function handlePacket(packet: any) {
@@ -56,7 +65,7 @@ export function handleClientPublish(packet: any, serverInstance: any) {
         });
     } else if (strmatch.hasString(topic, "/write")) {
         handleDeviceWrite(packet).catch(reason => {
-            console.log("write error occurred:", reason);
+            console.log("write error occurred:", reason.message);
         });
     } else {
         handlePacket(packet);
@@ -92,6 +101,9 @@ async function handleIncomingData(packet: any) {
     const topic: string = packet.topic;
     console.log(topic);
     const controller = await DB.findOne<ControllerModel>(Controller, {machine_name: topic.split("/")[1]}, "_id");
+
+    if (!controller) throw new Error("Invalid controller id");
+
     const device = await DB.findOne<DeviceModel>(Device, {
         _controllerID: controller.id,
         "used_pins.pin_name": topic.split("/")[4]

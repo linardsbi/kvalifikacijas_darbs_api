@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt-nodejs";
 import mongoose from "mongoose";
+import { DeviceModel } from "./Device";
 
 export type UserModel = mongoose.Document & {
     email: string,
@@ -10,7 +11,7 @@ export type UserModel = mongoose.Document & {
     role: string,
     controllers: [
         {
-            _id: mongoose.Schema.Types.ObjectId,
+            _id: mongoose.Schema.Types.ObjectId | DeviceModel,
             machine_name: string
         }
         ],

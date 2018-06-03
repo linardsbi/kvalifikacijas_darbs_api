@@ -1,6 +1,6 @@
 "use strict";
 import jwt from "jsonwebtoken";
-import {default as User} from "../../models/User";
+import {default as User, UserModel} from "../../models/User";
 import { DB } from "./queryHelper";
 
 
@@ -10,7 +10,7 @@ export class JwtToken {
             try {
                 jwt.verify(token, process.env.APPLICATION_KEY);
             } catch (e) {
-                console.error("token mismatch", e);
+                console.error("token mismatch", e.message);
                 resolve(false);
             }
             resolve(true);
@@ -48,12 +48,15 @@ export class JwtToken {
     static checkIfTokenAssigned(token: any): Promise<boolean> {
         return new Promise(async (resolve) => {
             const validToken = await this.validateToken(token);
-
             if (validToken) {
-                const user = await DB.findOne(User,{apiKey: token});
-                if (user) {
-                    resolve(true);
-                } else {
+                try {
+                    const user = await DB.findOne<UserModel>(User,{apiKey: token});
+                    if (user) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                } catch (e) {
                     resolve(false);
                 }
             } else {

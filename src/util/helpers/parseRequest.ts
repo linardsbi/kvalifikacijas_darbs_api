@@ -48,7 +48,7 @@ export class ParseRequest {
                 }
             }
         } catch (e) {
-            return {error: "array is not a valid json object"};
+            return {error: e.message};
         }
 
         return newArray;

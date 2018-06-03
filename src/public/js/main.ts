@@ -147,11 +147,46 @@ function sendAjaxRequest(url: string, data: object, method?: string) {
 }
 
 (($) => {
+
+
+    async function getConvertedText(text: string): Promise<any> {
+        const splitText = text.split("\n");
+        const wrapper: any = $("<ol class='converted-code'>");
+
+        splitText.forEach((value: string) => {
+            value = value.replace( /(\t|\s{4})/g, "<span class='tab'></span>");
+            const highlighted: any = value.replace(/".*?"/g, '<span class="highlighted-green">$&</span>');
+
+            wrapper.append($(`<li class='code-line'><div class="wrapper">${highlighted}</div></li>`));
+        });
+
+        return wrapper;
+    }
+
+    async function convertTextToCode(): Promise<void> {
+        $("div.convert-to-code").each( (index, value) => {
+            const $this = $(value);
+            let text: string;
+            let result: any;
+
+            if ($this.hasClass("json-data")) {
+                text = $this.text();
+                result = getConvertedText(text);
+            }
+
+            result.then((item: any) => {
+                console.log(item);
+                $this.html(item);
+            });
+        });
+    }
+
+
     $(window).on("load", function () {
         $("select").niceSelect();
+        convertTextToCode();
     });
     $(window).on("error", function () {
         console.log("error");
     });
-
 })(jQuery);

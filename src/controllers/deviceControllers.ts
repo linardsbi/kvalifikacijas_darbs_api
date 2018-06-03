@@ -13,6 +13,7 @@ import { ParseRequest } from "../util/helpers/parseRequest";
 import { EventHandler } from "../util/helpers/eventHandling";
 import { APIResponsePayload, Payload } from "../util/helpers/APIResponsePayload";
 import { APIResponse } from "../util/helpers/APIResponse";
+import {ObjectID} from "../util/helpers/queryHelper";
 
 let payload = new APIResponsePayload();
 
@@ -29,7 +30,7 @@ export function createNewController(controllerData: ControllerModel): any {
                 try {
                     controller.save((err, controller: ControllerModel) => {
                         if (err) {
-                            ErrorHandler.error(err);
+                            EventHandler.error(err);
                             payload.addUnformattedData({error: err});
                         }
                         payload.addUnformattedData({controller: controller});
@@ -50,9 +51,10 @@ export function createNewController(controllerData: ControllerModel): any {
                                 machine_name: controller.machine_name
                             });
                             user.save((err, found) => {
-                                console.log(user, err, found);
                                 if (err) {
                                     payload.addUnformattedData({error: err});
+                                } else {
+                                    payload.addUnformattedData({controller: found});
                                 }
                             });
 
@@ -68,7 +70,7 @@ export function createNewController(controllerData: ControllerModel): any {
             }
         ], (err) => {
             if (err) {
-                ErrorHandler.error(err);
+                EventHandler.error(err);
                 reject(payload.getFormattedPayload());
             } else
                 resolve(payload.getFormattedPayload());
@@ -201,7 +203,7 @@ function getControllerDataByID(controllerID: string, parameters: string) {
             }
         ], (err) => {
             if (err) {
-                ErrorHandler.error(err);
+                EventHandler.error(err);
                 reject(payload.getFormattedPayload());
             } else
                 resolve(payload.getFormattedPayload());
@@ -244,7 +246,7 @@ export let getControllerData = (req: Request, res: any) => {
  *
  */
 export const read = (req: Request, res: Response) => {
-    const controllerID: string = req.query.id;
+    const controllerID: ObjectID = req.query.id;
     const api = new APIController(req, res, Controller);
 
     api.read(controllerID);
@@ -270,7 +272,7 @@ export let update = async (req: Request, res: Response) => {
  *
  */
 export let remove = (req: Request, res: Response) => {
-    const controllerID: string = req.body._id;
+    const controllerID: ObjectID = req.body._id;
     const api = new APIController(req, res, Controller);
 
     api.remove(controllerID);

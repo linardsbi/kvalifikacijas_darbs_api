@@ -13,10 +13,11 @@ import User, {APIToken} from "../models/User";
 import Conditional, {ConditionalInterface} from "../models/Conditional";
 import {EventHandler} from "../util/helpers/eventHandling";
 import {eventSubject} from "../models/EventLog";
+import {MongooseDocument} from "mongoose";
 
 export class APIController {
     payload = new APIResponsePayload();
-    private resource: any;
+    readonly resource: any;
     private res: Response;
     private req: Request;
     private apiResponse: APIResponse;
@@ -137,20 +138,27 @@ export class APIController {
  * Authentication middleware
  */
 export let isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
-    // TODO: auth check
+    if (!req.headers.authtoken)
+        return res.status(403).send({error: "No auth token provided"});
+
     const isValid = await token.checkIfTokenAssigned(req.headers.authtoken);
 
     if (isValid) {
         return next();
     } else {
-        const decodedToken: APIToken = token.decodeToken(req.headers.authtoken.toString());
-        const subject: eventSubject = {
-            _id: decodedToken._id || undefined,
-            model: "User"
-        };
+        try {
+            const decodedToken: APIToken = token.decodeToken(req.headers.authtoken.toString());
+            const subject: eventSubject = {
+                _id: decodedToken._id || undefined,
+                model: "User"
+            };
 
-        EventHandler.error(`invalid auth token ${req.headers.authtoken.toString()}`, subject);
-        res.status(403).send({error: "Invalid auth token"});
+            EventHandler.error(`invalid auth token ${req.headers.authtoken.toString()}`, subject);
+        } catch (e) {
+            EventHandler.error(`invalid auth token ${req.headers.authtoken.toString()}`);
+        }
+
+        return res.status(403).send({error: "Invalid auth token"});
     }
 };
 

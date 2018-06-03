@@ -1,6 +1,7 @@
 .page-body {
   .device-overview {
     @include transition(500ms width);
+    position: relative;
     overflow: hidden;
     .buttons {
       @include display-flex();
@@ -31,6 +32,9 @@
         & > div {
           margin: auto;
         }
+      }
+      .device.row {
+        min-height: 65px;
       }
     }
   }
@@ -74,7 +78,18 @@
     }
   }
 }
-
+.dashboard {
+  .no-data {
+    position: absolute;
+    z-index: 1;
+    background: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: $mint-green;
+    display: none;
+  }
+}
 .controller-page {
   .controller-machine-name {
     display: none
@@ -334,12 +349,14 @@
           }
         }
       }
+
       &:nth-child(even) {
         .delete-action > i {
           left: -35px;
           right: auto;
         }
       }
+
       &:first-child {
         .delete-action > i {
           display: none;
@@ -442,6 +459,74 @@ body footer {
       font-family: $heading-font-family;
       letter-spacing: 1.2px;
     }
+  }
+}
+
+.account-management {
+  .bs-table-body {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}
+
+.site-statistics {
+  .delete-icon {
+    @include cross-icon();
+    @include display-flex();
+    opacity: 1;
+    text-indent: 1px;
+    .text {
+      margin: auto;
+    }
+  }
+  .controller-stats {
+    margin-top: 40px;
+    label {
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    span {
+      font-weight: bold;
+    }
+  }
+  .bs-table {
+    margin-top: 40px;
+    .table-head-row {
+      text-align: center;
+    }
+    .table-body-row{
+      min-height: 60px;
+      > div {
+        @include display-flex();
+      }
+      .name {
+        @include display-flex-item(1);
+      }
+    }
+  }
+}
+
+.api-examples {
+  .panel-body {
+    .row > div {
+      @include display-grid(auto, 1fr 1fr);
+      grid-gap: 15px;
+      white-space: nowrap;
+      margin-bottom: 20px;
+    }
+  }
+  .route-name {
+    span:not(.route) {
+      font-family: $heading-font-family;
+      margin-right: 15px;
+    }
+  }
+  span.route {
+    color: $mint-green;
+    font-weight: bold;
+  }
+  .route-example {
+    border: 2px solid $mint-green;
   }
 }
 

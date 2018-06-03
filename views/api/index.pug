@@ -1,139 +1,158 @@
 extends ../layout
 
 block content
-  h2 API Documentation
-  hr
-  .container-fluid
-    .panel-group#accordion
-      .panel.panel-default
-        .panel-heading
-          h4.panel-title
-            a(data-toggle="collapse" data-parent="#accordion" href=`#collapse1`) Controllers
-        .panel-collapse.collapse.in(id=`collapse1`)
-          .panel-body
-            .row
-              .col-md-6
-                .route-name
-                    span.route Route:
-                    | /controllers/create
-                    .purpose To create a new controller
-                .route-example
-                  | placeholder
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /controllers/get
-                  .purpose To get a controller
-                .route-example
-                  | placeholder
-            .row
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /controllers/edit
-                  .purpose To edit a controller
-                .route-example
-                  | placeholder
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /controllers/delete
-                  .purpose To delete a controller
-                .route-example
-                  | placeholder
+    h2 API Documentation
+    hr
+    .container-fluid.accordions
+        .panel-group#accordion
+            .panel.panel-default
+                .panel-heading
+                    h4.panel-title
+                        a(data-toggle="collapse" data-parent="#accordion" href=`#collapse1`) Controllers
+                .panel-collapse.collapse.in(id=`collapse1`)
+                    .panel-body
+                        .row
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route POST /controllers/create
+                                    .purpose To create a new controller
+                                .route-example.convert-to-code.json-data
+                                    .
+                                        [
+                                            {
+                                                "name":" new controller name",
+                                                "machine_name": "54537df041d7fc3a5c4f1e54",
+                                                "_client_id": "5b12a1f7fc006e1d7cb1202a"
+                                            }
+                                        ]
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route GET /controllers/get
+                                    .purpose To get a controller
+                                .route-example.convert-to-code.json-data
+                                    .
+                                        [
+                                            {"id": "5ab37df041d7fc335c4f1ef5"},
+                                            {"id": "54537df041d7fc3a5c4f1e54"}
+                                        ]
+                        .row
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route PATCH /controllers/edit
+                                    .purpose To edit a controller
+                                .route-example.convert-to-code.json-data
+                                    .
+                                        [
+                                            {
+                                                "name": "new controller name",
+                                                "id": "54537df041d7fc3a5c4f1e54"
+                                            }
+                                        ]
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route DELETE /controllers/delete
+                                    .purpose To delete a controller
+                                .route-example.convert-to-code.json-data
+                                    .
+                                        [
+                                            {"id": "5ab37df041d7fc335c4f1ef5"}
+                                        ]
+            .panel.panel-default
+                .panel-heading
+                    h4.panel-title
+                        a(data-toggle="collapse" data-parent="#accordion" href=`#collapse2`) Devices
+                .panel-collapse.collapse.in(id=`collapse2`)
+                    .panel-body
+                        .row
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route POST /devices/create
+                                    .purpose To create a new device
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route GET /devices/get
+                                    .purpose To get a device
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
+                        .row
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route PATCH /devices/edit
+                                    .purpose To edit a device
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route DELETE /devices/delete
+                                    .purpose To delete a device
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
 
-      .panel.panel-default
-        .panel-heading
-          h4.panel-title
-            a(data-toggle="collapse" data-parent="#accordion" href=`#collapse2`) Devices
-        .panel-collapse.collapse.in(id=`collapse2`)
-          .panel-body
-            .row
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /devices/create
-                  .purpose To create a new device
-                .route-example
-                  | placeholder
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /devices/get
-                  .purpose To get a device
-                .route-example
-                  | placeholder
-            .row
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /devices/edit
-                  .purpose To edit a device
-                .route-example
-                  | placeholder
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /devices/delete
-                  .purpose To delete a device
-                .route-example
-                  | placeholder
+            .panel.panel-default
+                .panel-heading
+                    h4.panel-title
+                        a(data-toggle="collapse" data-parent="#accordion" href=`#collapse3`) Conditionals
+                .panel-collapse.collapse.in(id=`collapse3`)
+                    .panel-body
+                        .row
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route POST /conditionals/create
+                                    .purpose To create a new conditional
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route GET /conditionals/get
+                                    .purpose To get a conditional
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
+                        .row
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route PATCH /conditionals/edit
+                                    .purpose To edit a conditional
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route DELETE /conditionals/delete
+                                    .purpose To delete a conditional
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
 
-      .panel.panel-default
-        .panel-heading
-          h4.panel-title
-            a(data-toggle="collapse" data-parent="#accordion" href=`#collapse3`) Conditionals
-        .panel-collapse.collapse.in(id=`collapse3`)
-          .panel-body
-            .row
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /conditionals/create
-                  .purpose To create a new conditional
-                .route-example
-                  | placeholder
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /conditionals/get
-                  .purpose To get a conditional
-                .route-example
-                  | placeholder
-            .row
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /conditionals/edit
-                  .purpose To edit a conditional
-                .route-example
-                  | placeholder
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /conditionals/delete
-                  .purpose To delete a conditional
-                .route-example
-                  | placeholder
-
-      .panel.panel-default
-        .panel-heading
-          h4.panel-title
-            a(data-toggle="collapse" data-parent="#accordion" href=`#collapse4`) Devices
-        .panel-collapse.collapse.in(id=`collapse4`)
-          .panel-body
-            .row
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /data/post
-                  .purpose To send and save incoming data from a device
-                .route-example
-                  | placeholder
-              .col-md-6
-                .route-name
-                  span.route Route:
-                  | /data/get
-                  .purpose To get the data of certain devices
-                .route-example
-                  | placeholder
+            .panel.panel-default
+                .panel-heading
+                    h4.panel-title
+                        a(data-toggle="collapse" data-parent="#accordion" href=`#collapse4`) Devices
+                .panel-collapse.collapse.in(id=`collapse4`)
+                    .panel-body
+                        .row
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route POST /data/post
+                                    .purpose To send and save incoming data from a device
+                                .route-example.convert-to-code.json-data
+                                    | placeholder
+                            .col-md-12
+                                .route-name
+                                    span Route:
+                                    span.route GET /data/get
+                                    .purpose To get the data of certain devices
+                                .route-example.convert-to-code.json-data
+                                    | placeholder

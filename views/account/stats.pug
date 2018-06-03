@@ -17,21 +17,40 @@ block content
                 span.online-controllers 0
     .row
         .col-md-6
-            .page-header
-                h2 Users
-            .users.col-lg-6.col-md-6
-                each user in users
-                    .name #{user.email}
-                    button.make-admin.btn.btn-success(data-uid= user._id) Make admin
-                    button.delete-user.btn.btn-danger(data-uid= user._id) Delete user
+            .form-group.bs-table#users
+                .bs-table-head
+                    .row.table-head-row
+                        .col-xs-1.table-head
+                        .col-xs-offset-3.col-xs-4.table-head
+                            | Users
+                        .col-xs-4.table-head
+                .bs-table-body
+                    each item in users
+                        .row.table-body-row
+                            .col-xs-2.table-body.delete-user(data-uid= item._id)
+                                i.delete-icon
+                                    .text &times;
+                            .col-xs-offset-3.col-xs-4.table-body.name #{item.email}
+                            .col-xs-4.table-body
+                                button.make-admin.btn.btn-success(data-uid= item._id) Make admin
+
         .col-md-6
-            .page-header
-                h2 Admins
-            .admins.col-lg-6.col-md-6
-                each admin in admins
-                    .name #{admin.email}
-                    if (admin._id != user.id)
-                        button.revoke-admin.btn.btn-danger(data-uid= admin._id) Revoke admin
+            .form-group.bs-table#admins
+                .bs-table-head
+                    .row.table-head-row
+                        .col-xs-1.table-head
+                        .col-xs-offset-3.col-xs-4.table-head
+                            | Admins
+                        .col-xs-4.table-head
+                .bs-table-body
+                    each admin in admins
+                        .row.table-body-row
+                            .col-xs-2.table-body.revoke-admin(data-uid= admin._id)
+                                if (admin._id != user.id)
+                                    i.delete-icon(data-uid= admin._id)
+                                        .text &times;
+                            .col-xs-offset-3.col-xs-4.table-body.name #{admin.email}
+                            .col-xs-4.table-body.revoke
 
     script(src="https://code.highcharts.com/highcharts.src.js")
     script(src="https://code.highcharts.com/stock/modules/exporting.js")

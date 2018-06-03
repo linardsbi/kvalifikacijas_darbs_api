@@ -6,7 +6,7 @@ import {ConditionalInterface, default as Conditional} from "../models/Conditiona
 import {APIResponse} from "../util/helpers/APIResponse";
 import {APIResponsePayload} from "../util/helpers/APIResponsePayload";
 import {APIController} from "./APIController";
-import {DB} from "../util/helpers/queryHelper";
+import {DB, ObjectID} from "../util/helpers/queryHelper";
 import {default as Device} from "../models/Device";
 
 let payload = new APIResponsePayload();
@@ -64,7 +64,7 @@ export const create = async (req: Request, res: any) => {
  *
  */
 export const read = (req: Request, res: Response) => {
-    const conditionalID: string = req.query.id;
+    const conditionalID: ObjectID = req.query.id || req.query._id;
     const api = new APIController(req, res, Conditional);
 
     api.read(conditionalID);
@@ -90,7 +90,7 @@ export let update = (req: Request, res: Response) => {
  *
  */
 export let remove = (req: Request, res: Response) => {
-    const conditionalID: string = req.body;
+    const conditionalID: ObjectID = req.body;
     const api = new APIController(req, res, Conditional);
 
     api.remove(conditionalID);

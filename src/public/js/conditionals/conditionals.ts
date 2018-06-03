@@ -217,9 +217,9 @@
     }
 
     function hideActions(item: any) {
-        const writeGroup = item.parent().siblings(".action-fields").find(".write-group");
-        const emailGroup = item.parent().siblings(".action-fields").find(".email-group");
-        const phoneGroup = item.parent().siblings(".action-fields").find(".phone-group");
+        const writeGroup = item.parent().parent().siblings(".action-fields").find(".write-group");
+        const emailGroup = item.parent().parent().siblings(".action-fields").find(".email-group");
+        const phoneGroup = item.parent().parent().siblings(".action-fields").find(".phone-group");
 
         if (item.val().toString() === "email") {
             writeGroup.hide();

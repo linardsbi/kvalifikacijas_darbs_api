@@ -1,22 +1,22 @@
 import async from "async";
 import crypto from "crypto";
 import passport from "passport";
-import {default as User, UserModel, AuthToken} from "../models/User";
-import {Request, Response, NextFunction} from "express";
-import {IVerifyOptions} from "passport-local";
-import {WriteError} from "mongodb";
-import DeviceController, {ControllerModel} from "../models/DeviceController";
-import {default as Device} from "../models/Device";
+import {default as User, UserModel, AuthToken } from "../models/User";
+import { Request, Response, NextFunction } from "express";
+import { IVerifyOptions } from "passport-local";
+import { WriteError } from "mongodb";
+import DeviceController, { ControllerModel } from "../models/DeviceController";
+import {default as Device } from "../models/Device";
 
 
 const request = require("express-validator");
-import {JwtToken as jwt} from "../util/helpers/jwtToken";
-import {DB} from "../util/helpers/queryHelper";
+import {JwtToken as jwt } from "../util/helpers/jwtToken";
+import { DB } from "../util/helpers/queryHelper";
 import { Email } from "../util/helpers/sendEmail";
 import PublishedData from "../models/PublishedData";
 import Event from "../models/EventLog";
-import {MongooseDocument} from "mongoose";
-import {EventHandler} from "../util/helpers/eventHandling";
+import { MongooseDocument } from "mongoose";
+import { EventHandler } from "../util/helpers/eventHandling";
 
 /**
  * GET /login
@@ -154,25 +154,27 @@ export const postAdmin = async (req: Request, res: Response) => {
     const uid = req.body.id;
     const user = await DB.findById<UserModel>(User, uid);
 
-    if (req.body.action === "make")
-        user.role = "admin";
-    else if (req.body.action === "revoke")
-        user.role = "user";
+    if (user) {
+        if (req.body.action === "make")
+            user.role = "admin";
+        else if (req.body.action === "revoke")
+            user.role = "user";
 
-    user.save(function (err, user: UserModel) {
-        if (err)
-            return res.send(err);
-        const subject = {
-            _id: user._id,
-            model: "User"
-        };
+        user.save(function (err, user: UserModel) {
+            if (err)
+                return res.send(err);
+            const subject = {
+                _id: user._id,
+                model: "User"
+            };
 
-        EventHandler.log("Info", `Got their role changed to "${req.body.action}"`, subject);
+            EventHandler.log("Info", `Got their role changed to "${req.body.action}"`, subject);
 
-        return res.send({status: "success"});
-    });
-
-};
+            return res.send({status: "success"});
+        });
+    } else {
+        return res.send({error: "User not found"});
+    }};
 
 /**
  * GET /dashboard
@@ -214,8 +216,9 @@ export let postLogin = (req: Request, res: Response, next: NextFunction) => {
         if (err) {
             return next(err);
         }
+
         if (!user) {
-            req.flash("errors", info.message);
+            req.flash("errors", {msg: info.message});
             return res.redirect("/login");
         }
         req.logIn(user, (err) => {
@@ -291,6 +294,9 @@ export let postSignup = (req: Request, res: Response, next: NextFunction) => {
             if (err) {
                 return next(err);
             }
+
+            user.apiKey = jwt.generateToken({id: user._id, role: user.role});
+            user.save();
 
             const subject = {
                 _id: user._id,
@@ -406,15 +412,19 @@ export let postUpdatePassword = (req: Request, res: Response, next: NextFunction
  * Delete user account.
  */
 export let postDeleteAccount = (req: Request, res: Response, next: NextFunction) => {
-    const id = (req.body.id && req.user.role === "admin") ? req.body.id : req.user.id;
+    const id = ((req.body.id || req.body._id) && req.user.role === "admin") ? req.body.id || req.body._id : req.user.id;
 
     User.remove({_id: id}, (err) => {
         if (err) {
             return next(err);
         }
-        req.logout();
-        req.flash("info", {msg: "Your account has been deleted."});
-        res.redirect("/");
+        if (!(req.body.id || req.body._id)) {
+            req.logout();
+            req.flash("info", {msg: "Your account has been deleted."});
+            res.redirect("/");
+        } else {
+            return res.send({success: "success"});
+        }
     });
 };
 

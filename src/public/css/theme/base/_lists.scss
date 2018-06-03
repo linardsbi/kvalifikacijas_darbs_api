@@ -10,6 +10,44 @@ ol {
     display: block;
   }
 }
+
+ol.converted-code {
+  counter-reset: item;
+  overflow: auto;
+  .highlighted-green {
+    color: $mint-green;
+    font-weight: bold;
+    font-size: 17px;
+  }
+  .tab {
+    margin-left: 20px;
+  }
+  .wrapper {
+    margin: auto 0;
+  }
+  > li {
+    @include display-flex();
+    height: 30px;
+    font-family: $code-font-family;
+    &:nth-child(even) {
+      background: #e7e7e7;
+    }
+  }
+  > li:before {
+    content: counters(item, ".");
+    counter-increment: item;
+    margin-left: 0;
+    margin-right: 10px;
+    padding-right: 15px;
+    padding-left: 15px;
+    background: #b7b7b7;
+    color: white;
+    font-weight: bold;
+    height: 30px;
+    padding-top: 3px;
+  }
+}
+
 dl {
   margin-bottom : $small-spacing;
 

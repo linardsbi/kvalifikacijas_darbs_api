@@ -153,7 +153,6 @@
                     x: -150,
                     y: -50,
                     labelFormatter : function() {
-                        console.log(this);
                         return `Collection: <span style="color: ${this.color}">${this.name}</span><br />
                                 total documents: <span style="color: ${this.color}">${this.y}</span><br />
                                 total collection size: <span style="color: ${this.color}">${this.size}</span><br />
@@ -192,33 +191,79 @@
         });
     }
 
+    function moveToTable(table: string, row: any): void {
+        if (table === "users") {
+            const makeAdminButton: any = row.find(".make-admin");
+            const uid: string = row.find(".revoke-admin").data("uid");
+
+            row.find(".revoke-admin").removeClass("revoke-admin").addClass("delete-user");
+
+            if (makeAdminButton.length > 0) {
+                makeAdminButton.show();
+            } else {
+                row.find(".revoke").append($(`<button class="make-admin btn btn-success" data-uid="${uid}">Make admin</button>`));
+            }
+
+            row.appendTo($("#users").find(".bs-table-body"));
+        } else if (table === "admins") {
+            row.find(".delete-user").removeClass("delete-user").addClass("revoke-admin");
+            row.find(".make-admin").hide();
+            row.appendTo($("#admins").find(".bs-table-body"));
+        }
+    }
+
     $(window).on("load", async function () {
+        const usersTable = $("#users");
         await initChart("total-stats-graph");
-        $(".loading").removeClass("loading");
+        $("div.loading").removeClass("loading");
         await connect();
 
-        $(".make-admin").on("click", function () {
+        usersTable.on("click", ".make-admin", async function () {
             const payload = {
                 id: $(this).data("uid").toString(),
                 action: "make"
             };
-            const response = sendAjaxRequest("/admin", payload, "POST");
-            console.log(response);
+            try {
+                await sendAjaxRequest("/admin", payload, "POST");
+                moveToTable("admins", $(this).parent().parent());
+            } catch (e) {
+                const errorMessage = `An error occurred while doing the thing you wanted to do.\n
+                    the error: <pre>${e.message}</pre>`;
+
+                ModalDialog.alert("An error occurred", errorMessage, true);
+            }
         });
-        $(".delete-user").on("click", function () {
+
+        usersTable.on("click", ".delete-user", async function () {
             const id = {
                 id: $(this).data("uid").toString()
             };
-            const response = sendAjaxRequest("/account/delete", id, "POST");
-            console.log(response);
+            try {
+                await sendAjaxRequest("/account/delete", id, "POST");
+                $(this).parent().remove();
+            } catch (e) {
+                const errorMessage = `An error occurred while doing the thing you wanted to do.\n
+                    the error: <pre>${e.message}</pre>`;
+
+                ModalDialog.alert("An error occurred", errorMessage, true);
+            }
         });
-        $(".revoke-admin").on("click", function () {
+
+        $("#admins").on("click", ".revoke-admin", async function () {
             const payload = {
                 id: $(this).data("uid").toString(),
                 action: "revoke"
             };
-            const response = sendAjaxRequest("/admin", payload, "POST");
-            console.log(response);
+
+            try {
+                await await sendAjaxRequest("/admin", payload, "POST");
+                moveToTable("users", $(this).parent());
+            } catch (e) {
+                const errorMessage = `An error occurred while doing the thing you wanted to do.\n
+                    the error: <pre>${e.message}</pre>`;
+
+                ModalDialog.alert("An error occurred", errorMessage, true);
+            }
         });
     });
 })(jQuery);

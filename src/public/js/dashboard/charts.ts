@@ -47,15 +47,19 @@
         const response: any = await queryLatestData();
         const deviceIDs: any = {};
         const currentSeries: any = {};
-
+        const noDataOverlay: any = $("div.no-data");
 
         if (response[0] && response[0].success) {
             response.splice(0, 1);
         }
-        console.log(response);
+
+        if (!response[0]) {
+            noDataOverlay.show();
+        } else {
+            noDataOverlay.hide();
+        }
 
         response.forEach((value: any, index: number) => {
-
             if (value[index]) {
                 value = value[index];
 
